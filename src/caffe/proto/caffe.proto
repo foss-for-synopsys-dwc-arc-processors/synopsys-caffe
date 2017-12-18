@@ -214,6 +214,7 @@ message NetParameter {
 // Update the next available ID when you add a new SolverParameter field.
 //
 // SolverParameter next available ID: 44 (last added: plateau_winsize)
+
 message SolverParameter {
   //////////////////////////////////////////////////////////////////////////////
   // Specifying the train and test networks
@@ -372,6 +373,16 @@ message SolverParameter {
   optional bool gan_solver = 51 [default = false];
   // Overlap compute and communication for data parallel training
   optional bool layer_wise_reduce = 45 [default = true];
+
+  // Path to caffemodel file(s) with pretrained weights to initialize finetuning.
+  // Tha same as command line --weights parameter for caffe train command.
+  // If command line --weights parameter if specified, it has higher priority
+  // and owerwrites this one(s).
+  // If --snapshot command line parameter is specified, this one(s) are ignored.
+  // If several model files are expected, they can be listed in a one 
+  // weights parameter separated by ',' (like in a command string) or
+  // in repeated weights parameters separately.
+  repeated string weights = 46;
 }
 
 // A message that stores the solver snapshots
