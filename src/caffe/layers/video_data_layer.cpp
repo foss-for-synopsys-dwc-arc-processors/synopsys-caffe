@@ -78,7 +78,7 @@ void VideoDataLayer<Dtype>::DataLayerSetUp(
     vector<int> label_shape(1, batch_size);
     top[1]->Reshape(label_shape);
     for (int i = 0; i < this->prefetch_.size(); ++i) {
-      this->prefetch_[i].label_.Reshape(label_shape);
+      this->prefetch_[i]->label_.Reshape(label_shape);
     }
   }
 }
