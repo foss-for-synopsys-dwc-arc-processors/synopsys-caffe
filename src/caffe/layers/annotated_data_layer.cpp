@@ -101,7 +101,7 @@ void AnnotatedDataLayer<Dtype>::DataLayerSetUp(
       label_shape[0] = batch_size;
     }
     top[1]->Reshape(label_shape);
-    for (int i = 0; i < this->prefecth_.size(); ++i) {
+    for (int i = 0; i < this->prefetch_.size(); ++i) {
       this->prefetch_[i].label_.Reshape(label_shape);
     }
   }
