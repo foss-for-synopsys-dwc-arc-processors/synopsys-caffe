@@ -51,17 +51,25 @@ __global__ void AvePoolForward(const int nthreads,
     const Dtype* const bottom_data, const int num, const int channels,
     const int height, const int width, const int pooled_height,
     const int pooled_width, const int kernel_h, const int kernel_w,
-    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
-    Dtype* const top_data) {
+    const int stride_h, const int stride_w,
+	//const int pad_h, const int pad_w,
+	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
+	Dtype* const top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
     const int c = (index / pooled_width / pooled_height) % channels;
     const int n = index / pooled_width / pooled_height / channels;
-    int hstart = ph * stride_h - pad_h;
-    int wstart = pw * stride_w - pad_w;
-    int hend = min(hstart + kernel_h, height + pad_h);
-    int wend = min(wstart + kernel_w, width + pad_w);
+    //<--CUSTOMIZATION
+    //int hstart = ph * stride_h - pad_h;
+    //int wstart = pw * stride_w - pad_w;
+    int hstart = ph * stride_h - pad_top;
+    int wstart = pw * stride_w - pad_left;
+    //int hend = min(hstart + kernel_h, height + pad_h);
+    //int wend = min(wstart + kernel_w, width + pad_w);
+    int hend = min(hstart + kernel_h, height + pad_bottom);
+    int wend = min(wstart + kernel_w, width + pad_right);
+    //CUSTOMIZATION-->
     const int pool_size = (hend - hstart) * (wend - wstart);
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
@@ -85,17 +93,25 @@ __global__ void AvePoolForward_TF(const int nthreads,
     const Dtype* const bottom_data, const int num, const int channels,
     const int height, const int width, const int pooled_height,
     const int pooled_width, const int kernel_h, const int kernel_w,
-    const int stride_h, const int stride_w, const int pad_h, const int pad_w,
+    const int stride_h, const int stride_w,
+	//const int pad_h, const int pad_w,
+	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMI
     Dtype* const top_data) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
     const int c = (index / pooled_width / pooled_height) % channels;
     const int n = index / pooled_width / pooled_height / channels;
-    int hstart = ph * stride_h - pad_h;
-    int wstart = pw * stride_w - pad_w;
-    int hend = min(hstart + kernel_h, height + pad_h);
-    int wend = min(wstart + kernel_w, width + pad_w);
+    //<--CUSTOMIZATION
+    //int hstart = ph * stride_h - pad_h;
+    //int wstart = pw * stride_w - pad_w;
+    int hstart = ph * stride_h - pad_top;
+    int wstart = pw * stride_w - pad_left;
+    //int hend = min(hstart + kernel_h, height + pad_h);
+    //int wend = min(wstart + kernel_w, width + pad_w);
+    int hend = min(hstart + kernel_h, height + pad_bottom);
+    int wend = min(wstart + kernel_w, width + pad_right);
+    //CUSTOMIZATION-->
     //const int pool_size = (hend - hstart) * (wend - wstart);
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
@@ -200,6 +216,37 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const bool use_top_mask = top.size() > 1;
   int* mask = NULL;
   Dtype* top_mask = NULL;
+
+  //<--CUSOMIZATION
+  int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
+  switch (pad_type_) {
+    case 0:
+      pad_top=pad_h_;
+      pad_bottom=pad_h_;
+      pad_left=pad_w_;
+      pad_right=pad_w_;
+      break;
+    case 1:  //for "SAME"padding
+      int pad_along_height, pad_along_width;
+      if (height_ % stride_h_ == 0)
+        pad_along_height = (kernel_h_ - stride_h_)>0 ? (kernel_h_ - stride_h_) : 0;
+      else
+        pad_along_height = (kernel_h_ - height_ % stride_h_)>0 ? (kernel_h_ - height_ % stride_h_) : 0;
+      if (width_ % stride_w_ == 0)
+        pad_along_width = (kernel_w_ - stride_w_)>0 ? (kernel_w_ - stride_w_) : 0;
+      else
+        pad_along_width = (kernel_w_ - width_ % stride_w_)>0 ? (kernel_w_ - width_ % stride_w_): 0;
+      pad_top = pad_along_height / 2;
+      pad_bottom = pad_along_height - pad_top;
+      pad_left = pad_along_width / 2;
+      pad_right = pad_along_width - pad_left;
+      break;
+    default:
+      LOG(FATAL) << "Unknown pooling padding type.";
+      break;
+  }
+  //CUSTOMIZATION-->
+
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     if (use_top_mask) {
@@ -211,7 +258,10 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     MaxPoolForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_, top_data,
+        kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, //CUSTOMIZATION
+		top_data,
         mask, top_mask);
     break;
   case PoolingParameter_PoolMethod_AVE:
@@ -219,7 +269,10 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     AvePoolForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_, top_data);
+        kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
+		top_data);
     break;
   //<--CUSTOMIZATION
   case PoolingParameter_PoolMethod_AVE_TF:
@@ -227,7 +280,10 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     AvePoolForward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_, top_data);
+        kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
+		top_data);
     break;
     //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
@@ -248,7 +304,8 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
                                   CAFFE_CUDA_NUM_THREADS>>>(
           count, bottom_data, bottom[0]->num(), channels_,
           height_, width_, pooled_height_, pooled_width_, kernel_h_,
-          kernel_w_, stride_h_, stride_w_, top_data);
+          kernel_w_, stride_h_, stride_w_,
+		  top_data);
     }
     break;
   default:
@@ -263,8 +320,10 @@ __global__ void MaxPoolBackward(const int nthreads, const Dtype* const top_diff,
     const int* const mask, const Dtype* const top_mask, const int num,
     const int channels, const int height, const int width,
     const int pooled_height, const int pooled_width, const int kernel_h,
-    const int kernel_w, const int stride_h, const int stride_w, const int pad_h,
-    const int pad_w, Dtype* const bottom_diff) {
+    const int kernel_w, const int stride_h, const int stride_w,
+	//const int pad_h, const int pad_w,
+	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
+	Dtype* const bottom_diff) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // find out the local index
     // find out the local offset
@@ -272,12 +331,20 @@ __global__ void MaxPoolBackward(const int nthreads, const Dtype* const top_diff,
     const int h = (index / width) % height;
     const int c = (index / width / height) % channels;
     const int n = index / width / height / channels;
+    //<--CUSTOMIZATION
+    //const int phstart =
+    //     (h + pad_h < kernel_h) ? 0 : (h + pad_h - kernel_h) / stride_h + 1;
+    //const int phend = min((h + pad_h) / stride_h + 1, pooled_height);
+    //const int pwstart =
+    //     (w + pad_w < kernel_w) ? 0 : (w + pad_w - kernel_w) / stride_w + 1;
+    //const int pwend = min((w + pad_w) / stride_w + 1, pooled_width);
     const int phstart =
-         (h + pad_h < kernel_h) ? 0 : (h + pad_h - kernel_h) / stride_h + 1;
-    const int phend = min((h + pad_h) / stride_h + 1, pooled_height);
+         (h + pad_top < kernel_h) ? 0 : (h + pad_top - kernel_h) / stride_h + 1;
+    const int phend = min((h + pad_bottom) / stride_h + 1, pooled_height);
     const int pwstart =
-         (w + pad_w < kernel_w) ? 0 : (w + pad_w - kernel_w) / stride_w + 1;
-    const int pwend = min((w + pad_w) / stride_w + 1, pooled_width);
+         (w + pad_left < kernel_w) ? 0 : (w + pad_left - kernel_w) / stride_w + 1;
+    const int pwend = min((w + pad_right) / stride_w + 1, pooled_width);
+    //CUSTOMIZATION-->
     Dtype gradient = 0;
     const int offset = (n * channels + c) * pooled_height * pooled_width;
     const Dtype* const top_diff_slice = top_diff + offset;
@@ -308,30 +375,45 @@ template <typename Dtype>
 __global__ void AvePoolBackward(const int nthreads, const Dtype* const top_diff,
     const int num, const int channels, const int height,
     const int width, const int pooled_height, const int pooled_width,
-    const int kernel_h, const int kernel_w, const int stride_h,
-    const int stride_w, const int pad_h, const int pad_w,
+    const int kernel_h, const int kernel_w, const int stride_h, const int stride_w,
+	//const int pad_h, const int pad_w,
+	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
     Dtype* const bottom_diff) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // find out the local index
     // find out the local offset
-    const int w = index % width + pad_w;
-    const int h = (index / width) % height + pad_h;
+    //const int w = index % width + pad_w;
+    //const int h = (index / width) % height + pad_h;
+    const int w = index % width; //CUSTOMIZATION
+    const int h = (index / width) % height; //CUSTOMIZATION
     const int c = (index / width / height) % channels;
     const int n = index / width / height / channels;
-    const int phstart = (h < kernel_h) ? 0 : (h - kernel_h) / stride_h + 1;
-    const int phend = min(h / stride_h + 1, pooled_height);
-    const int pwstart = (w < kernel_w) ? 0 : (w - kernel_w) / stride_w + 1;
-    const int pwend = min(w / stride_w + 1, pooled_width);
+    //<--CUSTOMIZATION
+    //const int phstart = (h < kernel_h) ? 0 : (h - kernel_h) / stride_h + 1;
+    //const int phend = min(h / stride_h + 1, pooled_height);
+    //const int pwstart = (w < kernel_w) ? 0 : (w - kernel_w) / stride_w + 1;
+    //const int pwend = min(w / stride_w + 1, pooled_width);
+    const int phstart = ( (h+pad_top) < kernel_h) ? 0 : ( (h+pad_top) - kernel_h) / stride_h + 1;
+    const int phend = min( (h+pad_bottom) / stride_h + 1, pooled_height);
+    const int pwstart = ( (w+pad_left) < kernel_w) ? 0 : ( (w+pad_left) - kernel_w) / stride_w + 1;
+    const int pwend = min( (w+pad_right) / stride_w + 1, pooled_width);
+    //CUSTOMIZATION-->
     Dtype gradient = 0;
     const Dtype* const top_diff_slice =
         top_diff + (n * channels + c) * pooled_height * pooled_width;
     for (int ph = phstart; ph < phend; ++ph) {
       for (int pw = pwstart; pw < pwend; ++pw) {
         // figure out the pooling size
-        int hstart = ph * stride_h - pad_h;
-        int wstart = pw * stride_w - pad_w;
-        int hend = min(hstart + kernel_h, height + pad_h);
-        int wend = min(wstart + kernel_w, width + pad_w);
+    	//<--CUSTOMIZATION
+        //int hstart = ph * stride_h - pad_h;
+        //int wstart = pw * stride_w - pad_w;
+        //int hend = min(hstart + kernel_h, height + pad_h);
+        //int wend = min(wstart + kernel_w, width + pad_w);
+    	int hstart = ph * stride_h - pad_top;
+    	int wstart = pw * stride_w - pad_left;
+    	int hend = min(hstart + kernel_h, height + pad_bottom);
+    	int wend = min(wstart + kernel_w, width + pad_right);
+        //-->CUSTOMIZATION
         int pool_size = (hend - hstart) * (wend - wstart);
         gradient += top_diff_slice[ph * pooled_width + pw] / pool_size;
       }
@@ -345,30 +427,45 @@ template <typename Dtype>
 __global__ void AvePoolBackward_TF(const int nthreads, const Dtype* const top_diff,
     const int num, const int channels, const int height,
     const int width, const int pooled_height, const int pooled_width,
-    const int kernel_h, const int kernel_w, const int stride_h,
-    const int stride_w, const int pad_h, const int pad_w,
+    const int kernel_h, const int kernel_w, const int stride_h, const int stride_w,
+	//const int pad_h, const int pad_w,
+	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
     Dtype* const bottom_diff) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // find out the local index
     // find out the local offset
-    const int w = index % width + pad_w;
-    const int h = (index / width) % height + pad_h;
+	//const int w = index % width + pad_w;
+	//const int h = (index / width) % height + pad_h;
+	const int w = index % width; //CUSTOMIZATION
+	const int h = (index / width) % height; //CUSTOMIZATION
     const int c = (index / width / height) % channels;
     const int n = index / width / height / channels;
-    const int phstart = (h < kernel_h) ? 0 : (h - kernel_h) / stride_h + 1;
-    const int phend = min(h / stride_h + 1, pooled_height);
-    const int pwstart = (w < kernel_w) ? 0 : (w - kernel_w) / stride_w + 1;
-    const int pwend = min(w / stride_w + 1, pooled_width);
+    //<--CUSTOMIZATION
+    //const int phstart = (h < kernel_h) ? 0 : (h - kernel_h) / stride_h + 1;
+    //const int phend = min(h / stride_h + 1, pooled_height);
+    //const int pwstart = (w < kernel_w) ? 0 : (w - kernel_w) / stride_w + 1;
+    //const int pwend = min(w / stride_w + 1, pooled_width);
+    const int phstart = ( (h+pad_top) < kernel_h) ? 0 : ( (h+pad_top) - kernel_h) / stride_h + 1;
+    const int phend = min( (h+pad_bottom) / stride_h + 1, pooled_height);
+    const int pwstart = ( (w+pad_left) < kernel_w) ? 0 : ( (w+pad_left) - kernel_w) / stride_w + 1;
+    const int pwend = min( (w+pad_right) / stride_w + 1, pooled_width);
+    //CUSTOMIZATION-->
     Dtype gradient = 0;
     const Dtype* const top_diff_slice =
         top_diff + (n * channels + c) * pooled_height * pooled_width;
     for (int ph = phstart; ph < phend; ++ph) {
       for (int pw = pwstart; pw < pwend; ++pw) {
         // figure out the pooling size
-        int hstart = ph * stride_h - pad_h;
-        int wstart = pw * stride_w - pad_w;
-        int hend = min(hstart + kernel_h, height + pad_h);
-        int wend = min(wstart + kernel_w, width + pad_w);
+        //<--CUSTOMIZATION
+    	//int hstart = ph * stride_h - pad_h;
+        //int wstart = pw * stride_w - pad_w;
+        //int hend = min(hstart + kernel_h, height + pad_h);
+        //int wend = min(wstart + kernel_w, width + pad_w);
+      	int hstart = ph * stride_h - pad_top;
+      	int wstart = pw * stride_w - pad_left;
+        int hend = min(hstart + kernel_h, height + pad_bottom);
+        int wend = min(wstart + kernel_w, width + pad_right);
+        //-->CUSTOMIZATION
         hstart = max(hstart, 0); //
         wstart = max(wstart, 0); //
         hend = min(hend, height); //
@@ -388,7 +485,8 @@ __global__ void StoPoolBackward(const int nthreads,
     const int num, const int channels, const int height,
     const int width, const int pooled_height, const int pooled_width,
     const int kernel_h, const int kernel_w, const int stride_h,
-    const int stride_w, Dtype* const bottom_diff) {
+    const int stride_w,
+	Dtype* const bottom_diff) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     // find out the local index
     // find out the local offset
@@ -430,6 +528,35 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   const bool use_top_mask = top.size() > 1;
   const int* mask = NULL;
   const Dtype* top_mask = NULL;
+  //<--CUSOMIZATION
+  int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
+  switch (pad_type_) {
+    case 0:
+      pad_top=pad_h_;
+      pad_bottom=pad_h_;
+      pad_left=pad_w_;
+      pad_right=pad_w_;
+      break;
+    case 1:  //for "SAME"padding
+      int pad_along_height, pad_along_width;
+      if (height_ % stride_h_ == 0)
+        pad_along_height = (kernel_h_ - stride_h_)>0 ? (kernel_h_ - stride_h_) : 0;
+      else
+        pad_along_height = (kernel_h_ - height_ % stride_h_)>0 ? (kernel_h_ - height_ % stride_h_) : 0;
+      if (width_ % stride_w_ == 0)
+        pad_along_width = (kernel_w_ - stride_w_)>0 ? (kernel_w_ - stride_w_) : 0;
+      else
+        pad_along_width = (kernel_w_ - width_ % stride_w_)>0 ? (kernel_w_ - width_ % stride_w_): 0;
+      pad_top = pad_along_height / 2;
+      pad_bottom = pad_along_height - pad_top;
+      pad_left = pad_along_width / 2;
+      pad_right = pad_along_width - pad_left;
+      break;
+    default:
+      LOG(FATAL) << "Unknown pooling padding type.";
+      break;
+  }
+  //CUSTOMIZATION-->
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     if (use_top_mask) {
@@ -441,7 +568,9 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     MaxPoolBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, mask, top_mask, top[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_,
-        kernel_h_, kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_,
+        kernel_h_, kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
         bottom_diff);
     break;
   case PoolingParameter_PoolMethod_AVE:
@@ -449,7 +578,10 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     AvePoolBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, top[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_, bottom_diff);
+        kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
+		bottom_diff);
     break;
   //<--CUSTOMIZATION
   case PoolingParameter_PoolMethod_AVE_TF:
@@ -457,7 +589,10 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     AvePoolBackward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, top[0]->num(), channels_,
         height_, width_, pooled_height_, pooled_width_, kernel_h_,
-        kernel_w_, stride_h_, stride_w_, pad_h_, pad_w_, bottom_diff);
+        kernel_w_, stride_h_, stride_w_,
+		//pad_h_, pad_w_,
+		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
+		bottom_diff);
     break;
     //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:

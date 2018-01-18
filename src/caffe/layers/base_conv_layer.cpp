@@ -68,6 +68,15 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       CHECK_GT(stride_data[i], 0) << "Stride dimensions must be nonzero.";
     }
   }
+
+  //<--CUSTOMIZATION
+  if (conv_param.has_pad_type()){
+    pad_type_ = conv_param.pad_type();
+  } else{
+	pad_type_ = 0;
+  }
+  //CUSTOMIZATION-->
+
   // Setup pad dimensions (pad_).
   pad_.Reshape(spatial_dim_blob_shape);
   int* pad_data = pad_.mutable_cpu_data();

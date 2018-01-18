@@ -54,6 +54,7 @@ class Im2colKernelTest : public GPUDeviceTest<Dtype> {
     channels_ = blob_bottom_->channels();
     pad_ = 0;
     stride_ = 2;
+    pad_type_ = 0; //CUSTOMIZATION
     dilation_ = 3;
     kernel_size_ = 3;
     height_col_ = (height_ + 2 * pad_ -
@@ -91,6 +92,7 @@ class Im2colKernelTest : public GPUDeviceTest<Dtype> {
   int channels_;
   int pad_;
   int stride_;
+  int pad_type_; //CUSTOMIZATION
   int dilation_;
   int kernel_size_;
   int height_col_;
@@ -120,7 +122,9 @@ TYPED_TEST(Im2colKernelTest, Test2D) {
     im2col_cpu(this->blob_bottom_->cpu_data() + this->blob_bottom_->offset(n),
       this->channels_, this->height_, this->width_,
       this->kernel_size_, this->kernel_size_, this->pad_, this->pad_,
-      this->stride_, this->stride_, this->dilation_, this->dilation_,
+      this->stride_, this->stride_,
+      this->pad_type_, //CUSTOMIZATION
+      this->dilation_, this->dilation_,
       cpu_data + this->blob_top_cpu_->offset(n));
   }
 
@@ -174,6 +178,7 @@ TYPED_TEST(Im2colKernelTest, TestND) {
         this->blob_top_cpu_->shape().data() + 1,
         this->blob_kernel_shape_->cpu_data(),
         this->blob_pad_->cpu_data(), this->blob_stride_->cpu_data(),
+        this->pad_type_, //CUSTOMIZATION
         this->blob_dilation_->cpu_data(),
         top_data_cpu + this->blob_top_cpu_->offset(n));
   }
@@ -193,7 +198,8 @@ TYPED_TEST(Im2colKernelTest, TestND) {
           num_kernels, bottom_data_gpu + this->blob_bottom_->offset(n),
           this->blob_bottom_->gpu_shape() + 1, this->blob_top_->gpu_shape() + 1,
           this->blob_kernel_shape_->gpu_data(), this->blob_pad_->gpu_data(),
-          this->blob_stride_->gpu_data(), this->blob_dilation_->gpu_data(),
+          this->blob_stride_->gpu_data(),
+		  this->blob_dilation_->gpu_data(),
           top_data_gpu + this->blob_top_->offset(n));
       CUDA_POST_KERNEL_CHECK;
     }
