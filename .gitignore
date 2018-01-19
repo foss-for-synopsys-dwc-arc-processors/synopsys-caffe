@@ -105,7 +105,6 @@ LOG*
 CURRENT
 MANIFEST-*
 
-<<<<<<< HEAD
 #Visual Studio files
 *.user
 *.suo
@@ -113,9 +112,8 @@ MANIFEST-*
 *.opensdf
 *.pdb
 *.props
-=======
+
 # temporary directories
 jobs
 temp
 examples/*/*lmdb
->>>>>>> origin/weiliu89-ssd
