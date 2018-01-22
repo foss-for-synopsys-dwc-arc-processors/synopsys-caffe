@@ -2178,7 +2178,7 @@ void VisualizeBBox(const vector<cv::Mat>& images, const Blob<Dtype>* detections,
   for (int i = 0; i < num_img; ++i) {
     cv::Mat image = images[i];
     // Show FPS.
-    snprintf(buffer, sizeof(buffer), "FPS: %.2f", fps);
+    _snprintf(buffer, sizeof(buffer), "FPS: %.2f", fps);
     cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
                                     &baseline);
     cv::rectangle(image, cv::Point(0, 0),
@@ -2202,7 +2202,7 @@ void VisualizeBBox(const vector<cv::Mat>& images, const Blob<Dtype>* detections,
         cv::Point bottom_right_pt(bboxes[j].xmax(), bboxes[j].ymax());
         cv::rectangle(image, top_left_pt, bottom_right_pt, color, 4);
         cv::Point bottom_left_pt(bboxes[j].xmin(), bboxes[j].ymax());
-        snprintf(buffer, sizeof(buffer), "%s: %.2f", label_name.c_str(),
+        _snprintf(buffer, sizeof(buffer), "%s: %.2f", label_name.c_str(),
                  bboxes[j].score());
         cv::Size text = cv::getTextSize(buffer, fontface, scale, thickness,
                                         &baseline);
