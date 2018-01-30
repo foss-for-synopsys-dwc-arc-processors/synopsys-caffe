@@ -67,6 +67,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   if (pad_h_ != 0 || pad_w_ != 0) {
     CHECK(this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_AVE
+		|| this->layer_param_.pooling_param().pool() //CUSTOMIZATION
+        == PoolingParameter_PoolMethod_AVE_TF //CUSTOMIZATION
         || this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_MAX)
         << "Padding implemented only for average and max pooling.";
@@ -218,6 +220,41 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
     break;
+  //<--CUSTOMIZATION
+  case PoolingParameter_PoolMethod_AVE_TF:
+     for (int i = 0; i < top_count; ++i) {
+       top_data[i] = 0;
+     }
+     // The main loop
+     for (int n = 0; n < bottom[0]->num(); ++n) {
+       for (int c = 0; c < channels_; ++c) {
+         for (int ph = 0; ph < pooled_height_; ++ph) {
+           for (int pw = 0; pw < pooled_width_; ++pw) {
+             int hstart = ph * stride_h_ - pad_h_;
+             int wstart = pw * stride_w_ - pad_w_;
+             int hend = min(hstart + kernel_h_, height_ + pad_h_);
+             int wend = min(wstart + kernel_w_, width_ + pad_w_);
+             hstart = max(hstart, 0);
+             wstart = max(wstart, 0);
+             hend = min(hend, height_);
+             wend = min(wend, width_);
+             int pool_size = (hend - hstart) * (wend - wstart); //
+             for (int h = hstart; h < hend; ++h) {
+               for (int w = wstart; w < wend; ++w) {
+                 top_data[ph * pooled_width_ + pw] +=
+                     bottom_data[h * width_ + w];
+               }
+             }
+             top_data[ph * pooled_width_ + pw] /= pool_size;
+           }
+         }
+         // compute offset
+         bottom_data += bottom[0]->offset(0, 1);
+         top_data += top[0]->offset(0, 1);
+       }
+     }
+     break;
+     //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
     NOT_IMPLEMENTED;
     break;
@@ -298,6 +335,37 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       }
     }
     break;
+  //<--CUSTOMIZATION
+  case PoolingParameter_PoolMethod_AVE_TF:
+    // The main loop
+    for (int n = 0; n < top[0]->num(); ++n) {
+      for (int c = 0; c < channels_; ++c) {
+        for (int ph = 0; ph < pooled_height_; ++ph) {
+          for (int pw = 0; pw < pooled_width_; ++pw) {
+            int hstart = ph * stride_h_ - pad_h_;
+            int wstart = pw * stride_w_ - pad_w_;
+            int hend = min(hstart + kernel_h_, height_ + pad_h_);
+            int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            hstart = max(hstart, 0);
+            wstart = max(wstart, 0);
+            hend = min(hend, height_);
+            wend = min(wend, width_);
+            int pool_size = (hend - hstart) * (wend - wstart); //
+            for (int h = hstart; h < hend; ++h) {
+              for (int w = wstart; w < wend; ++w) {
+                bottom_diff[h * width_ + w] +=
+                  top_diff[ph * pooled_width_ + pw] / pool_size;
+              }
+            }
+          }
+        }
+        // offset
+        bottom_diff += bottom[0]->offset(0, 1);
+        top_diff += top[0]->offset(0, 1);
+      }
+    }
+    break;
+    //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
     NOT_IMPLEMENTED;
     break;

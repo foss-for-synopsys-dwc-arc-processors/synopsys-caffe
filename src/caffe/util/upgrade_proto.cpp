@@ -327,6 +327,12 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
           layer_param->mutable_pooling_param()->set_pool(
               PoolingParameter_PoolMethod_AVE);
           break;
+        //<--CUSTOMIZATION
+        case V0LayerParameter_PoolMethod_AVE_TF:
+                  layer_param->mutable_pooling_param()->set_pool(
+                      PoolingParameter_PoolMethod_AVE_TF);
+                  break;
+                  //CUSTOMIZATION-->
         case V0LayerParameter_PoolMethod_STOCHASTIC:
           layer_param->mutable_pooling_param()->set_pool(
               PoolingParameter_PoolMethod_STOCHASTIC);
