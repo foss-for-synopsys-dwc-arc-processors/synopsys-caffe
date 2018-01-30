@@ -64,6 +64,15 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       CHECK_GT(stride_data[i], 0) << "Stride dimensions must be nonzero.";
     }
   }
+
+  //<--CUSTOMIZATION
+  if (conv_param.has_pad_type()){
+    pad_type_ = conv_param.pad_type();
+  } else{
+	pad_type_ = 0;
+  }
+  //CUSTOMIZATION-->
+
   // Setup pad dimensions (pad_).
   pad_.Reshape(dim_blob_shape);
   int* pad_data = pad_.mutable_cpu_data();
@@ -115,8 +124,21 @@ void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top_shape[channel_axis_] *= kernel_shape_data[i];
     const int input_dim = bottom[0]->shape(channel_axis_ + i + 1);
     const int kernel_extent = dilation_data[i] * (kernel_shape_data[i] - 1) + 1;
-    const int output_dim = (input_dim + 2 * pad_data[i] - kernel_extent)
-        / stride_data[i] + 1;
+    //<--CUSTOMIZATION
+    int output_dim;
+    switch (pad_type_) {
+      case 0:
+    	  output_dim = (input_dim + 2 * pad_data[i] - kernel_extent)
+          / stride_data[i] + 1;
+    	  break;
+      case 1:
+    	  output_dim = ceil(float(input_dim)/float(stride_data[i]));
+    	  break;
+      default:
+    	  LOG(FATAL) << "Unknown padding type.";
+    	  break;
+    }
+    //CUSTOMIZATION-->
     top_shape[channel_axis_ + i + 1] = output_dim;
   }
   top[0]->Reshape(top_shape);
@@ -146,6 +168,7 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
+		  pad_type_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1],
           top_data + n * top_dim_);
     } else {
@@ -153,6 +176,7 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           bottom[0]->shape().data() + channel_axis_,
           top[0]->shape().data() + channel_axis_,
           kernel_shape_.cpu_data(), pad_.cpu_data(), stride_.cpu_data(),
+		  pad_type_, //CUSTOMIZATION
           dilation_.cpu_data(), top_data + n * top_dim_);
     }
   }
@@ -171,6 +195,7 @@ void Im2colLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
+		  pad_type_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1],
           bottom_diff + n * bottom_dim_);
     } else {
@@ -178,6 +203,7 @@ void Im2colLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           bottom[0]->shape().data() + channel_axis_,
           top[0]->shape().data() + channel_axis_,
           kernel_shape_.cpu_data(), pad_.cpu_data(), stride_.cpu_data(),
+		  pad_type_, //CUSTOMIZATION
           dilation_.cpu_data(), bottom_diff + n * bottom_dim_);
     }
   }

@@ -64,6 +64,15 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK(pad_h_ == 0 && pad_w_ == 0 && stride_h_ == 1 && stride_w_ == 1)
       << "With Global_pooling: true; only pad = 0 and stride = 1";
   }
+
+  //<--CUSTOMIZATION
+  if (pool_param.has_pad_type()){
+    pad_type_ = pool_param.pad_type();
+  } else{
+	pad_type_ = 0;
+  }
+  //CUSTOMIZATION-->
+
   if (pad_h_ != 0 || pad_w_ != 0) {
     CHECK(this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_AVE
@@ -89,10 +98,25 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     kernel_h_ = bottom[0]->height();
     kernel_w_ = bottom[0]->width();
   }
-  pooled_height_ = static_cast<int>(ceil(static_cast<float>(
-      height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
-  pooled_width_ = static_cast<int>(ceil(static_cast<float>(
-      width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+
+  //<--CUSTOMIZATION
+  switch (pad_type_) {
+    case 0:
+      pooled_height_ = static_cast<int>(ceil(static_cast<float>(
+        height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
+      pooled_width_ = static_cast<int>(ceil(static_cast<float>(
+        width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+	  break;
+    case 1: //for "SAME"padding
+      pooled_height_ = static_cast<int>(ceil(static_cast<float>(height_) / static_cast<float>(stride_h_)));
+      pooled_width_ = static_cast<int>(ceil(static_cast<float>(width_) / static_cast<float>(stride_w_)));
+      break;
+    default:
+      LOG(FATAL) << "Unknown pooling padding type.";
+      break;
+  }
+
+  //CUSTOMIZATION-->
   if (pad_h_ || pad_w_) {
     // If we have padding, ensure that the last pooling starts strictly
     // inside the image (instead of at the padding); otherwise clip the last.
@@ -138,6 +162,38 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype* top_mask = NULL;
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
+
+  //<--CUSOMIZATION
+  int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
+  switch (pad_type_) {
+    case 0:
+      pad_top=pad_h_;
+      pad_bottom=pad_h_;
+      pad_left=pad_w_;
+      pad_right=pad_w_;
+      break;
+    case 1:  //for "SAME"padding
+      int pad_along_height, pad_along_width;
+      if (height_ % stride_h_ == 0)
+        pad_along_height = (kernel_h_ - stride_h_)>0 ? (kernel_h_ - stride_h_) : 0;
+      else
+        pad_along_height = (kernel_h_ - height_ % stride_h_)>0 ? (kernel_h_ - height_ % stride_h_) : 0;
+      if (width_ % stride_w_ == 0)
+        pad_along_width = (kernel_w_ - stride_w_)>0 ? (kernel_w_ - stride_w_) : 0;
+      else
+        pad_along_width = (kernel_w_ - width_ % stride_w_)>0 ? (kernel_w_ - width_ % stride_w_): 0;
+      pad_top = pad_along_height / 2;
+      pad_bottom = pad_along_height - pad_top;
+      pad_left = pad_along_width / 2;
+      pad_right = pad_along_width - pad_left;
+      break;
+    default:
+      LOG(FATAL) << "Unknown pooling padding type.";
+      break;
+  }
+  //CUSTOMIZATION-->
+
+  //CUSTOMIZATION-->
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     // Initialize
@@ -154,8 +210,12 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       for (int c = 0; c < channels_; ++c) {
         for (int ph = 0; ph < pooled_height_; ++ph) {
           for (int pw = 0; pw < pooled_width_; ++pw) {
-            int hstart = ph * stride_h_ - pad_h_;
-            int wstart = pw * stride_w_ - pad_w_;
+            //<--CUSTOMIZATION
+            //int hstart = ph * stride_h_ - pad_h_;
+            //int wstart = pw * stride_w_ - pad_w_;
+            int hstart = ph * stride_h_ - pad_top;
+            int wstart = pw * stride_w_ - pad_left;
+            //CUSTOMIZATION-->
             int hend = min(hstart + kernel_h_, height_);
             int wend = min(wstart + kernel_w_, width_);
             hstart = max(hstart, 0);
@@ -196,10 +256,16 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       for (int c = 0; c < channels_; ++c) {
         for (int ph = 0; ph < pooled_height_; ++ph) {
           for (int pw = 0; pw < pooled_width_; ++pw) {
-            int hstart = ph * stride_h_ - pad_h_;
-            int wstart = pw * stride_w_ - pad_w_;
-            int hend = min(hstart + kernel_h_, height_ + pad_h_);
-            int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            //<--CUSTOMIZATION
+            //int hstart = ph * stride_h_ - pad_h_;
+            //int wstart = pw * stride_w_ - pad_w_;
+            int hstart = ph * stride_h_ - pad_top;
+            int wstart = pw * stride_w_ - pad_left;
+            //int hend = min(hstart + kernel_h_, height_ + pad_h_);
+            //int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            int hend = min(hstart + kernel_h_, height_ + pad_bottom);
+            int wend = min(wstart + kernel_w_, width_ + pad_right);
+            //CUSTOMIZATION-->
             int pool_size = (hend - hstart) * (wend - wstart);
             hstart = max(hstart, 0);
             wstart = max(wstart, 0);
@@ -230,10 +296,16 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
        for (int c = 0; c < channels_; ++c) {
          for (int ph = 0; ph < pooled_height_; ++ph) {
            for (int pw = 0; pw < pooled_width_; ++pw) {
-             int hstart = ph * stride_h_ - pad_h_;
-             int wstart = pw * stride_w_ - pad_w_;
-             int hend = min(hstart + kernel_h_, height_ + pad_h_);
-             int wend = min(wstart + kernel_w_, width_ + pad_w_);
+             //<--CUSTOMIZATION
+             //int hstart = ph * stride_h_ - pad_h_;
+             //int wstart = pw * stride_w_ - pad_w_;
+             int hstart = ph * stride_h_ - pad_top;
+             int wstart = pw * stride_w_ - pad_left;
+             //int hend = min(hstart + kernel_h_, height_ + pad_h_);
+             //int wend = min(wstart + kernel_w_, width_ + pad_w_);
+             int hend = min(hstart + kernel_h_, height_ + pad_bottom);
+             int wend = min(wstart + kernel_w_, width_ + pad_right);
+             //CUSTOMIZATION-->
              hstart = max(hstart, 0);
              wstart = max(wstart, 0);
              hend = min(hend, height_);
@@ -278,6 +350,37 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   const bool use_top_mask = top.size() > 1;
   const int* mask = NULL;  // suppress warnings about uninitialized variables
   const Dtype* top_mask = NULL;
+
+  //<--CUSOMIZATION
+  int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
+  switch (pad_type_) {
+    case 0:
+      pad_top=pad_h_;
+      pad_bottom=pad_h_;
+      pad_left=pad_w_;
+      pad_right=pad_w_;
+      break;
+    case 1:  //for "SAME"padding
+      int pad_along_height, pad_along_width;
+      if (height_ % stride_h_ == 0)
+        pad_along_height = (kernel_h_ - stride_h_)>0 ? (kernel_h_ - stride_h_) : 0;
+      else
+        pad_along_height = (kernel_h_ - height_ % stride_h_)>0 ? (kernel_h_ - height_ % stride_h_) : 0;
+      if (width_ % stride_w_ == 0)
+        pad_along_width = (kernel_w_ - stride_w_)>0 ? (kernel_w_ - stride_w_) : 0;
+      else
+        pad_along_width = (kernel_w_ - width_ % stride_w_)>0 ? (kernel_w_ - width_ % stride_w_): 0;
+      pad_top = pad_along_height / 2;
+      pad_bottom = pad_along_height - pad_top;
+      pad_left = pad_along_width / 2;
+      pad_right = pad_along_width - pad_left;
+      break;
+    default:
+      LOG(FATAL) << "Unknown pooling padding type.";
+      break;
+  }
+  //CUSTOMIZATION-->
+
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     // The main loop
@@ -312,10 +415,16 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       for (int c = 0; c < channels_; ++c) {
         for (int ph = 0; ph < pooled_height_; ++ph) {
           for (int pw = 0; pw < pooled_width_; ++pw) {
-            int hstart = ph * stride_h_ - pad_h_;
-            int wstart = pw * stride_w_ - pad_w_;
-            int hend = min(hstart + kernel_h_, height_ + pad_h_);
-            int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            //<--CUSTOMIZATION
+            //int hstart = ph * stride_h_ - pad_h_;
+            //int wstart = pw * stride_w_ - pad_w_;
+            int hstart = ph * stride_h_ - pad_top;
+            int wstart = pw * stride_w_ - pad_bottom;
+            //int hend = min(hstart + kernel_h_, height_ + pad_h_);
+            //int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            int hend = min(hstart + kernel_h_, height_ + pad_bottom);
+            int wend = min(wstart + kernel_w_, width_ + pad_right);
+            //CUSTOMIZATION-->
             int pool_size = (hend - hstart) * (wend - wstart);
             hstart = max(hstart, 0);
             wstart = max(wstart, 0);
@@ -342,10 +451,16 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       for (int c = 0; c < channels_; ++c) {
         for (int ph = 0; ph < pooled_height_; ++ph) {
           for (int pw = 0; pw < pooled_width_; ++pw) {
-            int hstart = ph * stride_h_ - pad_h_;
-            int wstart = pw * stride_w_ - pad_w_;
-            int hend = min(hstart + kernel_h_, height_ + pad_h_);
-            int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            //<--CUSTOMIZATION
+            //int hstart = ph * stride_h_ - pad_h_;
+            //int wstart = pw * stride_w_ - pad_w_;
+            int hstart = ph * stride_h_ - pad_top;
+            int wstart = pw * stride_w_ - pad_bottom;
+            //int hend = min(hstart + kernel_h_, height_ + pad_h_);
+            //int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            int hend = min(hstart + kernel_h_, height_ + pad_bottom);
+            int wend = min(wstart + kernel_w_, width_ + pad_right);
+            //CUSTOMIZATION-->
             hstart = max(hstart, 0);
             wstart = max(wstart, 0);
             hend = min(hend, height_);

@@ -58,6 +58,8 @@ class Im2colLayer : public Layer<Dtype> {
   int channels_;
 
   bool force_nd_im2col_;
+
+  int pad_type_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
