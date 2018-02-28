@@ -595,7 +595,7 @@ void ComputeConfLossGPU(const Blob<Dtype>& conf_blob, const int num,
           CHECK_LT(match_index[p], gt_bboxes.size());
           label = gt_bboxes[match_index[p]].label();
           CHECK_GE(label, 0);
-          CHECK_NE(label, background_label_id);
+          //CHECK_NE(label, background_label_id);
           CHECK_LT(label, num_classes);
           // A prior can only be matched to one gt bbox.
           break;
