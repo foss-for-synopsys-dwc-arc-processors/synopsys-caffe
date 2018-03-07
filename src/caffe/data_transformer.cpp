@@ -593,7 +593,8 @@ template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
                                        Blob<Dtype>* transformed_blob,
                                        NormalizedBBox* crop_bbox,
-                                       bool* do_mirror) {
+                                       bool* do_mirror,
+                                       bool preserve_pixel_vals) {
   // Check dimensions.
   const int img_channels = cv_img.channels();
   const int channels = transformed_blob->channels();
@@ -607,17 +608,18 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
   CHECK_GE(num, 1);
 
   const int crop_size = param_.crop_size();
-  const Dtype scale = param_.scale();
+  //const Dtype scale = param_.scale();
+  const Dtype scale = preserve_pixel_vals ? 1 : param_.scale();
   *do_mirror = param_.mirror() && Rand(2);
   const bool has_mean_file = param_.has_mean_file();
   const bool has_mean_values = mean_values_.size() > 0;
 
   Dtype* mean = NULL;
-  if (has_mean_file) {
+  if (has_mean_file && !preserve_pixel_vals) {
     CHECK_EQ(img_channels, data_mean_.channels());
     mean = data_mean_.mutable_cpu_data();
   }
-  if (has_mean_values) {
+  if (has_mean_values && !preserve_pixel_vals) {
     CHECK(mean_values_.size() == 1 || mean_values_.size() == img_channels) <<
         "Specify either 1 mean_value or as many as channels: " << img_channels;
     if (img_channels > 1 && mean_values_.size() == 1) {
@@ -698,13 +700,13 @@ void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
       for (int c = 0; c < img_channels; ++c) {
         top_index = (c * height + h_idx_real) * width + w_idx_real;
         Dtype pixel = static_cast<Dtype>(ptr[img_index++]);
-        if (has_mean_file) {
+        if (has_mean_file && !preserve_pixel_vals) {
           int mean_index = (c * img_height + h_off + h_idx_real) * img_width
               + w_off + w_idx_real;
           transformed_data[top_index] =
               (pixel - mean[mean_index]) * scale;
         } else {
-          if (has_mean_values) {
+          if (has_mean_values && !preserve_pixel_vals) {
             transformed_data[top_index] =
                 (pixel - mean_values_[c]) * scale;
           } else {
@@ -791,10 +793,11 @@ void DataTransformer<Dtype>::TransformInv(const Blob<Dtype>* blob,
 
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const cv::Mat& cv_img,
-                                       Blob<Dtype>* transformed_blob) {
+                                       Blob<Dtype>* transformed_blob,
+                                       bool preserve_pixel_vals) {
   NormalizedBBox crop_bbox;
   bool do_mirror;
-  Transform(cv_img, transformed_blob, &crop_bbox, &do_mirror);
+  Transform(cv_img, transformed_blob, &crop_bbox, &do_mirror, preserve_pixel_vals);
 }
 
 template <typename Dtype>

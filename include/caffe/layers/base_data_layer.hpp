@@ -3,12 +3,17 @@
 
 #include <vector>
 
+#include "boost/scoped_ptr.hpp"
+
 #include "caffe/blob.hpp"
+#include "caffe/common.hpp"
 #include "caffe/data_transformer.hpp"
+#include "caffe/filler.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/blocking_queue.hpp"
+#include "caffe/util/db.hpp"
 
 namespace caffe {
 
@@ -65,16 +70,44 @@ class BasePrefetchingDataLayer :
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
+  virtual void CreatePrefetchThread();
+  virtual void JoinPrefetchThread();
+
  protected:
   virtual void InternalThreadEntry();
-  virtual void load_batch(Batch<Dtype>* batch) = 0;
+  virtual void load_batch(Batch<Dtype>* batch){} // = 0;
 
+  Blob<Dtype> prefetch_data_;
+  Blob<Dtype> prefetch_label_;
   vector<shared_ptr<Batch<Dtype> > > prefetch_;
   BlockingQueue<Batch<Dtype>*> prefetch_free_;
   BlockingQueue<Batch<Dtype>*> prefetch_full_;
   Batch<Dtype>* prefetch_current_;
 
   Blob<Dtype> transformed_data_;
+};
+
+template <typename Dtype>
+class DenseImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
+ public:
+  explicit DenseImageDataLayer(const LayerParameter& param)
+      : BasePrefetchingDataLayer<Dtype>(param) {}
+  virtual ~DenseImageDataLayer();
+  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+
+  virtual inline const char* type() const { return "DenseImageData"; }
+  virtual inline int ExactNumBottomBlobs() const { return 0; }
+  virtual inline int ExactNumTopBlobs() const { return 2; }
+
+ protected:
+  shared_ptr<Caffe::RNG> prefetch_rng_;
+  virtual void ShuffleImages();
+  virtual void InternalThreadEntry();
+
+  vector<std::pair<std::string, std::string> > lines_;
+  int lines_id_;
+  Blob<Dtype> transformed_label_;
 };
 
 }  // namespace caffe
