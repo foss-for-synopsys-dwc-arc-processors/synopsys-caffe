@@ -502,6 +502,7 @@ message LayerParameter {
   optional ConvolutionParameter convolution_param = 106;
   optional CropParameter crop_param = 144;
   optional DataParameter data_param = 107;
+  optional DenseImageDataParameter dense_image_data_param = 158; //CUSTOMIZATION: 138 is already used by TileParameter
   optional DetectionEvaluateParameter detection_evaluate_param = 205;
   optional DetectionOutputParameter detection_output_param = 204;
   optional DropoutParameter dropout_param = 108;
@@ -736,6 +737,9 @@ message LossParameter {
   // is not specified, then setting this to false will be equivalent to
   // normalization = BATCH_SIZE to be consistent with previous behavior.
   optional bool normalize = 2;
+  // label frequencies
+  optional bool weight_by_label_freqs = 5 [default = false];
+  repeated float class_weighting = 6;
 }
 
 // Messages that store parameters used by individual layer types follow, in
@@ -973,6 +977,30 @@ message DataParameter {
   optional uint32 prefetch = 10 [default = 4];
 }
 
+message DenseImageDataParameter {
+  // Specify the data source file.
+  optional string source = 1;
+  // Specify the batch size.
+  optional uint32 batch_size = 2;
+  // The rand_skip variable is for the data layer to skip a few data points
+  // to avoid all asynchronous sgd clients to start at the same point. The skip
+  // point would be set as rand_skip * rand(0,1). Note that rand_skip should not
+  // be larger than the number of keys in the database.
+  optional uint32 rand_skip = 3 [default = 0];
+  // Whether or not ImageLayer should shuffle the list of files at every epoch.
+  optional bool shuffle = 4 [default = false];
+  // It will also resize images if new_height or new_width are not zero.
+  optional uint32 new_height = 5 [default = 0];
+  optional uint32 new_width = 6 [default = 0];
+  // Specify if the images are color or gray
+  optional bool is_color = 7 [default = true];
+  optional string mean_file = 8;
+  optional string root_folder = 9 [default = ""];
+  optional bool mirror = 10 [default = false];
+  optional uint32 crop_width = 11 [default = 0];
+  optional uint32 crop_height = 12 [default = 0];
+}
+
 // Message that store parameters used by DetectionEvaluateLayer
 message DetectionEvaluateParameter {
   // Number of classes that are actually predicted. Required!
@@ -1064,6 +1092,7 @@ message DetectionOutputParameter {
 
 message DropoutParameter {
   optional float dropout_ratio = 1 [default = 0.5]; // dropout ratio
+  optional bool sample_weights_test = 2 [default = false]; // Sample weights for testing or use the mean
 }
 
 // DummyDataLayer fills any number of arbitrarily shaped blobs with random

@@ -11,6 +11,8 @@ void BasePrefetchingDataLayer<Dtype>::Forward_gpu(
     prefetch_free_.push(prefetch_current_);
   }
   prefetch_current_ = prefetch_full_.pop("Waiting for data");
+  // First, join the thread
+  JoinPrefetchThread();
   // Reshape to loaded data.
   top[0]->ReshapeLike(prefetch_current_->data_);
   top[0]->set_gpu_data(prefetch_current_->data_.mutable_gpu_data());

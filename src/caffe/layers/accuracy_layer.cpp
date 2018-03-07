@@ -17,6 +17,9 @@ void AccuracyLayer<Dtype>::LayerSetUp(
   if (has_ignore_label_) {
     ignore_label_ = this->layer_param_.accuracy_param().ignore_label();
   }
+  if (this->layer_param_.top_size() == 2) {
+    LOG(INFO) << "Per-class accuracies currently only work on TRAIN phase only.";
+  }
 }
 
 template <typename Dtype>

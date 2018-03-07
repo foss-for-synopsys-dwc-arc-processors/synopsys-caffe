@@ -116,6 +116,11 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   LossParameter_NormalizationMode normalization_;
 
   int softmax_axis_, outer_num_, inner_num_;
+
+  /// Whether to weight labels by their batch frequencies when calculating
+  /// the loss
+  bool weight_by_label_freqs_;
+  Blob<float> label_counts_;
 };
 
 }  // namespace caffe
