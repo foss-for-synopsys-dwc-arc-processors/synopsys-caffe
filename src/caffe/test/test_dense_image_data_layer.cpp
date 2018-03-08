@@ -187,7 +187,6 @@ TYPED_TEST(DenseImageDataLayerTest, TestShuffle) {
   EXPECT_EQ(this->blob_top_label_->channels(), 1);
   EXPECT_EQ(this->blob_top_label_->height(), this->blob_top_data_->height());
   EXPECT_EQ(this->blob_top_label_->width(), this->blob_top_data_->width());
-*/
   // Go through the data twice
   /*
   for (int iter = 0; iter < 2; ++iter) {

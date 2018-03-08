@@ -16,9 +16,7 @@
 namespace caffe {
 
 template <typename Dtype>
-DenseImageDataLayer<Dtype>::~DenseImageDataLayer<Dtype>() {
-  this->JoinPrefetchThread();
-}
+DenseImageDataLayer<Dtype>::~DenseImageDataLayer<Dtype>() {}
 
 template <typename Dtype>
 void DenseImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
@@ -161,7 +159,7 @@ void DenseImageDataLayer<Dtype>::InternalThreadEntry() {
         new_height, new_width, is_color);
     CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
     cv::Mat cv_lab = ReadImageToCVMat(root_folder + lines_[lines_id_].second,
-        new_height, new_width, false, true);
+        new_height, new_width, 0, 0, false, true);  //CUSTOMIZATION
     CHECK(cv_lab.data) << "Could not load " << lines_[lines_id_].second;
     read_time += timer.MicroSeconds();
     timer.Start();
