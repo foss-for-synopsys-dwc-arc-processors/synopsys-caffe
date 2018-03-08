@@ -70,12 +70,9 @@ class BasePrefetchingDataLayer :
   virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual void CreatePrefetchThread();
-  virtual void JoinPrefetchThread();
-
  protected:
   virtual void InternalThreadEntry();
-  virtual void load_batch(Batch<Dtype>* batch){} // = 0;
+  virtual void load_batch(Batch<Dtype>* batch) = 0;
 
   Blob<Dtype> prefetch_data_;
   Blob<Dtype> prefetch_label_;
@@ -102,6 +99,7 @@ class DenseImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
 
  protected:
   shared_ptr<Caffe::RNG> prefetch_rng_;
+  virtual void load_batch(Batch<Dtype>* batch){}
   virtual void ShuffleImages();
   virtual void InternalThreadEntry();
 
