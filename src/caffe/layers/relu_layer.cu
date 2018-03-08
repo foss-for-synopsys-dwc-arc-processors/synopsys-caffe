@@ -7,9 +7,11 @@ namespace caffe {
 
 template <typename Dtype>
 __global__ void ReLUForward(const int n, const Dtype* in, Dtype* out,
-    Dtype negative_slope) {
+    Dtype negative_slope, Dtype relu6) {
   CUDA_KERNEL_LOOP(index, n) {
     out[index] = in[index] > 0 ? in[index] : in[index] * negative_slope;
+    if(relu6) //CUSTOMIZATON
+      out[index] = out[index] > 6 ? 6: out[index]; //CUSTOMIZATON
   }
 }
 
@@ -20,9 +22,10 @@ void ReLULayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   Dtype* top_data = top[0]->mutable_gpu_data();
   const int count = bottom[0]->count();
   Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
+  Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
   // NOLINT_NEXT_LINE(whitespace/operators)
   ReLUForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
-      count, bottom_data, top_data, negative_slope);
+      count, bottom_data, top_data, negative_slope, relu6);
   CUDA_POST_KERNEL_CHECK;
   // << " count: " << count << " bottom_data: "
   //     << (unsigned long)bottom_data
