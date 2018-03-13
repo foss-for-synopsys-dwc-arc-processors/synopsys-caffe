@@ -3,17 +3,12 @@
 
 #include <vector>
 
-#include "boost/scoped_ptr.hpp"
-
 #include "caffe/blob.hpp"
-#include "caffe/common.hpp"
 #include "caffe/data_transformer.hpp"
-#include "caffe/filler.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/blocking_queue.hpp"
-#include "caffe/util/db.hpp"
 
 namespace caffe {
 
@@ -97,9 +92,8 @@ class DenseImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
 
  protected:
   shared_ptr<Caffe::RNG> prefetch_rng_;
-  virtual void load_batch(Batch<Dtype>* batch){}
+  virtual void load_batch(Batch<Dtype>* batch);
   virtual void ShuffleImages();
-  virtual void InternalThreadEntry();
 
   vector<std::pair<std::string, std::string> > lines_;
   int lines_id_;

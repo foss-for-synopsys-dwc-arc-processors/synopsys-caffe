@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "caffe/data_transformer.hpp"
 #include "caffe/layers/base_data_layer.hpp"
 #include "caffe/layer.hpp"
 #include "caffe/util/benchmark.hpp"
@@ -16,7 +17,9 @@
 namespace caffe {
 
 template <typename Dtype>
-DenseImageDataLayer<Dtype>::~DenseImageDataLayer<Dtype>() {}
+DenseImageDataLayer<Dtype>::~DenseImageDataLayer<Dtype>() {
+  this->StopInternalThread();
+}
 
 template <typename Dtype>
 void DenseImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
@@ -66,6 +69,7 @@ void DenseImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bott
   // Read an image, and use it to initialize the top blobs.
   cv::Mat cv_img = ReadImageToCVMat(root_folder + lines_[lines_id_].first,
                                     new_height, new_width, is_color);
+  CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
   const int channels = cv_img.channels();
   const int height = cv_img.rows;
   const int width = cv_img.cols;
@@ -130,7 +134,7 @@ void DenseImageDataLayer<Dtype>::ShuffleImages() {
 
 // This function is used to create a thread that prefetches the data.
 template <typename Dtype>
-void DenseImageDataLayer<Dtype>::InternalThreadEntry() {
+void DenseImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   CPUTimer batch_timer;
   batch_timer.Start();
   double read_time = 0;
@@ -154,6 +158,7 @@ void DenseImageDataLayer<Dtype>::InternalThreadEntry() {
   if (batch_size == 1 && crop_size == 0 && new_height == 0 && new_width == 0 && crop_height == 0 && crop_width == 0) {
     cv::Mat cv_img = ReadImageToCVMat(root_folder + lines_[lines_id_].first,
         0, 0, is_color);
+    CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
     for (int i = 0; i < this->prefetch_.size(); ++i) {
       this->prefetch_[i]->data_.Reshape(1, cv_img.channels(),
         cv_img.rows, cv_img.cols);
