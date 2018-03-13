@@ -63,7 +63,7 @@ class DenseImageDataLayerTest : public MultiDeviceTest<TypeParam> {
 };
 
 TYPED_TEST_CASE(DenseImageDataLayerTest, TestDtypesAndDevices);
-/*
+
 TYPED_TEST(DenseImageDataLayerTest, TestRead) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter param;
@@ -204,6 +204,6 @@ TYPED_TEST(DenseImageDataLayerTest, TestShuffle) {
     EXPECT_GT(5, num_in_order);
   }
   */
-//}
+}
 
 }  // namespace caffe
