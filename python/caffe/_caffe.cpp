@@ -7,6 +7,7 @@
 #include <boost/python.hpp>
 #include <boost/python/raw_function.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/enum.hpp>
 #include <numpy/arrayobject.h>
 
 // these need to be included after boost on OS X
@@ -401,6 +402,11 @@ BOOST_PYTHON_MODULE(_caffe) {
   bp::def("set_multiprocess", &Caffe::set_multiprocess);
 
   bp::def("layer_type_list", &LayerRegistry<Dtype>::LayerTypeList);
+
+  bp::enum_<Phase>("Phase")
+    .value("TRAIN", caffe::TRAIN)
+    .value("TEST", caffe::TEST)
+    .export_values();
 
   bp::class_<Net<Dtype>, shared_ptr<Net<Dtype> >, boost::noncopyable >("Net",
     bp::no_init)
