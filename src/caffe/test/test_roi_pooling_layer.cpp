@@ -4,7 +4,7 @@
 // Licensed under The MIT License [see fast-rcnn/LICENSE for details]
 // Written by Ross Girshick
 // ------------------------------------------------------------------
-
+/*
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -101,3 +101,4 @@ TYPED_TEST(ROIPoolingLayerTest, TestGradient) {
 }
 
 }  // namespace caffe
+*/
