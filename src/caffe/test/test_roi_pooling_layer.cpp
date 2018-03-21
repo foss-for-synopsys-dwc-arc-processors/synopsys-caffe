@@ -4,7 +4,7 @@
 // Licensed under The MIT License [see fast-rcnn/LICENSE for details]
 // Written by Ross Girshick
 // ------------------------------------------------------------------
-/*
+
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
@@ -25,7 +25,7 @@ using boost::scoped_ptr;
 
 namespace caffe {
 
-typedef ::testing::Types<GPUDevice<float>, GPUDevice<double> > TestDtypesGPU;
+//typedef ::testing::Types<GPUDevice<float>, GPUDevice<double> > TestDtypesGPU;
 
 template <typename TypeParam>
 class ROIPoolingLayerTest : public MultiDeviceTest<TypeParam> {
@@ -85,7 +85,7 @@ class ROIPoolingLayerTest : public MultiDeviceTest<TypeParam> {
   vector<Blob<Dtype>*> blob_top_vec_;
 };
 
-TYPED_TEST_CASE(ROIPoolingLayerTest, TestDtypesGPU);
+TYPED_TEST_CASE(ROIPoolingLayerTest, TestDtypesAndDevices);
 
 TYPED_TEST(ROIPoolingLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
@@ -101,4 +101,3 @@ TYPED_TEST(ROIPoolingLayerTest, TestGradient) {
 }
 
 }  // namespace caffe
-*/

@@ -3,6 +3,7 @@
 // Copyright (c) 2015 Microsoft
 // Licensed under The MIT License [see fast-rcnn/LICENSE for details]
 // Written by Ross Girshick
+// Modified by Synopsys Inc - Backward_cpu implementation
 // ------------------------------------------------------------------
 
 #include <cfloat>
@@ -127,7 +128,113 @@ void ROIPoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void ROIPoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  NOT_IMPLEMENTED;
+  if (!propagate_down[0]) {
+    return;
+  }
+  const Dtype* bottom_rois = bottom[1]->cpu_data();
+  const Dtype* top_diff = top[0]->cpu_diff();
+  Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
+  const int count = bottom[0]->count();
+  caffe_set(count, Dtype(0.), bottom_diff);
+  const int* argmax_data = max_idx_.cpu_data();
+  const int batch_size = bottom[0]->num();
+  // Number of ROIs
+  int num_rois = top[0]->num();
+
+  // (n, c, h, w) coords in bottom data
+  for (int n = 0; n < batch_size; ++n) {
+	  Dtype* offset_bottom_diff = bottom_diff;
+
+	  for (int c = 0; c < channels_; ++c) {
+
+		  for (int h = 0; h < height_; ++h) {
+			  for (int w = 0; w < width_; ++w) {
+
+				  const Dtype* offset_top_diff = top_diff + top[0]->offset(0, c);
+				  const int* offset_argmax_data = argmax_data + max_idx_.offset(0, c);
+				  const Dtype* offset_bottom_rois = bottom_rois;
+
+				  // Accumulate gradient over all ROIs that pooled this element
+				  for (int roi_n = 0; roi_n < num_rois; ++roi_n) {
+					  int roi_batch_ind = offset_bottom_rois[0];
+					  CHECK_GE(roi_batch_ind, 0);
+					  CHECK_LT(roi_batch_ind, batch_size);
+
+					  // Skip if ROI's batch index doesn't match n
+					  if (n != roi_batch_ind) {
+						  // Increment ROI data pointer
+						  offset_bottom_rois += bottom[1]->offset(1);
+						  offset_top_diff += top[0]->offset(1);
+						  offset_argmax_data += max_idx_.offset(1);
+						  continue;
+					  }
+
+					  int roi_start_w = round(
+							  offset_bottom_rois[1] * spatial_scale_);
+					  int roi_start_h = round(
+							  offset_bottom_rois[2] * spatial_scale_);
+					  int roi_end_w = round(
+							  offset_bottom_rois[3] * spatial_scale_);
+					  int roi_end_h = round(
+							  offset_bottom_rois[4] * spatial_scale_);
+
+
+					  // Skip if ROI doesn't include (h, w)
+					  const bool in_roi = (w >= roi_start_w && w <= roi_end_w
+							  && h >= roi_start_h && h <= roi_end_h);
+					  if (!in_roi) {
+						  // Increment ROI data pointer
+						  offset_bottom_rois += bottom[1]->offset(1);
+						  offset_top_diff += top[0]->offset(1);
+						  offset_argmax_data += max_idx_.offset(1);
+						  continue;
+					  }
+
+					  // Force malformed ROIs to be 1x1
+					  int roi_width = max(roi_end_w - roi_start_w + 1, 1);
+					  int roi_height = max(roi_end_h - roi_start_h + 1, 1);
+
+					  Dtype bin_size_h = static_cast<Dtype>(roi_height)
+										/ static_cast<Dtype>(pooled_height_);
+					  Dtype bin_size_w = static_cast<Dtype>(roi_width)
+										/ static_cast<Dtype>(pooled_width_);
+
+					  // Compute feasible set of pooled units that could have pooled
+					  // this bottom unit
+
+					  int phstart = floor(static_cast<Dtype>(h - roi_start_h)
+							  / bin_size_h);
+					  int phend = ceil(static_cast<Dtype>(h - roi_start_h + 1)
+							  / bin_size_h);
+					  int pwstart = floor(static_cast<Dtype>(w - roi_start_w)
+							  / bin_size_w);
+					  int pwend = ceil(static_cast<Dtype>(w - roi_start_w + 1)
+							  / bin_size_w);
+
+					  phstart = min(max(phstart, 0), pooled_height_);
+					  phend = min(max(phend, 0), pooled_height_);
+					  pwstart = min(max(pwstart, 0), pooled_width_);
+					  pwend = min(max(pwend, 0), pooled_width_);
+
+					  for (int ph = phstart; ph < phend; ++ph) {
+						  for (int pw = pwstart; pw < pwend; ++pw) {
+							  if (offset_argmax_data[ph * pooled_width_ + pw] == (h * width_ + w)) {
+								  offset_bottom_diff[h * width_ + w] += offset_top_diff[ph * pooled_width_ + pw];
+							  }
+						  }
+					  }
+					  // Increment ROI data pointer
+					  offset_bottom_rois += bottom[1]->offset(1);
+					  offset_top_diff += top[0]->offset(1);
+					  offset_argmax_data += max_idx_.offset(1);
+				  }
+			  }
+		  }
+		  // Increment data pointers by one channel
+		  offset_bottom_diff += bottom[0]->offset(0, 1);
+	  }
+	  bottom_diff += bottom[0]->offset(1);
+  }
 }
 
 
