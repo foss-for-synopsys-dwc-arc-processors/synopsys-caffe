@@ -31,6 +31,8 @@ using boost::scoped_ptr;
 
 namespace caffe {
 
+typedef ::testing::Types<CPUDevice<float>, CPUDevice<double> > TestDtypesCPU;
+
 static bool kBoolChoices[] = {true, false};
 static MultiBoxLossParameter_LocLossType kLocLossTypes[] = {
   MultiBoxLossParameter_LocLossType_L2,
@@ -324,7 +326,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
   vector<Blob<Dtype>*> blob_top_vec_;
 };
 
-TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesAndDevices);
+TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesCPU);
 
 TYPED_TEST(MultiBoxLossLayerTest, TestSetUp) {
   typedef typename TypeParam::Dtype Dtype;
@@ -356,7 +358,7 @@ TYPED_TEST(MultiBoxLossLayerTest, TestSetUp) {
     }
   }
 }
-/*
+
 TYPED_TEST(MultiBoxLossLayerTest, TestLocGradient) {
   typedef typename TypeParam::Dtype Dtype;
   LayerParameter layer_param;
@@ -453,5 +455,5 @@ TYPED_TEST(MultiBoxLossLayerTest, TestConfGradient) {
     }
   }
 }
-*/
+
 }  // namespace caffe
