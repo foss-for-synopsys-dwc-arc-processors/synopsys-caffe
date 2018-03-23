@@ -25,6 +25,7 @@ void SmoothL1LossLayer<Dtype>::LayerSetUp(
   //  CHECK_EQ(bottom.size(), 4) << "If weights are used, must specify both "
   //    "inside and outside weights";
   //}
+  abssum_ = loss_param.abssum();
 }
 
 template <typename Dtype>
@@ -90,10 +91,14 @@ void SmoothL1LossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	    errors_.cpu_data(),
 	    errors_.mutable_cpu_data());
   }
-  //top[0]->mutable_cpu_data()[0] =
-  //    caffe_cpu_asum(count, errors_.cpu_data()) / bottom[0]->num(); //SSD
-  top[0]->mutable_cpu_data()[0] = //Faster RCNN
-      caffe_cpu_dot(count, ones_.cpu_data(), errors_.cpu_data()) / bottom[0]->num();
+  if (abssum_) { //SSD
+    top[0]->mutable_cpu_data()[0] =
+        caffe_cpu_asum(count, errors_.cpu_data()) / bottom[0]->num();
+  }
+  else { //Faster RCNN
+	top[0]->mutable_cpu_data()[0] =
+		caffe_cpu_dot(count, ones_.cpu_data(), errors_.cpu_data()) / bottom[0]->num();
+  }
 }
 
 template <typename Dtype>
@@ -122,7 +127,7 @@ void SmoothL1LossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           diff_.cpu_data(),                 // a
           Dtype(0),                         // beta
           bottom[i]->mutable_cpu_diff());   // b
-      if (has_weights_) { //Faster RCNN
+      if (has_weights_ && !abssum_) { //Faster RCNN, CUSTOMIZATION
         // Scale by "inside" weight
         caffe_mul(
             count,
