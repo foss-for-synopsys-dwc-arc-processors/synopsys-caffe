@@ -1691,6 +1691,9 @@ message SmoothL1LossParameter {
   //   0.5 * (sigma * x) ** 2    -- if x < 1.0 / sigma / sigma
   //   |x| - 0.5 / sigma / sigma -- otherwise
   optional float sigma = 1 [default = 1];
+  // distinguish between the SSD and Faster RCNN implementaion,
+  // false for Faster RCNN, true for SSD
+  optional bool abssum = 3 [default = false];
 }
 
 message SliceParameter {

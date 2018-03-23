@@ -61,8 +61,12 @@ void SmoothL1LossLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   }
 
   Dtype loss;
-  //caffe_gpu_asum(count, errors_.gpu_data(), &loss); //SSD
-  caffe_gpu_dot(count, ones_.gpu_data(), errors_.gpu_data(), &loss); //Faster RCNN
+  if (abssum_) { //SSD
+    caffe_gpu_asum(count, errors_.gpu_data(), &loss);
+  }
+  else { //Faster RCNN
+    caffe_gpu_dot(count, ones_.gpu_data(), errors_.gpu_data(), &loss);
+  }
   top[0]->mutable_cpu_data()[0] = loss / bottom[0]->num();
 }
 
@@ -103,7 +107,7 @@ void SmoothL1LossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
           diff_.gpu_data(),                // x
           Dtype(0),                        // beta
           bottom[i]->mutable_gpu_diff());  // y
-      if (has_weights_) { //Faster RCNN
+      if (has_weights_ && !abssum_) { //Faster RCNN, CUSTOMIZATION
         // Scale by "inside" weight
         caffe_gpu_mul(
             count,
