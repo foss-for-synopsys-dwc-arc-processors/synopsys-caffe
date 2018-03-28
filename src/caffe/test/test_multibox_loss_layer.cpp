@@ -327,6 +327,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
 };
 
 TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesCPU);
+//TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesAndDevices);
 
 TYPED_TEST(MultiBoxLossLayerTest, TestSetUp) {
   typedef typename TypeParam::Dtype Dtype;

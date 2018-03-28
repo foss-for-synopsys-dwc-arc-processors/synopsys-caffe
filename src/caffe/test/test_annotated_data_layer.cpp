@@ -219,6 +219,32 @@ class AnnotatedDataLayerTest : public MultiDeviceTest<TypeParam> {
     }
   }
 
+  void TestSkip() {
+    LayerParameter param;
+    param.set_phase(TRAIN);
+    DataParameter* data_param = param.mutable_data_param();
+    int batch_size = num_; //6
+    data_param->set_batch_size(batch_size);
+    data_param->set_source(filename_->c_str());
+    data_param->set_backend(backend_);
+    Caffe::set_solver_count(8);
+    for (int dev = 0; dev < Caffe::solver_count(); ++dev) {
+      Caffe::set_solver_rank(dev);
+      AnnotatedDataLayer<Dtype> layer(param);
+      layer.SetUp(blob_bottom_vec_, blob_top_vec_);
+      int label = dev;
+      for (int iter = 0; iter < 10; ++iter) {
+        layer.Forward(blob_bottom_vec_, blob_top_vec_);
+        for (int i = 0; i < batch_size; ++i) {
+          EXPECT_EQ(label % batch_size, blob_top_label_->cpu_data()[i]);
+          label += Caffe::solver_count();
+        }
+      }
+    }
+    Caffe::set_solver_count(1);
+    Caffe::set_solver_rank(0);
+  }
+
   void TestReshape(DataParameter_DB backend, bool unique_pixel,
                    bool unique_annotation, bool use_rich_annotation,
                    AnnotatedDatum_AnnotationType type) {
@@ -584,6 +610,13 @@ TYPED_TEST(AnnotatedDataLayerTest, TestReadLevelDB) {
   }
 }
 
+TYPED_TEST(AnnotatedDataLayerTest, TestSkipLevelDB) {
+  const AnnotatedDatum_AnnotationType type = AnnotatedDatum_AnnotationType_BBOX;
+  this->Fill(DataParameter_DB_LEVELDB, false, false,
+	         false, type);
+  this->TestSkip();
+}
+
 TYPED_TEST(AnnotatedDataLayerTest, TestReshapeLevelDB) {
   const AnnotatedDatum_AnnotationType type = AnnotatedDatum_AnnotationType_BBOX;
   for (int p = 0; p < kNumChoices; ++p) {
@@ -665,6 +698,13 @@ TYPED_TEST(AnnotatedDataLayerTest, TestReadLMDB) {
       }
     }
   }
+}
+
+TYPED_TEST(AnnotatedDataLayerTest, TestSkipLMDB) {
+  const AnnotatedDatum_AnnotationType type = AnnotatedDatum_AnnotationType_BBOX;
+  this->Fill(DataParameter_DB_LMDB, false, false,
+	         false, type);
+  this->TestSkip();
 }
 
 TYPED_TEST(AnnotatedDataLayerTest, TestReshapeLMDB) {
