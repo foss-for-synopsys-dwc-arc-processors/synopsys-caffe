@@ -89,7 +89,9 @@ class SmoothL1LossLayerTest : public MultiDeviceTest<TypeParam> {
     const Dtype kErrorMargin = 1e-5;
     EXPECT_NEAR(loss_weight_1 * kLossWeight, loss_weight_2, kErrorMargin);
     // Make sure the loss is non-trivial.
-    const Dtype kNonTrivialAbsThresh = 1e-1;
+    Dtype kNonTrivialAbsThresh = 1e-1;
+    if (!SSD)
+      kNonTrivialAbsThresh = 1e-3; //CUSTOMIZATION
     EXPECT_GE(fabs(loss_weight_1), kNonTrivialAbsThresh);
   }
 
