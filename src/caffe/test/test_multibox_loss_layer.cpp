@@ -110,7 +110,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     LayerParameter layer_param;
     // Fake input (image) of size 20 x 20
     Blob<Dtype>* fake_input = new Blob<Dtype>(num_, 3, 20, 20);
-/*
+
     // 1) Fill ground truth.
 #ifdef USE_LMDB
     string filename;
@@ -174,14 +174,13 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     data_param->set_batch_size(num_);
     data_param->set_source(filename.c_str());
     data_param->set_backend(backend);
-    AnnotatedDataLayer<Dtype> anno_data_layer(layer_param);
+    //AnnotatedDataLayer<Dtype> anno_data_layer(layer_param);
     fake_top_vec.clear();
     fake_top_vec.push_back(fake_input);
     fake_top_vec.push_back(blob_bottom_gt_);
-    anno_data_layer.SetUp(fake_bottom_vec, fake_top_vec);
-    anno_data_layer.Forward(fake_bottom_vec, fake_top_vec);
+    //anno_data_layer.SetUp(fake_bottom_vec, fake_top_vec);
+    //anno_data_layer.Forward(fake_bottom_vec, fake_top_vec);
 #else
-*/
     FillerParameter filler_param;
     GaussianFiller<Dtype> filler(filler_param);
     filler.Fill(fake_input);
@@ -194,7 +193,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     FillItem(gt_data + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
     FillItem(gt_data + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
     FillItem(gt_data + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
-//#endif  // USE_LMDB
+#endif  // USE_LMDB
 
     // Fake layer
     PoolingParameter* pooling_param = layer_param.mutable_pooling_param();
