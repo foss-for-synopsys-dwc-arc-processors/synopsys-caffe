@@ -31,8 +31,6 @@ using boost::scoped_ptr;
 
 namespace caffe {
 
-typedef ::testing::Types<CPUDevice<float>, CPUDevice<double> > TestDtypesCPU;
-
 static bool kBoolChoices[] = {true, false};
 static MultiBoxLossParameter_LocLossType kLocLossTypes[] = {
   MultiBoxLossParameter_LocLossType_L2,
@@ -112,7 +110,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     LayerParameter layer_param;
     // Fake input (image) of size 20 x 20
     Blob<Dtype>* fake_input = new Blob<Dtype>(num_, 3, 20, 20);
-
+/*
     // 1) Fill ground truth.
 #ifdef USE_LMDB
     string filename;
@@ -183,6 +181,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     anno_data_layer.SetUp(fake_bottom_vec, fake_top_vec);
     anno_data_layer.Forward(fake_bottom_vec, fake_top_vec);
 #else
+*/
     FillerParameter filler_param;
     GaussianFiller<Dtype> filler(filler_param);
     filler.Fill(fake_input);
@@ -195,7 +194,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     FillItem(gt_data + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
     FillItem(gt_data + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
     FillItem(gt_data + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
-#endif  // USE_LMDB
+//#endif  // USE_LMDB
 
     // Fake layer
     PoolingParameter* pooling_param = layer_param.mutable_pooling_param();
@@ -326,8 +325,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
   vector<Blob<Dtype>*> blob_top_vec_;
 };
 
-TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesCPU);
-//TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesAndDevices);
+TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesAndDevices);
 
 TYPED_TEST(MultiBoxLossLayerTest, TestSetUp) {
   typedef typename TypeParam::Dtype Dtype;
