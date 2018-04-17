@@ -74,7 +74,101 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
     blob_bottom_vec_.push_back(blob_bottom_prior_);
     blob_bottom_vec_.push_back(blob_bottom_gt_);
     blob_top_vec_.push_back(blob_top_loss_);
+
+    // Take from the Fill method to keep the anno_data_layer not destroyed before referenced
+    // Actually change the value of blob_bottom_gt_
+    vector<Blob<Dtype>*> fake_bottom_vec1;
+    vector<Blob<Dtype>*> fake_top_vec1;
+    LayerParameter layer_param1; //Note: don't mix it with the MultiBoxLossLayer's LayerParameter!!
+    // Fake input (image) of size 20 x 20
+    Blob<Dtype>* fake_input1 = new Blob<Dtype>(this->num_, 3, 20, 20);
+    // 1) Fill ground truth.
+#ifdef USE_LMDB
+    string filename;
+    GetTempDirname(&filename);
+    DataParameter_DB backend = DataParameter_DB_LMDB;
+    scoped_ptr<db::DB> db(db::GetDB(backend));
+    db->Open(filename, db::NEW);
+    scoped_ptr<db::Transaction> txn(db->NewTransaction());
+    for (int i = 0; i < this->num_; ++i) {
+      AnnotatedDatum anno_datum;
+      // Fill data.
+      Datum* datum = anno_datum.mutable_datum();
+      datum->set_channels(3);
+      datum->set_height(20);
+      datum->set_width(20);
+      std::string* data = datum->mutable_data();
+      for (int j = 0; j < 3*20*20; ++j) {
+        data->push_back(static_cast<uint8_t>(j/100.));
+      }
+      anno_datum.set_type(AnnotatedDatum_AnnotationType_BBOX);
+      if (i == 0 || i == 2) {
+        AnnotationGroup* anno_group = anno_datum.add_annotation_group();
+        anno_group->set_group_label(1);
+        Annotation* anno = anno_group->add_annotation();
+        anno->set_instance_id(0);
+        NormalizedBBox* bbox = anno->mutable_bbox();
+        bbox->set_xmin(0.1);
+        bbox->set_ymin(0.1);
+        bbox->set_xmax(0.3);
+        bbox->set_ymax(0.3);
+        bbox->set_difficult(i % 2);
+      }
+      if (i == 2) {
+        AnnotationGroup* anno_group = anno_datum.add_annotation_group();
+        anno_group->set_group_label(2);
+        Annotation* anno = anno_group->add_annotation();
+        anno->set_instance_id(0);
+        NormalizedBBox* bbox = anno->mutable_bbox();
+        bbox->set_xmin(0.2);
+        bbox->set_ymin(0.2);
+        bbox->set_xmax(0.4);
+        bbox->set_ymax(0.4);
+        bbox->set_difficult(i % 2);
+        anno = anno_group->add_annotation();
+        anno->set_instance_id(1);
+        bbox = anno->mutable_bbox();
+        bbox->set_xmin(0.6);
+        bbox->set_ymin(0.6);
+        bbox->set_xmax(0.8);
+        bbox->set_ymax(0.9);
+        bbox->set_difficult((i + 1) % 2);
+      }
+      string key_str = caffe::format_int(i, 3);
+      string out;
+      CHECK(anno_datum.SerializeToString(&out));
+      txn->Put(key_str, out);
+    }
+    txn->Commit();
+    db->Close();
+    DataParameter* data_param = layer_param1.mutable_data_param();
+    data_param->set_batch_size(this->num_);
+    data_param->set_source(filename.c_str());
+    data_param->set_backend(backend);
+    //AnnotatedDataLayer<Dtype>
+    anno_data_layer = new AnnotatedDataLayer<Dtype>(layer_param1);
+    fake_top_vec1.clear();
+    fake_top_vec1.push_back(fake_input1);
+    fake_top_vec1.push_back(this->blob_bottom_gt_);
+    anno_data_layer->SetUp(fake_bottom_vec1, fake_top_vec1);
+    anno_data_layer->Forward(fake_bottom_vec1, fake_top_vec1);
+#else
+    FillerParameter filler_param;
+    GaussianFiller<Dtype> filler(filler_param);
+    filler.Fill(fake_input1);
+    vector<int> gt_shape(4, 1);
+    gt_shape[2] = 4;
+    gt_shape[3] = 8;
+    this->blob_bottom_gt_->Reshape(gt_shape);
+    Dtype* gt_data1 = this->blob_bottom_gt_->mutable_cpu_data();
+    this->FillItem(gt_data1, "0 1 0 0.1 0.1 0.3 0.3 0");
+    this->FillItem(gt_data1 + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
+    this->FillItem(gt_data1 + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
+    this->FillItem(gt_data1 + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
+#endif  // USE_LMDB
+    delete fake_input1;
   }
+
   virtual ~MultiBoxLossLayerTest() {
     delete blob_bottom_prior_;
     delete blob_bottom_loc_;
@@ -322,6 +416,7 @@ class MultiBoxLossLayerTest : public MultiDeviceTest<TypeParam> {
   Blob<Dtype>* const blob_top_loss_;
   vector<Blob<Dtype>*> blob_bottom_vec_;
   vector<Blob<Dtype>*> blob_top_vec_;
+  AnnotatedDataLayer<Dtype>* anno_data_layer;
 };
 
 TYPED_TEST_CASE(MultiBoxLossLayerTest, TestDtypesAndDevices);
@@ -334,98 +429,6 @@ TYPED_TEST(MultiBoxLossLayerTest, TestSetUp) {
   multibox_loss_param->set_num_classes(3);
   for (int i = 0; i < 2; ++i) {
     bool share_location = kBoolChoices[i];
-
-    // Take from the Fill method to keep the anno_data_layer not destroyed before referenced
-    vector<Blob<Dtype>*> fake_bottom_vec1;
-    vector<Blob<Dtype>*> fake_top_vec1;
-    LayerParameter layer_param1; //Note: don't mix it with the MultiBoxLossLayer's LayerParameter!!
-    // Fake input (image) of size 20 x 20
-    Blob<Dtype>* fake_input1 = new Blob<Dtype>(this->num_, 3, 20, 20);
-    // 1) Fill ground truth.
-#ifdef USE_LMDB
-    string filename;
-    GetTempDirname(&filename);
-    DataParameter_DB backend = DataParameter_DB_LMDB;
-    scoped_ptr<db::DB> db(db::GetDB(backend));
-    db->Open(filename, db::NEW);
-    scoped_ptr<db::Transaction> txn(db->NewTransaction());
-    for (int i = 0; i < this->num_; ++i) {
-    	AnnotatedDatum anno_datum;
-    	// Fill data.
-    	Datum* datum = anno_datum.mutable_datum();
-    	datum->set_channels(3);
-    	datum->set_height(20);
-    	datum->set_width(20);
-    	std::string* data = datum->mutable_data();
-    	for (int j = 0; j < 3*20*20; ++j) {
-    		data->push_back(static_cast<uint8_t>(j/100.));
-    	}
-    	anno_datum.set_type(AnnotatedDatum_AnnotationType_BBOX);
-    	if (i == 0 || i == 2) {
-    		AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		anno_group->set_group_label(1);
-    		Annotation* anno = anno_group->add_annotation();
-    		anno->set_instance_id(0);
-    		NormalizedBBox* bbox = anno->mutable_bbox();
-    		bbox->set_xmin(0.1);
-    		bbox->set_ymin(0.1);
-    		bbox->set_xmax(0.3);
-    		bbox->set_ymax(0.3);
-    		bbox->set_difficult(i % 2);
-    	}
-    	if (i == 2) {
-    		AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		anno_group->set_group_label(2);
-    		Annotation* anno = anno_group->add_annotation();
-    		anno->set_instance_id(0);
-    		NormalizedBBox* bbox = anno->mutable_bbox();
-    		bbox->set_xmin(0.2);
-    		bbox->set_ymin(0.2);
-    		bbox->set_xmax(0.4);
-    		bbox->set_ymax(0.4);
-    		bbox->set_difficult(i % 2);
-    		anno = anno_group->add_annotation();
-    		anno->set_instance_id(1);
-    		bbox = anno->mutable_bbox();
-    		bbox->set_xmin(0.6);
-    		bbox->set_ymin(0.6);
-    		bbox->set_xmax(0.8);
-    		bbox->set_ymax(0.9);
-    		bbox->set_difficult((i + 1) % 2);
-    	}
-    	string key_str = caffe::format_int(i, 3);
-    	string out;
-    	CHECK(anno_datum.SerializeToString(&out));
-    	txn->Put(key_str, out);
-    }
-    txn->Commit();
-    db->Close();
-    DataParameter* data_param = layer_param1.mutable_data_param();
-    data_param->set_batch_size(this->num_);
-    data_param->set_source(filename.c_str());
-    data_param->set_backend(backend);
-    AnnotatedDataLayer<Dtype> anno_data_layer(layer_param1);
-    fake_top_vec1.clear();
-    fake_top_vec1.push_back(fake_input1);
-    fake_top_vec1.push_back(this->blob_bottom_gt_);
-    anno_data_layer.SetUp(fake_bottom_vec1, fake_top_vec1);
-    anno_data_layer.Forward(fake_bottom_vec1, fake_top_vec1);
-#else
-	FillerParameter filler_param;
-	GaussianFiller<Dtype> filler(filler_param);
-	filler.Fill(fake_input1);
-	vector<int> gt_shape(4, 1);
-	gt_shape[2] = 4;
-	gt_shape[3] = 8;
-	this->blob_bottom_gt_->Reshape(gt_shape);
-	Dtype* gt_data1 = this->blob_bottom_gt_->mutable_cpu_data();
-	this->FillItem(gt_data1, "0 1 0 0.1 0.1 0.3 0.3 0");
-	this->FillItem(gt_data1 + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
-	this->FillItem(gt_data1 + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
-	this->FillItem(gt_data1 + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
-#endif  // USE_LMDB
-	delete fake_input1;
-
     this->Fill(share_location);
     for (int j = 0; j < 2; ++j) {
       MultiBoxLossParameter_MatchType match_type = kMatchTypes[j];
@@ -462,98 +465,6 @@ TYPED_TEST(MultiBoxLossLayerTest, TestLocGradient) {
     MultiBoxLossParameter_LocLossType loc_loss_type = kLocLossTypes[l];
     for (int i = 0; i < 2; ++i) {
       bool share_location = kBoolChoices[i];
-
-      // Take from the Fill method to keep the anno_data_layer not destroyed before referenced
-      vector<Blob<Dtype>*> fake_bottom_vec1;
-      vector<Blob<Dtype>*> fake_top_vec1;
-      LayerParameter layer_param1; //Note: don't mix it with the MultiBoxLossLayer's LayerParameter!!
-      // Fake input (image) of size 20 x 20
-      Blob<Dtype>* fake_input1 = new Blob<Dtype>(this->num_, 3, 20, 20);
-      // 1) Fill ground truth.
-#ifdef USE_LMDB
-      string filename;
-      GetTempDirname(&filename);
-      DataParameter_DB backend = DataParameter_DB_LMDB;
-      scoped_ptr<db::DB> db(db::GetDB(backend));
-      db->Open(filename, db::NEW);
-      scoped_ptr<db::Transaction> txn(db->NewTransaction());
-      for (int i = 0; i < this->num_; ++i) {
-    	  AnnotatedDatum anno_datum;
-    	  // Fill data.
-    	  Datum* datum = anno_datum.mutable_datum();
-    	  datum->set_channels(3);
-    	  datum->set_height(20);
-    	  datum->set_width(20);
-    	  std::string* data = datum->mutable_data();
-    	  for (int j = 0; j < 3*20*20; ++j) {
-    		  data->push_back(static_cast<uint8_t>(j/100.));
-    	  }
-    	  anno_datum.set_type(AnnotatedDatum_AnnotationType_BBOX);
-    	  if (i == 0 || i == 2) {
-    		  AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		  anno_group->set_group_label(1);
-    		  Annotation* anno = anno_group->add_annotation();
-    		  anno->set_instance_id(0);
-    		  NormalizedBBox* bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.1);
-    		  bbox->set_ymin(0.1);
-    		  bbox->set_xmax(0.3);
-    		  bbox->set_ymax(0.3);
-    		  bbox->set_difficult(i % 2);
-    	  }
-    	  if (i == 2) {
-    		  AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		  anno_group->set_group_label(2);
-    		  Annotation* anno = anno_group->add_annotation();
-    		  anno->set_instance_id(0);
-    		  NormalizedBBox* bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.2);
-    		  bbox->set_ymin(0.2);
-    		  bbox->set_xmax(0.4);
-    		  bbox->set_ymax(0.4);
-    		  bbox->set_difficult(i % 2);
-    		  anno = anno_group->add_annotation();
-    		  anno->set_instance_id(1);
-    		  bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.6);
-    		  bbox->set_ymin(0.6);
-    		  bbox->set_xmax(0.8);
-    		  bbox->set_ymax(0.9);
-    		  bbox->set_difficult((i + 1) % 2);
-    	  }
-    	  string key_str = caffe::format_int(i, 3);
-    	  string out;
-    	  CHECK(anno_datum.SerializeToString(&out));
-    	  txn->Put(key_str, out);
-      }
-      txn->Commit();
-      db->Close();
-      DataParameter* data_param = layer_param1.mutable_data_param();
-      data_param->set_batch_size(this->num_);
-      data_param->set_source(filename.c_str());
-      data_param->set_backend(backend);
-      AnnotatedDataLayer<Dtype> anno_data_layer(layer_param1);
-      fake_top_vec1.clear();
-      fake_top_vec1.push_back(fake_input1);
-      fake_top_vec1.push_back(this->blob_bottom_gt_);
-      anno_data_layer.SetUp(fake_bottom_vec1, fake_top_vec1);
-      anno_data_layer.Forward(fake_bottom_vec1, fake_top_vec1);
-#else
-      FillerParameter filler_param;
-      GaussianFiller<Dtype> filler(filler_param);
-      filler.Fill(fake_input1);
-      vector<int> gt_shape(4, 1);
-      gt_shape[2] = 4;
-      gt_shape[3] = 8;
-      this->blob_bottom_gt_->Reshape(gt_shape);
-      Dtype* gt_data1 = this->blob_bottom_gt_->mutable_cpu_data();
-      this->FillItem(gt_data1, "0 1 0 0.1 0.1 0.3 0.3 0");
-      this->FillItem(gt_data1 + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
-      this->FillItem(gt_data1 + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
-      this->FillItem(gt_data1 + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
-#endif  // USE_LMDB
-      delete fake_input1;
-
       this->Fill(share_location);
       for (int j = 0; j < 2; ++j) {
         MultiBoxLossParameter_MatchType match_type = kMatchTypes[j];
@@ -602,98 +513,6 @@ TYPED_TEST(MultiBoxLossLayerTest, TestConfGradient) {
     MultiBoxLossParameter_ConfLossType conf_loss_type = kConfLossTypes[c];
     for (int i = 0; i < 2; ++i) {
       bool share_location = kBoolChoices[i];
-
-      // Take from the Fill method to keep the anno_data_layer not destroyed before referenced
-      vector<Blob<Dtype>*> fake_bottom_vec1;
-      vector<Blob<Dtype>*> fake_top_vec1;
-      LayerParameter layer_param1; //Note: don't mix it with the MultiBoxLossLayer's LayerParameter!!
-      // Fake input (image) of size 20 x 20
-      Blob<Dtype>* fake_input1 = new Blob<Dtype>(this->num_, 3, 20, 20);
-      // 1) Fill ground truth.
-#ifdef USE_LMDB
-      string filename;
-      GetTempDirname(&filename);
-      DataParameter_DB backend = DataParameter_DB_LMDB;
-      scoped_ptr<db::DB> db(db::GetDB(backend));
-      db->Open(filename, db::NEW);
-      scoped_ptr<db::Transaction> txn(db->NewTransaction());
-      for (int i = 0; i < this->num_; ++i) {
-    	  AnnotatedDatum anno_datum;
-    	  // Fill data.
-    	  Datum* datum = anno_datum.mutable_datum();
-    	  datum->set_channels(3);
-    	  datum->set_height(20);
-    	  datum->set_width(20);
-    	  std::string* data = datum->mutable_data();
-    	  for (int j = 0; j < 3*20*20; ++j) {
-    		  data->push_back(static_cast<uint8_t>(j/100.));
-    	  }
-    	  anno_datum.set_type(AnnotatedDatum_AnnotationType_BBOX);
-    	  if (i == 0 || i == 2) {
-    		  AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		  anno_group->set_group_label(1);
-    		  Annotation* anno = anno_group->add_annotation();
-    		  anno->set_instance_id(0);
-    		  NormalizedBBox* bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.1);
-    		  bbox->set_ymin(0.1);
-    		  bbox->set_xmax(0.3);
-    		  bbox->set_ymax(0.3);
-    		  bbox->set_difficult(i % 2);
-    	  }
-    	  if (i == 2) {
-    		  AnnotationGroup* anno_group = anno_datum.add_annotation_group();
-    		  anno_group->set_group_label(2);
-    		  Annotation* anno = anno_group->add_annotation();
-    		  anno->set_instance_id(0);
-    		  NormalizedBBox* bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.2);
-    		  bbox->set_ymin(0.2);
-    		  bbox->set_xmax(0.4);
-    		  bbox->set_ymax(0.4);
-    		  bbox->set_difficult(i % 2);
-    		  anno = anno_group->add_annotation();
-    		  anno->set_instance_id(1);
-    		  bbox = anno->mutable_bbox();
-    		  bbox->set_xmin(0.6);
-    		  bbox->set_ymin(0.6);
-    		  bbox->set_xmax(0.8);
-    		  bbox->set_ymax(0.9);
-    		  bbox->set_difficult((i + 1) % 2);
-    	  }
-    	  string key_str = caffe::format_int(i, 3);
-    	  string out;
-    	  CHECK(anno_datum.SerializeToString(&out));
-    	  txn->Put(key_str, out);
-      }
-      txn->Commit();
-      db->Close();
-      DataParameter* data_param = layer_param1.mutable_data_param();
-      data_param->set_batch_size(this->num_);
-      data_param->set_source(filename.c_str());
-      data_param->set_backend(backend);
-      AnnotatedDataLayer<Dtype> anno_data_layer(layer_param1);
-      fake_top_vec1.clear();
-      fake_top_vec1.push_back(fake_input1);
-      fake_top_vec1.push_back(this->blob_bottom_gt_);
-      anno_data_layer.SetUp(fake_bottom_vec1, fake_top_vec1);
-      anno_data_layer.Forward(fake_bottom_vec1, fake_top_vec1);
-#else
-      FillerParameter filler_param;
-      GaussianFiller<Dtype> filler(filler_param);
-      filler.Fill(fake_input1);
-      vector<int> gt_shape(4, 1);
-      gt_shape[2] = 4;
-      gt_shape[3] = 8;
-      this->blob_bottom_gt_->Reshape(gt_shape);
-      Dtype* gt_data1 = this->blob_bottom_gt_->mutable_cpu_data();
-      this->FillItem(gt_data1, "0 1 0 0.1 0.1 0.3 0.3 0");
-      this->FillItem(gt_data1 + 8, "2 1 0 0.1 0.1 0.3 0.3 0");
-      this->FillItem(gt_data1 + 8 * 2, "2 2 0 0.2 0.2 0.4 0.4 0");
-      this->FillItem(gt_data1 + 8 * 3, "2 2 1 0.6 0.6 0.8 0.9 1");
-#endif  // USE_LMDB
-      delete fake_input1;
-
       this->Fill(share_location);
       for (int j = 0; j < 2; ++j) {
         MultiBoxLossParameter_MatchType match_type = kMatchTypes[j];
