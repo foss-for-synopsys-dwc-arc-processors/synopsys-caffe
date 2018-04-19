@@ -9,6 +9,15 @@
 
 namespace caffe {
 
+void Caffe::set_logging(bool value)
+{
+    FLAGS_logtostderr = value ? 1 : 0;
+    FLAGS_alsologtostderr = FLAGS_logtostderr;
+
+    if(!value) FLAGS_minloglevel=2;
+    else       FLAGS_minloglevel=0;
+}
+
 // Make sure each thread can have different values.
 static boost::thread_specific_ptr<Caffe> thread_instance_;
 

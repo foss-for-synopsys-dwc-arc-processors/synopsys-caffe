@@ -19,6 +19,8 @@ namespace boost { class mutex; }
 
 namespace caffe {
 
+template <typename Dtype> class Net;
+
 /**
  * @brief An interface for the units of computation which can be composed into a
  *        Net.
@@ -90,6 +92,22 @@ class Layer {
    */
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {}
+
+  inline void SetNet(Net<Dtype> *net) {
+    this->net_ = net;
+  }
+  inline Net<Dtype>* GetNet() {
+    return this->net_;
+  }
+
+  virtual inline bool DoesUseCustomCopyBlobs() const {
+    return false;
+  }
+
+  virtual inline void CustomCopyBlobs(vector<Blob<float>*> blobs) {
+    LOG(FATAL) << "This layer uses custom blob copying, but has not implemented the CustomCopyBlobs method.";
+  }
+
 
   /**
    * @brief Adjust the shapes of top blobs and internal buffers to accommodate
@@ -270,6 +288,15 @@ class Layer {
   }
 
   /**
+   * @brief By Alexey: return whether to allow backward for this layer
+   *
+   * If AllowBackward = false, this layer will never do backward
+   */
+  virtual inline bool AllowBackward() const {
+    return true;
+  }
+
+  /**
    * @brief Specifies whether the layer should compute gradients w.r.t. a
    *        parameter at a particular index given by param_id.
    *
@@ -404,6 +431,9 @@ class Layer {
   }
 
  private:
+  /** Pointer to parent Net if existant */
+  Net<Dtype>* net_;
+
   DISABLE_COPY_AND_ASSIGN(Layer);
 };  // class Layer
 
@@ -414,7 +444,8 @@ template <typename Dtype>
 inline Dtype Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   Dtype loss = 0;
-  Reshape(bottom, top);
+  if (this->layer_param_.reshape_every_iter())
+    Reshape(bottom, top);
   switch (Caffe::mode()) {
   case Caffe::CPU:
     Forward_cpu(bottom, top);

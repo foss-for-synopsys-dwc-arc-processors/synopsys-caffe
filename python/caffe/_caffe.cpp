@@ -52,6 +52,8 @@ const int NPY_DTYPE = NPY_FLOAT32;
 void set_mode_cpu() { Caffe::set_mode(Caffe::CPU); }
 void set_mode_gpu() { Caffe::set_mode(Caffe::GPU); }
 
+void set_logging_disabled() { Caffe::set_logging(false); }
+
 void InitLog() {
   ::google::InitGoogleLogging("");
   ::google::InstallFailureSignalHandler();
@@ -393,6 +395,7 @@ BOOST_PYTHON_MODULE(_caffe) {
   bp::def("has_nccl", &HasNCCL);
   bp::def("set_mode_cpu", &set_mode_cpu);
   bp::def("set_mode_gpu", &set_mode_gpu);
+  bp::def("set_logging_disabled", &set_logging_disabled);
   bp::def("set_random_seed", &set_random_seed);
   bp::def("set_device", &Caffe::SetDevice);
   bp::def("solver_count", &Caffe::solver_count);
