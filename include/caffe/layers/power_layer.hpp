@@ -33,6 +33,39 @@ class PowerLayer : public NeuronLayer<Dtype> {
 
   virtual inline const char* type() const { return "Power"; }
 
+  /**
+   * @brief Setter method for the "power" parameter
+   * @param new_power_value New value for the "power" parameter
+   */
+  void SetPower(Dtype new_power_value)
+  {
+    power_ = new_power_value;
+
+    /// Recompute values that depend on power_
+    diff_scale_ = power_  * scale_;
+  }
+
+  /**
+   * @brief Setter method for the "scale" parameter
+   * @param new_scale_value New value for the "scale" parameter
+   */
+  void SetScale(Dtype new_scale_value)
+  {
+    scale_ = new_scale_value;
+
+    /// Recompute values that depend on scale_
+    diff_scale_ = power_  * scale_;
+  }
+
+  /**
+   * @brief Setter method for the "shift" parameter
+   * @param new_shift_value New value for the "shift" parameter
+   */
+  void SetShift(Dtype new_shift_value)
+  {
+    shift_ = new_shift_value;
+  }
+
  protected:
   /**
    * @param bottom input Blob vector (length 1)

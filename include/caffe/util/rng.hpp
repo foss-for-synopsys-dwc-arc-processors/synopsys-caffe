@@ -7,6 +7,8 @@
 #include "boost/random/mersenne_twister.hpp"
 #include "boost/random/uniform_int.hpp"
 
+#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/common.hpp"
 
 namespace caffe {
@@ -16,6 +18,8 @@ typedef boost::mt19937 rng_t;
 inline rng_t* caffe_rng() {
   return static_cast<caffe::rng_t*>(Caffe::rng_stream().generator());
 }
+
+template <typename Dtype,typename Randtype> Randtype caffe_rng_generate(const RandomGeneratorParameter& param, Dtype discount_coeff = 1,Dtype prob0_value = NAN);
 
 // Fisher–Yates algorithm
 template <class RandomAccessIterator, class RandomGenerator>

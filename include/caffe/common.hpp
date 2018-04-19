@@ -141,6 +141,8 @@ class Caffe {
   }
 #endif
 
+  static void set_logging(bool value);
+
   // Returns the mode: running on CPU or GPU.
   inline static Brew mode() { return Get().mode_; }
   // The setters for the variables
