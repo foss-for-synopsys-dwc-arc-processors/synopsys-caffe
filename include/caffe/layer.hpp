@@ -19,6 +19,8 @@ namespace boost { class mutex; }
 
 namespace caffe {
 
+template <typename Dtype> class Net;
+
 /**
  * @brief An interface for the units of computation which can be composed into a
  *        Net.
@@ -90,6 +92,22 @@ class Layer {
    */
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {}
+
+  inline void SetNet(Net<Dtype> *net) {
+    this->net_ = net;
+  }
+  inline Net<Dtype>* GetNet() {
+    return this->net_;
+  }
+
+  virtual inline bool DoesUseCustomCopyBlobs() const {
+    return false;
+  }
+
+  virtual inline void CustomCopyBlobs(vector<Blob<float>*> blobs) {
+    LOG(FATAL) << "This layer uses custom blob copying, but has not implemented the CustomCopyBlobs method.";
+  }
+
 
   /**
    * @brief Adjust the shapes of top blobs and internal buffers to accommodate
@@ -413,6 +431,9 @@ class Layer {
   }
 
  private:
+  /** Pointer to parent Net if existant */
+  Net<Dtype>* net_;
+
   DISABLE_COPY_AND_ASSIGN(Layer);
 };  // class Layer
 

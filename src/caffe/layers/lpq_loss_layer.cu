@@ -100,15 +100,14 @@ namespace caffe {
     /// Check and reset p/q parameters
     if (schedule_.size() > 0) {
       /// Get current iteration
-      //Net<Dtype> *net = this->GetNet();
-      //unsigned int current_iteration = (net) ? net->iter() : 0;
+      Net<Dtype> *net = this->GetNet();
+      unsigned int current_iteration = (net) ? net->iter() : 0;
       
       ScheduleStep_* step_ptr = 0;
       
       /// Discard old schedule steps
-      while (schedule_.size() > 0
-    		  //and current_iteration >= schedule_.front()->start_iter
-    		  )
+      while (schedule_.size() > 0 and
+             current_iteration >= schedule_.front()->start_iter)
       {
         if (step_ptr) {
           delete step_ptr;
@@ -123,7 +122,7 @@ namespace caffe {
       
       /// Use retrieved schedule step and reinitialize p/q layers
       if (step_ptr) {
-        LOG(INFO) << "Lpq loss layer: Iteration " //<< current_iteration
+        LOG(INFO) << "Lpq loss layer: Iteration " << current_iteration
                   << ", switching to p = " << step_ptr->p
                   << ", q = " << step_ptr->q;
         

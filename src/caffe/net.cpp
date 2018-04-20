@@ -144,7 +144,11 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     for (int param_id = 0; param_id < num_param_blobs; ++param_id) {
       const ParamSpec* param_spec = (param_id < param_size) ?
           &layer_param.param(param_id) : &default_param_spec;
-      const bool param_need_backward = param_spec->lr_mult() != 0;
+      bool param_need_backward = param_spec->lr_mult() != 0;
+
+      if (!layer->AllowBackward())
+        param_need_backward = false;
+
       need_backward |= param_need_backward;
       layers_[layer_id]->set_param_propagate_down(param_id,
                                                   param_need_backward);
@@ -152,6 +156,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     for (int param_id = 0; param_id < num_param_blobs; ++param_id) {
       AppendParam(param, layer_id, param_id);
     }
+    if (!layer->AllowBackward())
+        need_backward = false;
+    LOG(INFO) << "DEBUG: need_backward = " << need_backward;
     // Finally, set the backward flag
     layer_need_backward_.push_back(need_backward);
     if (need_backward) {
@@ -747,6 +754,19 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     DLOG(INFO) << "Copying source layer " << source_layer_name;
     vector<shared_ptr<Blob<Dtype> > >& target_blobs =
         layers_[target_layer_id]->blobs();
+    if( layers_[target_layer_id]->DoesUseCustomCopyBlobs() ) {
+        vector<Blob<float>* > blobs;
+        for(int i=0; i<source_layer.blobs().size(); i++)
+        {
+            Blob<float>* blob = new Blob<float>();
+            blob->FromProto(source_layer.blobs(i));
+            blobs.push_back(blob);
+        }
+        layers_[target_layer_id]->CustomCopyBlobs(blobs);
+
+        for(int i=0; i<blobs.size(); i++)
+            delete blobs[i];
+    } else {
     CHECK_EQ(target_blobs.size(), source_layer.blobs_size())
         << "Incompatible number of blobs for layer " << source_layer_name;
     for (int j = 0; j < target_blobs.size(); ++j) {
@@ -763,6 +783,7 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
       }
       const bool kReshape = false;
       target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
+    }
     }
   }
 }
