@@ -70,8 +70,8 @@ void FLOWriterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const int height = bottom[0]->height();
     const int width = bottom[0]->width();
 
-    Net<Dtype> *net = this->GetNet();
-    int iter = net->iter();
+    //Net<Dtype> *net = this->GetNet();
+    //int iter = net->iter();
 
     int size=height*width*channels;
     for(int n=0; n<num; n++)
@@ -82,18 +82,18 @@ void FLOWriterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         else
         {
             if(num>1)
-                sprintf(filename,"%s/%s%07d(%03d)%s.flo",
+                sprintf(filename,"%s/%s(%03d)%s.flo",
                     this->layer_param_.writer_param().folder().c_str(),
                     this->layer_param_.writer_param().prefix().c_str(),
-                    iter,
+                    //iter,
                     n,
                     this->layer_param_.writer_param().suffix().c_str()
                 );
             else
-                sprintf(filename,"%s/%s%07d%s.flo",
+                sprintf(filename,"%s/%sd%s.flo",
                     this->layer_param_.writer_param().folder().c_str(),
                     this->layer_param_.writer_param().prefix().c_str(),
-                    iter,
+                    //iter,
                     this->layer_param_.writer_param().suffix().c_str()
                 );
         }
