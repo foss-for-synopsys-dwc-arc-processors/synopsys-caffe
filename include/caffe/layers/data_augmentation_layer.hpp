@@ -25,6 +25,7 @@ public:
                             const vector<Blob<Dtype>*>& top);
     virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
                          const vector<Blob<Dtype>*>& top);
+    virtual inline const char* type() const { return "DataAugmentation"; }
     virtual void adjust_blobs(vector<Blob<Dtype>*> blobs);
     virtual inline bool AllowBackward() const { LOG(WARNING) << "DataAugmentationLayer does not do backward."; return false; }
 

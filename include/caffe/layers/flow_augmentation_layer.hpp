@@ -25,6 +25,7 @@ class FlowAugmentationLayer : public AugmentationLayerBase<Dtype>, public Layer<
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual inline const char* type() const { return "FlowAugmentation"; }
   virtual inline bool AllowBackward() const { LOG(WARNING) << "FlowAugmentationLayer does not do backward."; return false; }
   
 

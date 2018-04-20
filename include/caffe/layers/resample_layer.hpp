@@ -22,6 +22,7 @@ class ResampleLayer : public Layer<Dtype> {
   virtual inline int MinBottomBlobs() const { return 1; }
   virtual inline int MaxBottomBlobs() const { return 2; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline const char* type() const { return "Resample"; }
   virtual inline bool AllowBackward() const { LOG(WARNING) << "ResampleLayer does not do backward."; return false; }
 
  protected:

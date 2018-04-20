@@ -19,6 +19,7 @@ class MeanLayer : public Layer<Dtype> {
         const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top);
+  virtual inline const char* type() const { return "Mean"; }
 
  protected:
   Blob<Dtype> mean_;

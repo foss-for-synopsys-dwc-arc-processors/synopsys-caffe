@@ -20,6 +20,7 @@ class FloatReaderLayer : public Layer<Dtype> {
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual inline const char* type() const { return "FloatReader"; }
 
  protected:
   int dataXSize_;
