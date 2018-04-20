@@ -362,7 +362,7 @@ void FlowWarpLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom, const
     int channels = top[0]->channels();
     int num = top[0]->num();
     const int wh_size = width * height;
-    const int whc_size = width * height * channels;
+    //const int whc_size = width * height * channels;
 
     Dtype* warped_data = top[0]->mutable_gpu_data(); // dest
     const Dtype* image_data = bottom[0]->gpu_data(); // source image
@@ -466,7 +466,7 @@ void FlowWarpLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     int channels = top[0]->channels();
     int num = top[0]->num();
     const int wh_size = width * height;
-    const int whc_size = width * height * channels;
+    //const int whc_size = width * height * channels;
 
     const Dtype* warped_data = top[0]->gpu_data(); // dest
     const Dtype* warped_diff = top[0]->gpu_diff(); // dest

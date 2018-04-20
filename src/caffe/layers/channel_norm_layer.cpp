@@ -31,7 +31,7 @@ void ChannelNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(top.size(), 1) << "ChannelNormLayer outputs one blob.";
   
   const int num = bottom[0]->num();
-  const int channels = bottom[0]->channels();
+  //const int channels = bottom[0]->channels();
   const int height = bottom[0]->height();
   const int width = bottom[0]->width();
   
