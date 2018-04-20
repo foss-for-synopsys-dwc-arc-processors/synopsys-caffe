@@ -37,7 +37,7 @@ class LpqLossLayer : public LossLayer<Dtype> {
         const vector<Blob<Dtype>*>& bottom,
         const vector<Blob<Dtype>*>& top);
   
-  virtual inline const char* type() const { return "L1Loss"; }
+  virtual inline const char* type() const { return "LpqLoss"; }
   
   virtual inline bool AllowForceBackward(
         const int bottom_index) const 

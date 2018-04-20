@@ -24,6 +24,7 @@ class GenerateAugmentationParametersLayer : public AugmentationLayerBase<Dtype>,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
+  virtual inline const char* type() const { return "GenerateAugmentationParameters"; }
   virtual inline bool AllowBackward() const { LOG(WARNING) << "GenerateAugmentationParametersLayer does not do backward."; return false; }
   
  protected:
