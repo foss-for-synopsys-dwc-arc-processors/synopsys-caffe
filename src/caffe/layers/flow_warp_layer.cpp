@@ -127,7 +127,7 @@ void FlowWarpLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const int wh_size = width * height;
     const int whc_size = width * height * channels;
 
-    const Dtype* warped_data = top[0]->cpu_data(); // dest
+    //const Dtype* warped_data = top[0]->cpu_data(); // dest
     const Dtype* warped_diff = top[0]->cpu_diff(); // dest
     const Dtype* image_data = bottom[0]->cpu_data(); // source image
     Dtype* image_diff = bottom[0]->mutable_cpu_diff(); // source image
