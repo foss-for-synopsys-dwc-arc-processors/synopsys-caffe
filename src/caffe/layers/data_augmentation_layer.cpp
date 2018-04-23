@@ -175,7 +175,7 @@ void DataAugmentationLayer<Dtype>::adjust_blobs(vector<Blob<Dtype>* > blobs)
       {
              // If using RGB mean, copy only RGB values (blob 2)
              Blob<Dtype> tmp; tmp.CopyFrom(*blobs[2], false,true);
-             caffe_gpu_memcpy(this->blobs_[2]->count()*sizeof(float), tmp.mutable_gpu_data(), this->blobs_[2]->mutable_gpu_data());
+             caffe_copy(this->blobs_[2]->count()*sizeof(float), tmp.mutable_cpu_data(), this->blobs_[2]->mutable_gpu_data());
 
              Dtype* data_mean_per_channel_cpu = this->blobs_[2]->mutable_cpu_data();
              for(int i=0; i<this->blobs_[2]->count(); i++)
@@ -208,7 +208,15 @@ template <typename Dtype>
 void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top)
 {
-   	LOG(FATAL) << "Forward CPU Augmentation not implemented.";
+	NOT_IMPLEMENTED;
+}
+
+template <typename Dtype>
+void DataAugmentationLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "DataAugmentationLayer cannot do backward.";
+	return;
 }
 
 #ifdef CPU_ONLY

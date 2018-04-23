@@ -636,6 +636,14 @@ void DataAugmentationLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& botto
       
 }
 
+template <typename Dtype>
+void DataAugmentationLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "DataAugmentationLayer cannot do backward.";
+	return;
+}
+
 INSTANTIATE_LAYER_GPU_FUNCS(DataAugmentationLayer);
 
 }  // namespace caffe

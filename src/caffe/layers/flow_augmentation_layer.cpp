@@ -77,8 +77,16 @@ void FlowAugmentationLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void FlowAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top)
-{  
-    LOG(FATAL) << "Forward CPU Augmentation not implemented.";
+{
+	NOT_IMPLEMENTED;
+}
+
+template <typename Dtype>
+void FlowAugmentationLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "FlowAugmentationLayer cannot do backward.";
+	return;
 }
 
 #ifdef CPU_ONLY
