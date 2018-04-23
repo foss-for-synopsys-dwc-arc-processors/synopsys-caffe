@@ -56,17 +56,21 @@ void ResampleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ResampleLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  
-  LOG(FATAL) << "ResampleLayer: CPU Forward not yet implemented.";
+      const vector<Blob<Dtype>*>& top)
+{
+	NOT_IMPLEMENTED;
 }
 
 template <typename Dtype>
 void ResampleLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  
+
   LOG(FATAL) << "ResampleLayer cannot do backward.";
 }
+
+#ifdef CPU_ONLY
+STUB_GPU(ResampleLayer);
+#endif
 
 INSTANTIATE_CLASS(ResampleLayer);
 REGISTER_LAYER_CLASS(Resample);

@@ -105,12 +105,19 @@ void GenerateAugmentationParametersLayer<Dtype>::Reshape(const vector<Blob<Dtype
 }
 
 template <typename Dtype>
-void GenerateAugmentationParametersLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {  
-  
-  LOG(FATAL) << "CPU forward pass not implemented";
-
+void GenerateAugmentationParametersLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+{
+	NOT_IMPLEMENTED;
 }
+
+template <typename Dtype>
+void GenerateAugmentationParametersLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "GenerateAugmentationParametersLayer cannot do backward.";
+	return;
+}
+
 
 #ifdef CPU_ONLY
 STUB_GPU(GenerateAugmentationParametersLayer);

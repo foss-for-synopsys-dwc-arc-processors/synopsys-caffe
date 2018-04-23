@@ -105,10 +105,13 @@ void FLOWriterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
 }
 
-
-#ifdef CPU_ONLY
-STUB_GPU_FORWARD(FLOWriterLayer, Forward);
-#endif
+template <typename Dtype>
+void FLOWriterLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "FLOWriterLayer cannot do backward.";
+	return;
+}
 
 INSTANTIATE_CLASS(FLOWriterLayer);
 REGISTER_LAYER_CLASS(FLOWriter);

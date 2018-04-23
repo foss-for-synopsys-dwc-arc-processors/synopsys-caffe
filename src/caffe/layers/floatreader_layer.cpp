@@ -61,6 +61,14 @@ void FloatReaderLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         memcpy(top[0]->mutable_cpu_data()+n*dataXSize_*dataYSize_*dataZSize_,data_,sizeof(float)*dataXSize_*dataYSize_*dataZSize_);
 }
 
+template <typename Dtype>
+void FloatReaderLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "FloatReaderLayer cannot do backward.";
+	return;
+}
+
 INSTANTIATE_CLASS(FloatReaderLayer);
 REGISTER_LAYER_CLASS(FloatReader);
 

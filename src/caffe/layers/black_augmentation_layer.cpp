@@ -40,6 +40,14 @@ void BlackAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bott
     NOT_IMPLEMENTED;
 }
 
+template <typename Dtype>
+void BlackAugmentationLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "BlackAugmentation cannot do backward";
+	return;
+}
+
 #ifdef CPU_ONLY
 STUB_GPU(BlackAugmentationLayer);
 #endif

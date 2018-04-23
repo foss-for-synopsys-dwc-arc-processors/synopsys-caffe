@@ -114,6 +114,14 @@ void GenerateAugmentationParametersLayer<Dtype>::Forward_gpu(const vector<Blob<D
   }
 }
 
+template <typename Dtype>
+void GenerateAugmentationParametersLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "GenerateAugmentationParametersLayer cannot do backward.";
+	return;
+}
+
 
 
 INSTANTIATE_LAYER_GPU_FUNCS(GenerateAugmentationParametersLayer);

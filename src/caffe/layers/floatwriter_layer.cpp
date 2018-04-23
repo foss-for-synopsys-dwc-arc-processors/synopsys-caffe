@@ -97,9 +97,13 @@ void FloatWriterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU_FORWARD(FloatWriterLayer, Forward);
-#endif
+template <typename Dtype>
+void FloatWriterLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+{
+	LOG(FATAL) << "FloatWriterLayer cannot do backward.";
+	return;
+}
 
 INSTANTIATE_CLASS(FloatWriterLayer);
 REGISTER_LAYER_CLASS(FloatWriter);

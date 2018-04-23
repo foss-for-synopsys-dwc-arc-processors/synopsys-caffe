@@ -35,9 +35,9 @@ class GenerateAugmentationParametersLayer : public AugmentationLayerBase<Dtype>,
       const vector<Blob<Dtype>*>& top);
 
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)  { LOG(FATAL) << "GenerateAugmentationParametersLayer cannot do backward."; return; }
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)  { LOG(FATAL) << "GenerateAugmentationParametersLayer cannot do backward."; return; }
+      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
       
     
   int num_params_; 
