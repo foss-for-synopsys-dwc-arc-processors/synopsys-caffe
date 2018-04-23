@@ -213,7 +213,7 @@ message NetParameter {
 // NOTE
 // Update the next available ID when you add a new SolverParameter field.
 //
-// SolverParameter next available ID: 42 (last added: layer_wise_reduce)
+// SolverParameter next available ID: 44 (last added: plateau_winsize)
 message SolverParameter {
   //////////////////////////////////////////////////////////////////////////////
   // Specifying the train and test networks

@@ -100,6 +100,19 @@ class NCCL : public GPUParams<Dtype>,
    */
   void Run(const vector<int>& gpus, const char* restore);
 
+  explicit P2PSync(shared_ptr<Solver<Dtype> > root_solver,
+                   P2PSync<Dtype>* parent, const SolverParameter& param);
+  virtual ~P2PSync();
+
+  inline const shared_ptr<Solver<Dtype> >& solver() const {
+    return solver_;
+  }
+
+  void Run(const vector<int>& gpus);
+  void Prepare(const vector<int>& gpus,
+               vector<shared_ptr<P2PSync<Dtype> > >* syncs);
+  inline int initial_iter() const { return initial_iter_; }
+
  protected:
   void Init();
   void on_start() {}
