@@ -849,7 +849,7 @@ void Net<Dtype>::CopyTrainedLayersFromHDF5(const string trained_filename) {
         }
       }
       hdf5_load_nd_dataset(layer_hid, dataset_name.c_str(), 0, kMaxBlobAxes,
-          target_blobs[j].get());
+          target_blobs[j].get(), true); //Allow reshape here, as we are loading data not params
     }
     H5Gclose(layer_hid);
   }
