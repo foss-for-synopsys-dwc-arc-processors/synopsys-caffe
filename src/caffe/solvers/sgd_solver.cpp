@@ -380,7 +380,7 @@ void SGDSolver<Dtype>::RestoreSolverStateFromHDF5(const string& state_file) {
     ostringstream oss;
     oss << i;
     hdf5_load_nd_dataset<Dtype>(history_hid, oss.str().c_str(), 0,
-                                kMaxBlobAxes, history_[i].get());
+                                kMaxBlobAxes, history_[i].get(), true); //Allow reshape here, as we are loading data not params
   }
   H5Gclose(history_hid);
   H5Fclose(file_hid);
