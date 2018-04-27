@@ -23,7 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include <omp.h>
-#include <sys/dir.h>
+#include <dirent.h>
 
 using std::max;
 
