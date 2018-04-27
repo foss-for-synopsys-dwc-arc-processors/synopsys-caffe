@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <leveldb/db.h>
-#include <pthread.h>
+//#include <pthread.h>
 #include <boost/algorithm/string.hpp>
 
 #include <fstream>  // NOLINT(readability/streams)
