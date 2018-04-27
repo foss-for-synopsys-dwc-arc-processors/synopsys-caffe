@@ -24,7 +24,7 @@
 #include <fstream>
 #include <omp.h>
 #if defined(_MSC_VER)
-	#include "caffe/layers/windows/dirent.h"
+	#include "windows/dirent.h"
 #else
 	#include <dirent.h>
 #endif
