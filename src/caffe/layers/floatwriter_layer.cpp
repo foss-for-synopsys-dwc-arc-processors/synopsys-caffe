@@ -23,7 +23,11 @@
 #include <iostream>
 #include <fstream>
 #include <omp.h>
-#include <dirent.h>
+#if defined(_MSC_VER)
+	#include "caffe/layers/windows/dirent.h"
+#else
+	#include <dirent.h>
+#endif
 
 using std::max;
 
