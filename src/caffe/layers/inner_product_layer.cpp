@@ -12,7 +12,9 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const int num_output = this->layer_param_.inner_product_param().num_output();
   bias_term_ = this->layer_param_.inner_product_param().bias_term();
   transpose_ = this->layer_param_.inner_product_param().transpose();
+  update_weight_ = !this->layer_param_.inner_product_param().weight_fixed();
   N_ = num_output;
+  gan_mode_ = 1;
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
   // Dimensions starting from "axis" are "flattened" into a single
@@ -103,20 +105,31 @@ void InnerProductLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   if (this->param_propagate_down_[0]) {
     const Dtype* top_diff = top[0]->cpu_diff();
     const Dtype* bottom_data = bottom[0]->cpu_data();
+	update_weight_ = true;
+    if (this->layer_param_.inner_product_param().gen_mode() && gan_mode_ != 2) {
+      update_weight_ = false;
+    }
+    if (this->layer_param_.inner_product_param().dis_mode() && gan_mode_ == 2) {
+      update_weight_ = false;
+    }
     // Gradient with respect to weight
     if (transpose_) {
-      caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
+      if (update_weight_) {
+        caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
           K_, N_, M_,
           (Dtype)1., bottom_data, top_diff,
           (Dtype)1., this->blobs_[0]->mutable_cpu_diff());
+      }
     } else {
-      caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
+      if (update_weight_) {
+        caffe_cpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
           N_, K_, M_,
           (Dtype)1., top_diff, bottom_data,
           (Dtype)1., this->blobs_[0]->mutable_cpu_diff());
+      }
     }
   }
-  if (bias_term_ && this->param_propagate_down_[1]) {
+  if (bias_term_ && this->param_propagate_down_[1] && update_weight_) {
     const Dtype* top_diff = top[0]->cpu_diff();
     // Gradient with respect to bias
     caffe_cpu_gemv<Dtype>(CblasTrans, M_, N_, (Dtype)1., top_diff,
@@ -138,6 +151,8 @@ void InnerProductLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           (Dtype)0., bottom[0]->mutable_cpu_diff());
     }
   }
+  // update gan_mode_
+  gan_mode_ = gan_mode_ == 2 ? 1 : gan_mode_ + 1;
 }
 
 #ifdef CPU_ONLY

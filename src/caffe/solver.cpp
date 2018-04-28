@@ -184,8 +184,10 @@ void Solver<Dtype>::Step(int iters) {
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
   int average_loss = this->param_.average_loss();
+  bool gan_solver = this->param_.gan_solver();
   losses_.clear();
   smoothed_loss_ = 0;
+  Dtype loss_buff = 0;
   iteration_timer_.Start();
 
   while (iter_ < stop_iter) {
@@ -223,6 +225,17 @@ void Solver<Dtype>::Step(int iters) {
           << param_.display() << " iters), loss = " << smoothed_loss_;
       iteration_timer_.Start();
       iterations_last_ = iter_;
+      if (gan_solver) {
+            if (iter_ != 0 && (iter_ % 2) == 0) {
+              LOG_IF(INFO, Caffe::root_solver()) << "    dis_loss =  "  << loss;
+              LOG_IF(INFO, Caffe::root_solver()) << "    gen_loss =  "  << loss_buff;
+            }
+            else if((iter_ % 2) != 0)
+            {
+              LOG_IF(INFO, Caffe::root_solver()) << "    dis_loss =  "  << loss_buff;
+              LOG_IF(INFO, Caffe::root_solver()) << "    gen_loss =  "  << loss;
+            }
+          }
       const vector<Blob<Dtype>*>& result = net_->output_blobs();
       int score_index = 0;
       for (int j = 0; j < result.size(); ++j) {
@@ -243,6 +256,7 @@ void Solver<Dtype>::Step(int iters) {
         }
       }
     }
+    loss_buff = loss;
     for (int i = 0; i < callbacks_.size(); ++i) {
       callbacks_[i]->on_gradients_ready();
     }

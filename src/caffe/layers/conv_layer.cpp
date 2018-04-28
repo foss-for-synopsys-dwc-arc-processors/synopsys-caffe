@@ -57,13 +57,21 @@ template <typename Dtype>
 void ConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   const Dtype* weight = this->blobs_[0]->cpu_data();
+  //default update_weight =true
+  bool update_weight = !this->layer_param_.convolution_param().weight_fixed();
+  if (this->layer_param_.convolution_param().gen_mode() && this->gan_mode_ != 2) {
+	update_weight = false;
+  }
+  if (this->layer_param_.convolution_param().dis_mode() && this->gan_mode_ == 2) {
+	update_weight = false;
+  }
   Dtype* weight_diff = this->blobs_[0]->mutable_cpu_diff();
   for (int i = 0; i < top.size(); ++i) {
     const Dtype* top_diff = top[i]->cpu_diff();
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
     // Bias gradient, if necessary.
-    if (this->bias_term_ && this->param_propagate_down_[1]) {
+    if (this->bias_term_ && this->param_propagate_down_[1] && update_weight) {
       Dtype* bias_diff = this->blobs_[1]->mutable_cpu_diff();
       for (int n = 0; n < this->num_; ++n) {
         this->backward_cpu_bias(bias_diff, top_diff + n * this->top_dim_);
@@ -72,7 +80,7 @@ void ConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     if (this->param_propagate_down_[0] || propagate_down[i]) {
       for (int n = 0; n < this->num_; ++n) {
         // gradient w.r.t. weight. Note that we will accumulate diffs.
-        if (this->param_propagate_down_[0]) {
+        if (this->param_propagate_down_[0] && update_weight) {
           this->weight_cpu_gemm(bottom_data + n * this->bottom_dim_,
               top_diff + n * this->top_dim_, weight_diff);
         }
@@ -84,6 +92,8 @@ void ConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       }
     }
   }
+  // update gan_mode_
+  this->gan_mode_ = this->gan_mode_ == 2 ? 1 : this->gan_mode_ + 1;
 }
 
 #ifdef CPU_ONLY

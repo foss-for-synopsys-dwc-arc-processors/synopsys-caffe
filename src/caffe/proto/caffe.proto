@@ -369,6 +369,7 @@ message SolverParameter {
   // DEPRECATED: use type instead of solver_type
   optional SolverType solver_type = 30 [default = SGD];
 
+  optional bool gan_solver = 51 [default = false];
   // Overlap compute and communication for data parallel training
   optional bool layer_wise_reduce = 45 [default = true];
 }
@@ -513,6 +514,7 @@ message LayerParameter {
   optional EmbedParameter embed_param = 137;
   optional ExpParameter exp_param = 111;
   optional FlattenParameter flatten_param = 135;
+  optional GANLossParameter gan_loss_param = 171;
   optional HDF5DataParameter hdf5_data_param = 112;
   optional HDF5OutputParameter hdf5_output_param = 113;
   optional HingeLossParameter hinge_loss_param = 114;
@@ -1213,6 +1215,14 @@ message ConvolutionParameter {
   // implementation; for input blobs with num_axes != 2, this option is
   // ignored and the ND implementation will be used.)
   optional bool force_nd_im2col = 17 [default = false];
+  // when it is true, the gradient will not accumulate (used for GAN)
+  optional bool weight_fixed = 29 [default = false];
+
+  optional bool dis_mode = 20 [default = false];
+
+  optional bool gen_mode = 21 [default = false];
+
+  repeated uint32 shape_offset = 22;
 }
 
 message CropParameter {
@@ -1499,6 +1509,17 @@ message FlattenParameter {
   optional int32 end_axis = 2 [default = -1];
 }
 
+message GANLossParameter {
+  optional uint32 dis_iter = 1 [default = 1];
+  optional uint32 gen_iter = 2 [default = 1];
+  optional float dis_lossweight = 3 [default = 1];
+  optional float gen_lossweight = 4 [default = 1];
+  optional bool simple_genloss = 5 [default = false];
+  optional float k_lr = 6 [default = 0];
+  optional float equilibrium = 7 [default = 0];
+  optional bool nothing = 8 [default = false];
+}
+
 // Message that stores parameters used by HDF5DataLayer
 message HDF5DataParameter {
   // Specify the data source.
@@ -1579,6 +1600,12 @@ message InnerProductParameter {
   // of the weight matrix. The weight matrix itself is not going to be transposed
   // but rather the transfer flag of operations will be toggled accordingly.
   optional bool transpose = 6 [default = false];
+  // when it is true, the gradient will not accumulate (used for GAN)
+  optional bool weight_fixed = 7 [default = false];
+
+  optional bool dis_mode = 8 [default = false];
+
+  optional bool gen_mode = 9 [default = false];
 }
 
 message InputParameter {
@@ -1950,6 +1977,7 @@ message ReshapeParameter {
   //
   optional int32 axis = 2 [default = 0];
   optional int32 num_axes = 3 [default = -1];
+  optional int32 pixelshuffler = 4 [default = 1];
 }
 
 // Message that stores parameters used by ROIPoolingLayer
@@ -1998,6 +2026,10 @@ message ScaleParameter {
   // may be more efficient).  Initialized with bias_filler (defaults to 0).
   optional bool bias_term = 4 [default = false];
   optional FillerParameter bias_filler = 5;
+
+  optional bool dis_mode = 6 [default = false];
+
+  optional bool gen_mode = 7 [default = false];
 }
 
 message SigmoidParameter {
