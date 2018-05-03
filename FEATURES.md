@@ -4,6 +4,14 @@ A Short Summary of New Features in Synopsys Caffe
 Synopsys Caffe Version: 2018.06  
 New added features are compared with the original BVLC Caffe 1.0.0
 
+SRGAN related  
+-------------
+gan_loss_layer  
+gan_solver in SolverParameter  
+pixelshuffler in ReshapeParameter  
+dis_mode, gen_mode in ConvolutionParameter, InnerProductParameter and ScaleParameter  
+weight_fixed in ConvolutionParameter and InnerProductParameter  
+
 FlowNet2 related
 ----------------
 accum_layer  
