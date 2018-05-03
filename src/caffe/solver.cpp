@@ -209,6 +209,10 @@ void Solver<Dtype>::Step(int iters) {
     }
     const bool display = param_.display() && iter_ % param_.display() == 0;
     net_->set_debug_info(display && param_.debug_info());
+    /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+    // Set current iteration number
+    net_->set_current_iter_num(iter_);
+    /*************************************************************************************/
     // accumulate the loss and gradient
     Dtype loss = 0;
     for (int i = 0; i < param_.iter_size(); ++i) {

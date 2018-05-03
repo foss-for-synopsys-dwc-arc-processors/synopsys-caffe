@@ -16,7 +16,7 @@
 #include "caffe/util/insert_splits.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
-
+#include "caffe/test/test_caffe_main.hpp"
 namespace caffe {
 
 template <typename Dtype>
@@ -459,6 +459,12 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
     const int learnable_param_id = learnable_params_.size();
     learnable_params_.push_back(params_[net_param_id].get());
     learnable_param_ids_.push_back(learnable_param_id);
+    /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+     // Create Mask ids for weights and biases
+     if(param_id >= 2) {
+       mask_param_ids_.push_back(learnable_param_id);
+     }
+     /*************************************************************************************/
     has_params_lr_.push_back(param_spec->has_lr_mult());
     has_params_decay_.push_back(param_spec->has_decay_mult());
     params_lr_.push_back(param_spec->lr_mult());
@@ -499,6 +505,12 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
     }
     const int learnable_param_id = learnable_param_ids_[owner_net_param_id];
     learnable_param_ids_.push_back(learnable_param_id);
+    /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+    // Create Mask ids for weights and biases
+    if(param_id >= 2) {
+      mask_param_ids_.push_back(learnable_param_id);
+    }
+    /************************************************************************************/
     if (param_spec->has_lr_mult()) {
       if (has_params_lr_[learnable_param_id]) {
         CHECK_EQ(param_spec->lr_mult(), params_lr_[learnable_param_id])
@@ -769,6 +781,18 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
         for(int i=0; i<blobs.size(); i++)
             delete blobs[i];
     } else {
+    /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+    // Copy weight mask and bias mask from source to dest
+    if (strcmp(layers_[target_layer_id]->type(),"SqueezeInnerProduct")==0 || strcmp(layers_[target_layer_id]->type(),"SqueezeConvolution" )==0 ) {
+      if(target_blobs.size() > source_layer.blobs_size()) {
+        for (int j = 0; j < source_layer.blobs_size(); ++j) {
+          const bool kReshape = false;
+          target_blobs[j]->FromProto(source_layer.blobs(j), kReshape);
+        }
+        continue;
+      }
+    }
+    /*************************************************************************************/
     CHECK_EQ(target_blobs.size(), source_layer.blobs_size())
         << "Incompatible number of blobs for layer " << source_layer_name;
     for (int j = 0; j < target_blobs.size(); ++j) {
@@ -929,6 +953,12 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
 template <typename Dtype>
 void Net<Dtype>::Update() {
   for (int i = 0; i < learnable_params_.size(); ++i) {
+    /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+    // Condition to update weights and biases
+    if (std::find(mask_param_ids_.begin(), mask_param_ids_.end(),
+          learnable_param_ids_[i]) != mask_param_ids_.end())
+      continue;
+    /************************************************************************************/
     learnable_params_[i]->Update();
   }
 }

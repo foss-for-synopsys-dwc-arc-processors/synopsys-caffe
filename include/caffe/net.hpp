@@ -209,6 +209,14 @@ class Net {
   inline const vector<int>& output_blob_indices() const {
     return net_output_blob_indices_;
   }
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  inline void set_current_iter_num(const int iter_num) {
+    iter_ = iter_num;
+    for (int layer_id = 0; layer_id < layers_.size(); ++layer_id) {
+      layers_[layer_id]->set_current_iter_num(iter_num);
+    }
+  }
+  /************************************************************************************/
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
   bool has_layer(const string& layer_name) const;
@@ -280,6 +288,10 @@ class Net {
   string name_;
   /// @brief The phase: TRAIN or TEST
   Phase phase_;
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  /// @brief The current iteration number
+  int iter_;
+  /*************************************************************************************/
   /// @brief Individual layers in the net
   vector<shared_ptr<Layer<Dtype> > > layers_;
   vector<string> layer_names_;
@@ -323,6 +335,10 @@ class Net {
    * and learnable_params_[learnable_param_ids_[i]] gives its owner.
    */
   vector<int> learnable_param_ids_;
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  // the index of mask parameters
+  vector<int> mask_param_ids_;
+  /*************************************************************************************/
   /// the learning rate multipliers for learnable_params_
   vector<float> params_lr_;
   vector<bool> has_params_lr_;
@@ -338,7 +354,7 @@ class Net {
   vector<Callback*> after_forward_;
   vector<Callback*> before_backward_;
   vector<Callback*> after_backward_;
-  int iter_;
+
 DISABLE_COPY_AND_ASSIGN(Net);
 };
 

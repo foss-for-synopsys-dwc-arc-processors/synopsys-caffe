@@ -1216,13 +1216,18 @@ message ConvolutionParameter {
   // ignored and the ND implementation will be used.)
   optional bool force_nd_im2col = 17 [default = false];
   // when it is true, the gradient will not accumulate (used for GAN)
-  optional bool weight_fixed = 29 [default = false];
-
+  optional bool weight_fixed = 23 [default = false];
   optional bool dis_mode = 20 [default = false];
-
   optional bool gen_mode = 21 [default = false];
-
   repeated uint32 shape_offset = 22;
+
+  //SqueezeConvolutionParameter
+  optional float gamma = 28 [default = 0.001]; // The compress parameter of current layer
+  optional float power = 29 [default = 1];
+  optional float iter_stop = 30 [default = 10000];
+  optional float c_rate = 31 [default = 3];
+  optional FillerParameter weight_mask_filler = 32; // The filler for the weight
+  optional FillerParameter bias_mask_filler = 33;   // The filler for the bias
 }
 
 message CropParameter {
@@ -1602,10 +1607,16 @@ message InnerProductParameter {
   optional bool transpose = 6 [default = false];
   // when it is true, the gradient will not accumulate (used for GAN)
   optional bool weight_fixed = 7 [default = false];
-
   optional bool dis_mode = 8 [default = false];
-
   optional bool gen_mode = 9 [default = false];
+
+  //SqueezeInnerProductParameter
+  optional float gamma = 17 [default = 0.001]; // The compress parameter of current layer
+  optional float power = 18 [default = 1];
+  optional float iter_stop = 19 [default = 8000];
+  optional float c_rate = 20 [default = 3];
+  optional FillerParameter weight_mask_filler = 21; // The filler for the weight
+  optional FillerParameter bias_mask_filler = 22;   // The filler for the bias
 }
 
 message InputParameter {

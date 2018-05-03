@@ -318,6 +318,12 @@ class Layer {
     param_propagate_down_[param_id] = value;
   }
 
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  inline void set_current_iter_num(const int iter_num) {
+    iter_ = iter_num;
+  }
+  /**************************************************************************************/
+
  inline Phase phase() { return phase_; }
 
  protected:
@@ -325,6 +331,12 @@ class Layer {
   LayerParameter layer_param_;
   /** The phase: TRAIN or TEST */
   Phase phase_;
+
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  /** The current iteration number **/
+  int iter_;
+  /**************************************************************************************/
+
   /** The vector that stores the learnable parameters as a set of blobs. */
   vector<shared_ptr<Blob<Dtype> > > blobs_;
   /** Vector indicating whether to compute the diff of each param blob. */
