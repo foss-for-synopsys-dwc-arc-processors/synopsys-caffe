@@ -71,9 +71,16 @@ void BatchNormLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   }
 
   // normalize variance
-  caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
-  caffe_gpu_sqrt(variance_.count(), variance_.gpu_data(),
-      variance_.mutable_gpu_data());
+  if(yolo_bn_) {
+    caffe_sqrt(variance_.count(), variance_.gpu_data(),
+        variance_.mutable_gpu_data());
+    caffe_add_scalar(variance_.count(), yolo_eps_, variance_.mutable_gpu_data());
+  }
+  else {
+    caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
+    caffe_gpu_sqrt(variance_.count(), variance_.gpu_data(),
+        variance_.mutable_gpu_data());
+  }
 
   // replicate variance to input size
   caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, channels_, 1, 1,

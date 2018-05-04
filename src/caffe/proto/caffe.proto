@@ -1117,6 +1117,8 @@ message BatchNormParameter {
   // Small value to add to the variance estimate so that we don't divide by
   // zero.
   optional float eps = 3 [default = 1e-5];
+  optional bool yolo_bn = 4 [default = false];
+  optional float yolo_eps = 5 [default = 1e-6];
 }
 
 message BiasParameter {
