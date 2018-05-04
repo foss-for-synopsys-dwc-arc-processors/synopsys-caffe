@@ -169,6 +169,7 @@ cmake -G"!CMAKE_GENERATOR!" ^
       -DINSTALL_PREREQUISITES:BOOL=1 ^
       -DUSE_NCCL:BOOL=!USE_NCCL! ^
       -DCUDA_ARCH_NAME:STRING=%CUDA_ARCH_NAME% ^
+      %* ^
       "%~dp0\.."
 
 if ERRORLEVEL 1 (
