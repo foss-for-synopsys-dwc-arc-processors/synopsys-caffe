@@ -85,10 +85,10 @@ __global__ void SqueezeCMaskCalc(const int n, const Dtype* wb,
     Dtype* mask, Dtype mu, Dtype std, Dtype r) {
   CUDA_KERNEL_LOOP(index, n) {
     // The constants 0.9 and 1.1 is to set margin that witholds few parameters undergoing pruning / splicing
-    if (mask[index] == 1 && fabs(wb[index]) <= 0.9 * r * max(mu + std, Dtype(0))) {
+    if (mask[index] >0 && fabs(wb[index]) <= 0.9 * r * max(mu + std, Dtype(0))) {
       mask[index] = 0;
     }
-    else if (mask[index] == 0 && fabs(wb[index]) > 1.1 * r * max(mu + std, Dtype(0))){
+    else if (mask[index] == 0 && fabs(wb[index]) > 1.1 * r * max(mu + std, Dtype(0)) && r != 0){
       mask[index] = 1;
     }
   }
@@ -198,8 +198,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
       this->std /= ncount; this->std = sqrt(std);
       LOG(INFO)<<mu<<"  "<<std<<"  "<<ncount<<"\n";
     }
-// No pruning/splicing during Retraining
-#if !RETRAINING 
+    // No pruning/splicing during Retraining
     // Calculate the weight mask and bias mask with probability
     Dtype r = static_cast<Dtype>(rand())/static_cast<Dtype>(RAND_MAX);
     if (pow(1 + (this->gamma) * (this->iter_), -(this->power)) > r && (this->iter_) < (this->iter_stop_)) {
@@ -215,30 +214,49 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
         CUDA_POST_KERNEL_CHECK;
       }
     }
-#endif
-// Dynamic Splicing
-// Randomly unprune the pruned weights based on the splicing ratio
-#if DYNAMIC_SPLICING
-    if (this->iter_ == 0) {
-      vector<int> index_zero;
-      Dtype* weightMask_cpu = (Dtype *)malloc(this->blobs_[0]->count() *(sizeof(Dtype)));
-      cudaMemcpy(weightMask_cpu, weightMask, this->blobs_[0]->count() *(sizeof(Dtype)), cudaMemcpyDeviceToHost);
-      for (unsigned int k = 0; k < this->blobs_[0]->count(); ++k) {
+    // Dynamic Splicing
+    // Unprune the pruned weights based on the splicing ratio
+    if(this->dynamicsplicing)
+    {
+      if (this->iter_ == 0) {
+        Dtype* weight_cpu = (Dtype *)malloc(this->blobs_[0]->count() *(sizeof(Dtype)));
+        Dtype* weightMask_cpu = (Dtype *)malloc(this->blobs_[0]->count() *(sizeof(Dtype)));
+        // Initially copy weight, weightMask to weight_cpu, weightMask_cpu and do Dynamic Splicing
+        cudaMemcpy(weight_cpu, weight, this->blobs_[0]->count() *(sizeof(Dtype)), cudaMemcpyDeviceToHost);
+        cudaMemcpy(weightMask_cpu, weightMask, this->blobs_[0]->count() *(sizeof(Dtype)), cudaMemcpyDeviceToHost);
+        // Vector Pair holds weights and corresponding index for pruned nodes
+        std::vector<std::pair<float, int> > prune_node;
+        for (unsigned int k = 0; k < this->blobs_[0]->count(); ++k) {
           if(weightMask_cpu[k] == 0) {
-              index_zero.push_back(k);
+            prune_node.push_back(make_pair(fabs(weight_cpu[k]), k));
           }
+        }
+        // Sort the weights and unprune the nodes
+        std::sort(prune_node.begin(), prune_node.end());
+        int zero_count = prune_node.size();
+        int to_bespliced = zero_count * this->splicing_rate;
+        int start_index = 0;
+        int end_index = 0;
+        for (unsigned int k = 0; k < zero_count; ++k) {
+          if (prune_node[k].first > (0.25 * (this->mu + this->std))) {
+            start_index = k;
+            break;
+          }
+        }
+        end_index = start_index + to_bespliced;
+        if (end_index > zero_count) {
+          start_index = start_index - (end_index - zero_count);
+          end_index = start_index + to_bespliced;
+        }
+        for (unsigned int k = start_index; k < end_index; ++k) {
+          weightMask_cpu[prune_node[k].second] = 1;
+        }
+        cudaMemcpy(weightMask, weightMask_cpu, this->blobs_[0]->count() *(sizeof(Dtype)), cudaMemcpyHostToDevice);
+        free(weightMask_cpu);
+        free(weight_cpu);
+        this->dynamicsplicing = false;
       }
-      int zero_count = index_zero.size();
-      int to_bespliced = zero_count * CONV_SPLICING_RATE;
-      std::random_shuffle(index_zero.begin(), index_zero.end());
-
-      for (unsigned int k = 0; k < to_bespliced; ++k) {
-          weightMask_cpu[index_zero[k]] = 1;
-      }
-    cudaMemcpy(weightMask, weightMask_cpu, this->blobs_[0]->count() *(sizeof(Dtype)), cudaMemcpyHostToDevice);
-    free(weightMask_cpu);
     }
-#endif
   }
  
   // Calculate the current (masked) weight and bias

@@ -10,10 +10,6 @@
 
 #include "caffe/layers/base_conv_layer.hpp"
 
-#define RETRAINING 0
-#define DYNAMIC_SPLICING 0
-#define CONV_SPLICING_RATE 0.0001
-
 namespace caffe {
 
 /**
@@ -98,6 +94,8 @@ class SqueezeConvolutionLayer : public BaseConvolutionLayer<Dtype> {
   Dtype crate;
   Dtype mu,std;
   int iter_stop_;
+  bool dynamicsplicing;
+  float splicing_rate;
 };
 
 }  // namespace caffe

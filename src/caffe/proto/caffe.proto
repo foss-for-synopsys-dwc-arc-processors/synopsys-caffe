@@ -1228,6 +1228,8 @@ message ConvolutionParameter {
   optional float c_rate = 31 [default = 3];
   optional FillerParameter weight_mask_filler = 32; // The filler for the weight
   optional FillerParameter bias_mask_filler = 33;   // The filler for the bias
+  optional bool dynamicsplicing = 35[default = false];
+  optional float splicing_rate = 36 [default = 0.0001];
 }
 
 message CropParameter {
@@ -1617,6 +1619,8 @@ message InnerProductParameter {
   optional float c_rate = 20 [default = 3];
   optional FillerParameter weight_mask_filler = 21; // The filler for the weight
   optional FillerParameter bias_mask_filler = 22;   // The filler for the bias
+  optional bool dynamicsplicing = 23[default = false];
+  optional float splicing_rate = 24 [default = 0.001];
 }
 
 message InputParameter {

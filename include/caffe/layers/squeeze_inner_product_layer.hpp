@@ -8,10 +8,6 @@
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
-#define RETRAINING 0
-#define DYNAMIC_SPLICING 0
-#define IP_SPLICING_RATE 0.001
-
 namespace caffe {
 
 template <typename Dtype>
@@ -58,6 +54,8 @@ class SqueezeInnerProductLayer : public Layer<Dtype> {
   Dtype crate;  
   Dtype mu,std;  
   int iter_stop_;
+  bool dynamicsplicing;
+  float splicing_rate;
 };
 
 }  // namespace caffe
