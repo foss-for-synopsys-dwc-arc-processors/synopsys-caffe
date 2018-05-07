@@ -18,7 +18,7 @@ SRGAN related
 gan_loss_layer  
 gan_solver in SolverParameter  
 pixelshuffler in ReshapeParameter  
-dis_mode, gen_mode in ConvolutionParameter, InnerProductParameter and ScaleParameter  
+dis_mode and gen_mode in ConvolutionParameter, InnerProductParameter and ScaleParameter  
 weight_fixed in ConvolutionParameter and InnerProductParameter  
   
 FlowNet2 related
