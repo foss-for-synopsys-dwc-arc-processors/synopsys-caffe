@@ -9,11 +9,16 @@
 namespace caffe {
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+/**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+template <typename LayerParam>
+void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
+		const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+//void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+//      const vector<Blob<Dtype>*>& top)
+{
   // Configure the kernel size, padding, stride, and inputs.
   gan_mode_ = 1;
-  ConvolutionParameter conv_param = this->layer_param_.convolution_param();
+  //ConvolutionParameter conv_param = this->layer_param_.convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
   channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis());
   const int first_spatial_axis = channel_axis_ + 1;
@@ -126,9 +131,11 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
   // Configure output channels and groups.
   channels_ = bottom[0]->shape(channel_axis_);
-  num_output_ = this->layer_param_.convolution_param().num_output();
+  //num_output_ = this->layer_param_.convolution_param().num_output();
+  num_output_ = conv_param.num_output();
   CHECK_GT(num_output_, 0);
-  group_ = this->layer_param_.convolution_param().group();
+  //group_ = this->layer_param_.convolution_param().group();
+  group_ = conv_param.group();
   CHECK_EQ(channels_ % group_, 0);
   CHECK_EQ(num_output_ % group_, 0)
       << "Number of output should be multiples of group.";
@@ -148,7 +155,8 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   for (int i = 0; i < num_spatial_axes_; ++i) {
     weight_shape.push_back(kernel_shape_data[i]);
   }
-  bias_term_ = this->layer_param_.convolution_param().bias_term();
+  //bias_term_ = this->layer_param_.convolution_param().bias_term();
+  bias_term_ = conv_param.bias_term();
   vector<int> bias_shape(bias_term_, num_output_);
   if (this->blobs_.size() > 0) {
     CHECK_EQ(1 + bias_term_, this->blobs_.size())
@@ -176,13 +184,15 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     // output channels x input channels per-group x kernel height x kernel width
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
-        this->layer_param_.convolution_param().weight_filler()));
+        //this->layer_param_.convolution_param().weight_filler()));
+        conv_param.weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the biases.
     if (bias_term_) {
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
-          this->layer_param_.convolution_param().bias_filler()));
+          //this->layer_param_.convolution_param().bias_filler()));
+          conv_param.bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
   }
@@ -190,6 +200,21 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   weight_offset_ = conv_out_channels_ * kernel_dim_ / group_;
   // Propagate gradients to the parameters (as directed by backward pass).
   this->param_propagate_down_.resize(this->blobs_.size(), true);
+}
+
+template <typename Dtype>
+void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
+  /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
+  // For SqueezeConvolution
+  if (!strcmp(this->type(), "SqueezeConvolution")) {
+    LayerSetUpInternal(this->layer_param_.squeeze_convolution_param(), bottom, top);
+  }
+  // For Convolution
+  //if (!strcmp(this->type(), "Convolution")) {
+  else LayerSetUpInternal(this->layer_param_.convolution_param(), bottom, top);
+  //}
+  /**************************************************************************************/
 }
 
 template <typename Dtype>

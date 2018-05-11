@@ -152,17 +152,17 @@ REGISTER_LAYER_CREATOR(Convolution, GetConvolutionLayer);
 template <typename Dtype>
 shared_ptr<Layer<Dtype> > GetSqueezeConvolutionLayer(
     const LayerParameter& param) {
-  ConvolutionParameter_Engine engine = param.convolution_param().engine(); //CUSTOMIZATION
-  if (engine == ConvolutionParameter_Engine_DEFAULT) {
-    engine = ConvolutionParameter_Engine_CAFFE;
+  SqueezeConvolutionParameter_Engine engine = param.squeeze_convolution_param().engine();
+  if (engine == SqueezeConvolutionParameter_Engine_DEFAULT) {
+    engine = SqueezeConvolutionParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
-    engine = ConvolutionParameter_Engine_CUDNN;
+    engine = SqueezeConvolutionParameter_Engine_CUDNN;
 #endif
   }
-  if (engine == ConvolutionParameter_Engine_CAFFE) {
+  if (engine == SqueezeConvolutionParameter_Engine_CAFFE) {
     return shared_ptr<Layer<Dtype> >(new SqueezeConvolutionLayer<Dtype>(param));
 #ifdef USE_CUDNN
-  } else if (engine == ConvolutionParameter_Engine_CUDNN) {
+  } else if (engine == SqueezeConvolutionParameter_Engine_CUDNN) {
     return shared_ptr<Layer<Dtype> >(new CuDNNSqueezeConvolutionLayer<Dtype>(param));
 #endif
   } else {

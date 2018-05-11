@@ -83,7 +83,7 @@ __global__ void SqueezeCMaskCalc(const int n, const Dtype* wb,
     Dtype* mask, Dtype mu, Dtype std, Dtype r) {
   CUDA_KERNEL_LOOP(index, n) {
     // The constants 0.9 and 1.1 is to set margin that witholds few parameters undergoing pruning / splicing
-    if (mask[index] >0 && fabs(wb[index]) <= 0.9 * r * max(mu + std, Dtype(0)))
+    if (mask[index] > 0 && fabs(wb[index]) <= 0.9 * r * max(mu + std, Dtype(0)))
       mask[index] = 0;
     else if (mask[index] == 0 && fabs(wb[index])> 1.1 * r * max(mu + std, Dtype(0)) && r!=0)
       mask[index] = 1;

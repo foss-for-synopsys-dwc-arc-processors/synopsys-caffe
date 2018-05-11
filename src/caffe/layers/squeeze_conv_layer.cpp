@@ -14,7 +14,7 @@ void SqueezeConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bott
       const vector<Blob<Dtype>*>& top) {
   BaseConvolutionLayer <Dtype>::LayerSetUp(bottom, top);
 
-  ConvolutionParameter sqconv_param = this->layer_param_.convolution_param(); //CUSTOMIZATION
+  SqueezeConvolutionParameter sqconv_param = this->layer_param_.squeeze_convolution_param();
 
   if(this->blobs_.size()==2 && (this->bias_term_)){
     this->blobs_.resize(4);
@@ -85,7 +85,7 @@ void SqueezeConvolutionLayer<Dtype>::CalculateMask(const int n, const Dtype* wb,
     Dtype mu, Dtype std, Dtype r) {
   for (unsigned int k = 0;k < n;++k) {
         // The constants 0.9 and 1.1 is to set margin that witholds few parameters undergoing pruning / splicing
-        if (mask[k] >0 && fabs(wb[k]) <= 0.9 * r *  std::max(mu + std, Dtype(0)))
+        if (mask[k] > 0 && fabs(wb[k]) <= 0.9 * r *  std::max(mu + std, Dtype(0)))
           mask[k] = 0; //Pruning
         else if (mask[k] == 0 && fabs(wb[k]) > 1.1 * r * std::max(mu + std, Dtype(0)) && r != 0)
           mask[k] = 1; //Splicing
@@ -140,16 +140,15 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
       this->std /= ncount; this->std = sqrt(std);
     }
 
-  // No pruning/splicing during Retraining
-  // Calculate the weight mask and bias mask with probability
+    // No pruning/splicing during Retraining
+    // Calculate the weight mask and bias mask with probability
     Dtype r = static_cast<Dtype>(rand())/static_cast<Dtype>(RAND_MAX);
     if (pow(1 + (this->gamma) * (this->iter_), -(this->power)) > r && (this->iter_) < (this->iter_stop_)) {
       CalculateMask(this->blobs_[0]->count(), weight, weightMask, this->mu, this->std, this->crate);  
-      if (this->bias_term_) {       
+      if (this->bias_term_) {
         CalculateMask(this->blobs_[1]->count(), bias, biasMask, this->mu, this->std, this->crate);
       } 
     }
-
     // Dynamic Splicing
     // Unprune the pruned weights based on the splicing ratio
     if(this->dynamicsplicing)
