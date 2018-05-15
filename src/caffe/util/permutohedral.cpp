@@ -1,11 +1,5 @@
 #include "caffe/util/permutohedral.hpp"
 
-#ifdef WIN32
-static float round( float v ) {
-  return floor( v+0.5f );
-}
-#endif
-
 /************************************************/
 /***                Hash Table                ***/
 /************************************************/
