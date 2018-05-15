@@ -494,9 +494,11 @@ message LayerParameter {
   // engine parameter for selecting the implementation.
   // The default for the engine is set by the ENGINE switch at compile-time.
   optional AccuracyParameter accuracy_param = 102;
+  optional AdaptiveBiasChannelParameter adaptive_bias_channel_param = 178;
   optional AnnotatedDataParameter annotated_data_param = 200;
   optional ArgMaxParameter argmax_param = 103;
   optional BatchNormParameter batch_norm_param = 139;
+  optional BiasChannelParameter bias_channel_param = 169;
   optional BiasParameter bias_param = 141;
   optional BNParameter bn_param = 45;
   optional ConcatParameter concat_param = 104;
@@ -504,9 +506,11 @@ message LayerParameter {
   optional ConvolutionParameter convolution_param = 106;
   optional CropParameter crop_param = 144;
   optional DataParameter data_param = 107;
+  optional DenseCRFParameter dense_crf_param = 176;
   optional DenseImageDataParameter dense_image_data_param = 168;
   optional DetectionEvaluateParameter detection_evaluate_param = 205;
   optional DetectionOutputParameter detection_output_param = 204;
+  optional DomainTransformParameter domain_transform_param = 167;
   optional DropoutParameter dropout_param = 108;
   optional DummyDataParameter dummy_data_param = 109;
   optional EltwiseParameter eltwise_param = 110;
@@ -522,8 +526,11 @@ message LayerParameter {
   optional InfogainLossParameter infogain_loss_param = 116;
   optional InnerProductParameter inner_product_param = 117;
   optional InputParameter input_param = 143;
+  optional InterpParameter interp_param = 163;
   optional LogParameter log_param = 134;
   optional LRNParameter lrn_param = 118;
+  optional MatReadParameter mat_read_param = 181;
+  optional MatWriteParameter mat_write_param = 165;
   optional MemoryDataParameter memory_data_param = 119;
   optional MultiBoxLossParameter multibox_loss_param = 201;
   optional MVNParameter mvn_param = 120;
@@ -541,20 +548,23 @@ message LayerParameter {
   optional ReshapeParameter reshape_param = 133;
   optional ROIPoolingParameter roi_pooling_param = 8266711;
   optional ScaleParameter scale_param = 142;
+  optional SegAccuracyParameter seg_accuracy_param = 164;
   optional SigmoidParameter sigmoid_param = 124;
   optional SliceParameter slice_param = 126;
   optional SmoothL1LossParameter smooth_l1_loss_param = 8266712;
   optional SoftmaxParameter softmax_param = 125;
   optional SPPParameter spp_param = 132;
-  optional SqueezeConvolutionParameter squeeze_convolution_param = 167;      // *************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************
-  optional SqueezeInnerProductParameter squeeze_inner_product_param = 178;
+  optional SqueezeConvolutionParameter squeeze_convolution_param = 187;      // *************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************
+  optional SqueezeInnerProductParameter squeeze_inner_product_param = 188;
   optional TanHParameter tanh_param = 127;
   optional ThresholdParameter threshold_param = 128;
   optional TileParameter tile_param = 138;
-  optional UpsampleParameter upsample_param = 177; //CUSTOMIZATION: 137 is already used by mbedParameter
+  optional UniqueLabelParameter unique_label_param = 170;
+  optional UpsampleParameter upsample_param = 177;
   optional VideoDataParameter video_data_param = 207;
   optional WindowDataParameter window_data_param = 129;
 
+  //FlowNet related
   optional CoeffScheduleParameter coeff_schedule_param = 148;
   optional AugmentationParameter augmentation_param = 149;
   optional CorrelationParameter correlation_param = 150;
@@ -568,7 +578,6 @@ message LayerParameter {
   optional FlowWarpParameter flow_warp_param = 159;
   optional AccumParameter accum_param = 160;
   optional BlackAugmentationParameter black_augmentation_param = 161;
-
   // If should run reshape every iteration
   optional bool reshape_every_iter = 157 [default = true];
 }
@@ -877,6 +886,12 @@ message TransformationParameter {
   optional ExpansionParameter expand_param = 14;
   // Constraint for emitting the annotation after transformation.
   optional EmitConstraint emit_constraint = 10;
+  // If we want to do data augmentation, Scaling factor for randomly scaling input images
+  repeated float scale_factors = 18;
+  // the width for cropped region
+  optional uint32 crop_width = 19 [default = 0];
+  // the height for cropped region
+  optional uint32 crop_height = 20 [default = 0];
 }
 
 // Message that stores parameters used by data transformer for resize policy
@@ -1066,6 +1081,14 @@ message AnnotatedDataParameter {
   optional AnnotatedDatum.AnnotationType anno_type = 3;
 }
 
+message AdaptiveBiasChannelParameter {
+  optional int32 num_iter = 1 [default = 1];
+  optional float bg_portion = 2 [default = 0.2];
+  optional float fg_portion = 3 [default = 0.2];
+  optional bool suppress_others = 4 [default = true];
+  optional float margin_others = 5 [default = 1e-5];
+}
+
 message ArgMaxParameter {
   // If true produce pairs (argmax, maxval)
   optional bool out_max_val = 1 [default = false];
@@ -1075,28 +1098,6 @@ message ArgMaxParameter {
   // By default ArgMaxLayer maximizes over the flattened trailing dimensions
   // for each index of the first / num dimension.
   optional int32 axis = 3;
-}
-
-// Message that stores parameters used by BN (Batch Normalization)  layer
-message BNParameter {
-  enum BNMode {
-    LEARN = 0;
-    INFERENCE = 1;
-  }
-  optional BNMode bn_mode = 3 [default = LEARN];
-  optional FillerParameter scale_filler = 1;  // The filler for the scale
-  optional FillerParameter shift_filler = 2;  // The filler for the shift
-}
-
-message ConcatParameter {
-  // The axis along which to concatenate -- may be negative to index from the
-  // end (e.g., -1 for the last axis).  Other axes must have the
-  // same dimension for all the bottom blobs.
-  // By default, ConcatLayer concatenates blobs along the "channels" axis (1).
-  optional int32 axis = 2 [default = 1];
-
-  // DEPRECATED: alias for "axis" -- does not support negative indexing.
-  optional uint32 concat_dim = 1 [default = 1];
 }
 
 message BatchNormParameter {
@@ -1121,6 +1122,23 @@ message BatchNormParameter {
   optional float eps = 3 [default = 1e-5];
   optional bool yolo_bn = 4 [default = false];
   optional float yolo_eps = 5 [default = 1e-6];
+  optional bool update_global_stats = 6 [default = false];
+}
+
+message BiasChannelParameter {
+  // Score biases. Separate values for BG / FG
+  optional float bg_bias = 1 [default = 1.];
+  optional float fg_bias = 2 [default = 2.];
+  // will ignore labels with this value when adding bias
+  repeated int32 ignore_label = 3;
+  enum LabelType {
+    IMAGE = 1;
+    PIXEL = 2;
+  }
+  optional LabelType label_type = 4 [default = IMAGE];
+  // If the dataset defines generic background label or not.
+  // The default value is defined for PASCAL VOC segmentation
+  optional int32 background_label = 6 [default = 0];
 }
 
 message BiasParameter {
@@ -1153,6 +1171,40 @@ message BiasParameter {
   // Default is the zero (0) initialization, resulting in the BiasLayer
   // initially performing the identity operation.
   optional FillerParameter filler = 3;
+}
+
+// Message that stores parameters used by BN (Batch Normalization)  layer
+message BNParameter {
+  enum BNMode {
+    LEARN = 0;
+    INFERENCE = 1;
+  }
+  optional BNMode bn_mode = 3 [default = LEARN];
+  optional FillerParameter scale_filler = 1;  // The filler for the scale
+  optional FillerParameter shift_filler = 2;  // The filler for the shift
+  optional float momentum = 7 [default = 0.9];
+  optional float eps = 4 [default = 1e-5];
+  // If true, will use the moving average mean and std for training and test.
+  // Will override the lr_param and freeze all the parameters.
+  // Make sure to initialize the layer properly with pretrained parameters.
+  optional bool frozen = 5 [default = false];
+  enum Engine {
+    DEFAULT = 0;
+    CAFFE = 1;
+    CUDNN = 2;
+  }
+  optional Engine engine = 6 [default = DEFAULT];
+}
+
+message ConcatParameter {
+  // The axis along which to concatenate -- may be negative to index from the
+  // end (e.g., -1 for the last axis).  Other axes must have the
+  // same dimension for all the bottom blobs.
+  // By default, ConcatLayer concatenates blobs along the "channels" axis (1).
+  optional int32 axis = 2 [default = 1];
+
+  // DEPRECATED: alias for "axis" -- does not support negative indexing.
+  optional uint32 concat_dim = 1 [default = 1];
 }
 
 message ContrastiveLossParameter {
@@ -1314,6 +1366,20 @@ message DataParameter {
   optional uint32 block_size = 3013 [default = 0];
 }
 
+message DenseCRFParameter {
+  // max number of iteration for message passing
+  optional int32 max_iter = 1 [default = 10];
+  // positional std and weight for "Positional" filter (color-independent)
+  repeated float pos_xy_std = 2;
+  repeated float pos_w = 3;
+  // positional std, color std and weight for Bilateral filter
+  repeated float bi_xy_std = 4;
+  repeated float bi_rgb_std = 5;
+  repeated float bi_w = 6;
+  // output is probability or score (score = log(prob))
+  optional bool output_probability = 7 [default = true];
+}
+
 message DenseImageDataParameter {
   // Specify the data source file.
   optional string source = 1;
@@ -1425,6 +1491,17 @@ message DetectionOutputParameter {
   optional float visualize_threshold = 11;
   // If provided, save outputs to video file.
   optional string save_file = 12;
+}
+
+message DomainTransformParameter {
+  // Max number of iteration for filtering.
+  optional int32 num_iter = 1 [default = 3];
+  // Standard deviation for spatial domain.
+  optional float spatial_sigma = 2 [default = 50];
+  // Standard deviation for range domain.
+  optional float range_sigma = 3 [default = 5];
+  // minimum weight value (to avoid zero gradient for ref_grad_data)
+  optional float min_weight = 4 [default = 0];
 }
 
 message DropoutParameter {
@@ -1566,6 +1643,16 @@ message ImageDataParameter {
   optional uint32 new_width = 10 [default = 0];
   // Specify if the images are color or gray
   optional bool is_color = 11 [default = true];
+
+  // This is the value set for pixels or images where we don't know the label
+  optional int32 ignore_label = 15 [default = 255];
+  enum LabelType {
+    NONE = 0;
+    IMAGE = 1;
+    PIXEL = 2;
+  }
+  optional LabelType label_type = 16 [default = IMAGE];
+
   // DEPRECATED. See TransformationParameter. For data pre-processing, we can do
   // simple scaling and subtracting the data mean, if provided. Note that the
   // mean subtraction is always carried out before scaling.
@@ -1615,6 +1702,15 @@ message InputParameter {
   repeated BlobShape shape = 1;
 }
 
+message InterpParameter {
+  optional int32 height = 1 [default = 0]; // Height of output
+  optional int32 width = 2 [default = 0]; // Width of output
+  optional int32 zoom_factor = 3 [default = 1]; // zoom factor
+  optional int32 shrink_factor = 4 [default = 1]; // shrink factor
+  optional int32 pad_beg = 5 [default = 0]; // padding at begin of input
+  optional int32 pad_end = 6 [default = 0]; // padding at end of input
+}
+
 // Message that stores parameters used by LogLayer
 message LogParameter {
   // LogLayer computes outputs y = log_base(shift + scale * x), for base > 0.
@@ -1642,6 +1738,20 @@ message LRNParameter {
     CUDNN = 2;
   }
   optional Engine engine = 6 [default = DEFAULT];
+}
+
+message MatReadParameter {
+  required string prefix = 1;
+  optional string source = 2 [default = ""];
+  optional int32 strip = 3 [default = 0];
+  optional int32 batch_size = 4 [default = 1];
+}
+
+message MatWriteParameter {
+  required string prefix = 1;
+  optional string source = 2 [default = ""];
+  optional int32 strip = 3 [default = 0];
+  optional int32 period = 4 [default = 1];
 }
 
 message MemoryDataParameter {
@@ -2031,6 +2141,18 @@ message ScaleParameter {
   optional bool gen_mode = 7 [default = false];
 }
 
+message SegAccuracyParameter {
+  enum AccuracyMetric {
+    PixelAccuracy = 0;
+    ClassAccuracy = 1;
+    PixelIOU = 2;
+  }
+  optional AccuracyMetric metric = 1 [default = PixelAccuracy];
+  // will ignore pixels with this value when computing accuracy
+  repeated int32 ignore_label = 2;
+  optional bool reset = 3 [default = true];
+}
+
 message SigmoidParameter {
   enum Engine {
     DEFAULT = 0;
@@ -2192,6 +2314,12 @@ message TileParameter {
 // Message that stores parameters used by ThresholdLayer
 message ThresholdParameter {
   optional float threshold = 1 [default = 0]; // Strictly positive values
+}
+
+message UniqueLabelParameter {
+  required int32 max_labels = 1;
+  repeated int32 ignore_label = 2;
+  repeated float force_label = 3;
 }
 
 message UpsampleParameter {

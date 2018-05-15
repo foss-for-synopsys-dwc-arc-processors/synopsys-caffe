@@ -67,6 +67,7 @@ class BatchNormLayer : public Layer<Dtype> {
   Dtype eps_;
   bool yolo_bn_;
   Dtype yolo_eps_;
+  bool update_global_stats_;
 
   // extra temporarary variables is used to carry out sums/broadcasting
   // using BLAS
