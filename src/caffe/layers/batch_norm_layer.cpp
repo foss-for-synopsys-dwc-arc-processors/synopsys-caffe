@@ -11,6 +11,7 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   BatchNormParameter param = this->layer_param_.batch_norm_param();
   moving_average_fraction_ = param.moving_average_fraction();
+  CHECK(moving_average_fraction_ >= 0 && moving_average_fraction_ <= 1);
   use_global_stats_ = this->phase_ == TEST;
   if (param.has_use_global_stats())
     use_global_stats_ = param.use_global_stats();
@@ -21,6 +22,8 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   eps_ = param.eps();
   yolo_bn_ = param.yolo_bn();
   yolo_eps_ = param.yolo_eps();
+  update_global_stats_ = param.update_global_stats();
+  icnet_ = param.icnet();
   if (this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
   } else {
@@ -62,7 +65,8 @@ void BatchNormLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   mean_.Reshape(sz);
   variance_.Reshape(sz);
   temp_.ReshapeLike(*bottom[0]);
-  x_norm_.ReshapeLike(*bottom[0]);
+  if(!icnet_)
+    x_norm_.ReshapeLike(*bottom[0]);
   sz[0] = bottom[0]->shape(0);
   batch_sum_multiplier_.Reshape(sz);
 
@@ -124,7 +128,7 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       spatial_dim, 1, -1, num_by_chans_.cpu_data(),
       spatial_sum_multiplier_.cpu_data(), 1., top_data);
 
-  if (!use_global_stats_) {
+  if (!use_global_stats_ && this->phase_ == TRAIN && update_global_stats_) {
     // compute variance using var(X) = E((X-EX)^2)
     caffe_sqr<Dtype>(top[0]->count(), top_data,
                      temp_.mutable_cpu_data());  // (X-EX)^2

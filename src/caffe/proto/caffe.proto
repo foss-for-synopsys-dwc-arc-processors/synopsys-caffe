@@ -1122,7 +1122,8 @@ message BatchNormParameter {
   optional float eps = 3 [default = 1e-5];
   optional bool yolo_bn = 4 [default = false];
   optional float yolo_eps = 5 [default = 1e-6];
-  optional bool update_global_stats = 6 [default = false];
+  optional bool update_global_stats = 6 [default = true]; //CUSTOMIZATION
+  optional bool icnet = 7 [default = false]; //CUSTOMIZATION
 }
 
 message BiasChannelParameter {
@@ -1182,7 +1183,9 @@ message BNParameter {
   optional BNMode bn_mode = 3 [default = LEARN];
   optional FillerParameter scale_filler = 1;  // The filler for the scale
   optional FillerParameter shift_filler = 2;  // The filler for the shift
-  optional float momentum = 7 [default = 0.9];
+  optional FillerParameter slope_filler = 7;
+  optional FillerParameter bias_filler = 8;
+  optional float momentum = 9 [default = 0.9];
   optional float eps = 4 [default = 1e-5];
   // If true, will use the moving average mean and std for training and test.
   // Will override the lr_param and freeze all the parameters.
@@ -1194,6 +1197,7 @@ message BNParameter {
     CUDNN = 2;
   }
   optional Engine engine = 6 [default = DEFAULT];
+  optional bool icnet = 10 [default = false]; //CUSTOMIZATION
 }
 
 message ConcatParameter {

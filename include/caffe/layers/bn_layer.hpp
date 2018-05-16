@@ -65,6 +65,27 @@ class BNLayer : public Layer<Dtype> {
   int W_;
   // eps
   Dtype var_eps_;
+
+  //ICNet
+  //void AverageAllExceptChannel(const Dtype* input, Dtype* output);
+  //void BroadcastChannel(const Dtype* input, Dtype* output);
+
+  bool frozen_;
+  Dtype bn_momentum_;
+  Dtype bn_eps_;
+
+  int num_;
+  int channels_;
+  int height_;
+  int width_;
+
+  Blob<Dtype> broadcast_buffer_;
+  Blob<Dtype> spatial_statistic_;
+  Blob<Dtype> batch_statistic_;
+
+  Blob<Dtype> x_inv_std_;
+
+  bool icnet_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
