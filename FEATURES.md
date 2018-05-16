@@ -3,7 +3,25 @@ A Short Summary of New Features in Synopsys Caffe
 
 Synopsys Caffe Version: 2018.06  
 New added features are compared with the original BVLC Caffe 1.0.0
-  
+
+ICNet (PSPNet) related  
+---------------------  
+adaptive_bias_channel_layer  
+bias_channel_layer  
+cudnn_bn_layer  
+densecrf_layer  
+domain_transform_forward_only_layer  
+domain_transform_layer  
+image_seg_data_layer  
+interp_layer  
+seg_accuracy_layer  
+spatial_product_layer  
+unique_label_layer  
+bn_layer (slope_filler, bias_filler, momentum and icnet in BNParameter)  
+update_global_stats and icnet in BatchNormParameter  
+scale_factors, crop_width and crop_height in TransformationParameter  
+MatReadParameter and MatWriteParameter  
+
 YOLOv2 related  
 --------------  
 yolo_bn and yolo_eps in BatchNormParameter  
