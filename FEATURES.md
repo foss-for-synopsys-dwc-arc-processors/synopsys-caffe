@@ -14,13 +14,14 @@ domain_transform_forward_only_layer
 domain_transform_layer  
 image_seg_data_layer  
 interp_layer  
+mat_read_layer  
+mat_write_layer  
 seg_accuracy_layer  
 spatial_product_layer  
 unique_label_layer  
 bn_layer (slope_filler, bias_filler, momentum and icnet in BNParameter)  
 update_global_stats and icnet in BatchNormParameter  
 scale_factors, crop_width and crop_height in TransformationParameter  
-MatReadParameter and MatWriteParameter  
 
 YOLOv2 related  
 --------------  
