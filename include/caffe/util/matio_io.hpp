@@ -1,7 +1,12 @@
 #ifndef CAFFE_UTIL_MATIO_IO_H_
 #define CAFFE_UTIL_MATIO_IO_H_
 
+#if defined(_MSC_VER)
+#include <io.h>
+#include <process.h>
+#else
 #include <unistd.h>
+#endif
 #include <string>
 
 #include "google/protobuf/message.h"
