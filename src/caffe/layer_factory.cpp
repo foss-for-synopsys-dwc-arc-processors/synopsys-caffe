@@ -165,7 +165,8 @@ shared_ptr<Layer<Dtype> > GetSqueezeConvolutionLayer(
     return shared_ptr<Layer<Dtype> >(new SqueezeConvolutionLayer<Dtype>(param));
 #ifdef USE_CUDNN
   } else if (engine == SqueezeConvolutionParameter_Engine_CUDNN) {
-    return shared_ptr<Layer<Dtype> >(new CuDNNSqueezeConvolutionLayer<Dtype>(param));
+    //return shared_ptr<Layer<Dtype> >(new CuDNNSqueezeConvolutionLayer<Dtype>(param));
+    return shared_ptr<Layer<Dtype> >(new SqueezeConvolutionLayer<Dtype>(param));
 #endif
   } else {
     LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
