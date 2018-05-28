@@ -20,8 +20,7 @@ void BatchNormLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   else
     channels_ = bottom[0]->shape(1);
   eps_ = param.eps();
-  yolo_bn_ = param.yolo_bn();
-  yolo_eps_ = param.yolo_eps();
+  add_eps_before_sqrt_ = param.add_eps_before_sqrt();
   update_global_stats_ = param.update_global_stats();
   icnet_ = param.icnet();
   if (this->blobs_.size() > 0) {
@@ -153,15 +152,14 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 
   // normalize variance
-  if(yolo_bn_) {
-    caffe_sqrt(variance_.count(), variance_.cpu_data(),
-            variance_.mutable_cpu_data());
-    caffe_add_scalar(variance_.count(), yolo_eps_, variance_.mutable_cpu_data());
-  }
-  else {
+  if (add_eps_before_sqrt_) {
     caffe_add_scalar(variance_.count(), eps_, variance_.mutable_cpu_data());
     caffe_sqrt(variance_.count(), variance_.cpu_data(),
-            variance_.mutable_cpu_data());
+              variance_.mutable_cpu_data());
+  } else {
+    caffe_sqrt(variance_.count(), variance_.cpu_data(),
+              variance_.mutable_cpu_data());
+    caffe_add_scalar(variance_.count(), eps_, variance_.mutable_cpu_data());
   }
 
   // replicate variance to input size

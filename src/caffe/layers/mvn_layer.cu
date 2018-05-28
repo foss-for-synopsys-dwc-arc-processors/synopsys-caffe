@@ -36,10 +36,15 @@ void MVNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         variance_.mutable_gpu_data());  // E((X-EX)^2)
 
     // normalize variance
-    caffe_gpu_powx(variance_.count(), variance_.gpu_data(), Dtype(0.5),
-          variance_.mutable_gpu_data());
-
-    caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
+    if (add_eps_before_sqrt_) {
+      caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
+      caffe_gpu_powx(variance_.count(), variance_.gpu_data(), Dtype(0.5),
+            variance_.mutable_gpu_data());
+    } else {
+      caffe_gpu_powx(variance_.count(), variance_.gpu_data(), Dtype(0.5),
+            variance_.mutable_gpu_data());
+      caffe_gpu_add_scalar(variance_.count(), eps_, variance_.mutable_gpu_data());
+    }
 
     caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, 1.,
           variance_.gpu_data(), sum_multiplier_.gpu_data(), 0.,

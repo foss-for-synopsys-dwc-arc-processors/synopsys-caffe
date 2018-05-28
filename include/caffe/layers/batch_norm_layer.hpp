@@ -65,8 +65,7 @@ class BatchNormLayer : public Layer<Dtype> {
   Dtype moving_average_fraction_;
   int channels_;
   Dtype eps_;
-  bool yolo_bn_;
-  Dtype yolo_eps_;
+  bool add_eps_before_sqrt_;
   bool update_global_stats_;
   bool icnet_; //CUSTOMIZATION
 

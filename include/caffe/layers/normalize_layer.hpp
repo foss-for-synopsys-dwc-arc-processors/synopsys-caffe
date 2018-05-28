@@ -44,6 +44,7 @@ class NormalizeLayer : public Layer<Dtype> {
   bool across_spatial_;
   bool channel_shared_;
   Dtype eps_;
+  bool add_eps_before_sqrt_;
 };
 
 }  // namespace caffe

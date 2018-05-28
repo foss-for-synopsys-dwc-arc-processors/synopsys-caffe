@@ -25,6 +25,7 @@ void MVNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   Dtype* multiplier_data = sum_multiplier_.mutable_cpu_data();
   caffe_set(sum_multiplier_.count(), Dtype(1), multiplier_data);
   eps_ = this->layer_param_.mvn_param().eps();
+  add_eps_before_sqrt_ = this->layer_param_.mvn_param().add_eps_before_sqrt();
 }
 
 template <typename Dtype>
@@ -57,10 +58,15 @@ void MVNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         variance_.mutable_cpu_data());  // E((X-EX)^2)
 
     // normalize variance
-    caffe_powx(variance_.count(), variance_.cpu_data(), Dtype(0.5),
-          variance_.mutable_cpu_data());
-
-    caffe_add_scalar(variance_.count(), eps_, variance_.mutable_cpu_data());
+    if (add_eps_before_sqrt_) {
+      caffe_add_scalar(variance_.count(), eps_, variance_.mutable_cpu_data());
+      caffe_powx(variance_.count(), variance_.cpu_data(), Dtype(0.5),
+            variance_.mutable_cpu_data());
+    } else {
+      caffe_powx(variance_.count(), variance_.cpu_data(), Dtype(0.5),
+            variance_.mutable_cpu_data());
+      caffe_add_scalar(variance_.count(), eps_, variance_.mutable_cpu_data());
+    }
 
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, 1.,
           variance_.cpu_data(), sum_multiplier_.cpu_data(), 0.,

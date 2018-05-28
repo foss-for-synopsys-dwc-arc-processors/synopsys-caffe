@@ -1136,8 +1136,7 @@ message BatchNormParameter {
   // Small value to add to the variance estimate so that we don't divide by
   // zero.
   optional float eps = 3 [default = 1e-5];
-  optional bool yolo_bn = 4 [default = false];
-  optional float yolo_eps = 5 [default = 1e-6];
+  optional bool add_eps_before_sqrt = 4 [default = true];
   optional bool update_global_stats = 6 [default = true]; //CUSTOMIZATION
   optional bool icnet = 7 [default = false]; //CUSTOMIZATION
 }
@@ -1862,6 +1861,7 @@ message MVNParameter {
 
   // Epsilon for not dividing by zero while normalizing variance
   optional float eps = 3 [default = 1e-9];
+  optional bool add_eps_before_sqrt = 4 [default = false];
 }
 
 // Message that stores parameters used by NormalizeLayer
@@ -1873,6 +1873,7 @@ message NormalizeParameter {
   optional bool channel_shared = 3 [default = true];
   // Epsilon for not dividing by zero while normalizing variance
   optional float eps = 4 [default = 1e-10];
+  optional bool add_eps_before_sqrt = 5 [default = true];
 }
 
 message ParameterParameter {

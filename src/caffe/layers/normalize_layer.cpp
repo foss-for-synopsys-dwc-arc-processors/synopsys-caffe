@@ -22,6 +22,7 @@ void NormalizeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     norm_.Reshape(bottom[0]->num(), 1, bottom[0]->height(), bottom[0]->width());
   }
   eps_ = norm_param.eps();
+  add_eps_before_sqrt_ = norm_param.add_eps_before_sqrt();
   int channels = bottom[0]->channels();
   int spatial_dim = bottom[0]->width() * bottom[0]->height();
   sum_channel_multiplier_.Reshape(1, channels, 1, 1);
@@ -101,8 +102,13 @@ void NormalizeLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_sqr<Dtype>(dim, bottom_data, buffer_data);
     if (across_spatial_) {
       // add eps to avoid overflow
-      norm_data[n] = pow(caffe_cpu_asum<Dtype>(dim, buffer_data)+eps_,
-                         Dtype(0.5));
+      if (add_eps_before_sqrt_) {
+        norm_data[n] = pow(caffe_cpu_asum<Dtype>(dim, buffer_data)+eps_,
+                           Dtype(0.5));
+      } else {
+        norm_data[n] = pow(caffe_cpu_asum<Dtype>(dim, buffer_data),
+                           Dtype(0.5))+eps_;
+      }
       caffe_cpu_scale<Dtype>(dim, Dtype(1.0 / norm_data[n]), bottom_data,
                              top_data);
     } else {

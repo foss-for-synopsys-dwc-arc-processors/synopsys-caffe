@@ -41,6 +41,7 @@ class MVNLayer : public Layer<Dtype> {
   /// sum_multiplier is used to carry out sum using BLAS
   Blob<Dtype> sum_multiplier_;
   Dtype eps_;
+  bool add_eps_before_sqrt_;
 };
 
 }  // namespace caffe

@@ -73,7 +73,11 @@ void NormalizeLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       Dtype normsqr;
       caffe_gpu_asum<Dtype>(dim, buffer_data, &normsqr);
       // add eps to avoid overflow
-      norm_data[n] = pow(normsqr+eps_, Dtype(0.5));
+      if (add_eps_before_sqrt_) {
+        norm_data[n] = pow(normsqr+eps_, Dtype(0.5));
+      } else {
+        norm_data[n] = pow(normsqr, Dtype(0.5))+eps_;
+      }
       caffe_gpu_scale<Dtype>(dim, Dtype(1.0 / norm_data[n]), bottom_data,
                              top_data);
     } else {
