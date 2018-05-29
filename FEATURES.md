@@ -91,15 +91,13 @@ weight_by_label_freqs in LossParameter
 TensorFlow (Converter) related
 ------------------------------
 AVE_TF (average pooling excluding the paddings) in PoolingParameter  
-*pad_type (asymmetric padding) in ConvolutionParameter and PoolingParameter  
+pad_type (asymmetric padding) in ConvolutionParameter and PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
 pad.py (customized Python layer)  
 stridedslice.py (customized Python layer)  
 shape.py (customized Python layer)  
   
-  
-***Special Note**: pad_type (asymmetric padding) does not support the cuDNN acceleration now, [explanations](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/b193bc72180a295ea9322837a9735cd72a552f7e#comments); To use it, you must turn off the cuDNN acceleration switch in *Makefile.config* for building.
   
   
 For more details, please refer to [caffe.proto](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/src/caffe/proto/caffe.proto) and the corresponding source code.
