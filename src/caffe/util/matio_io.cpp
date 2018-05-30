@@ -1,3 +1,4 @@
+#if ndefined(_MSC_VER)
 #include <stdint.h>
 
 #include <fstream>  // NOLINT(readability/streams)
@@ -102,3 +103,4 @@ template void WriteBlobToMat<int>(const char*, bool, Blob<int>*);
 template void WriteBlobToMat<unsigned int>(const char*, bool, Blob<unsigned int>*);
 
 }
+#endif

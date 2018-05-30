@@ -1,3 +1,4 @@
+#if ndefined(_MSC_VER)
 #include <vector>
 
 #include "caffe/common.hpp"
@@ -104,3 +105,4 @@ INSTANTIATE_CLASS(MatReadLayer);
 REGISTER_LAYER_CLASS(MatRead);
 
 }  // namespace caffe
+#endif

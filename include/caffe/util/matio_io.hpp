@@ -1,3 +1,4 @@
+#if ndefined(_MSC_VER)
 #ifndef CAFFE_UTIL_MATIO_IO_H_
 #define CAFFE_UTIL_MATIO_IO_H_
 
@@ -28,3 +29,4 @@ void WriteBlobToMat(const char *fname, bool write_diff,
 }  // namespace caffe
 
 #endif   // CAFFE_UTIL_IO_H_
+#endif

@@ -4,7 +4,11 @@
 #define CAFFE_TEST_TEST_CAFFE_MAIN_HPP_
 
 #include <glog/logging.h>
+#if defined(_MSC_VER)
+#include "../../../src/gtest/gtest.h"
+#else
 #include <gtest/gtest.h>
+#endif
 
 #include <cstdio>
 #include <cstdlib>

@@ -1,3 +1,4 @@
+#if ndefined(_MSC_VER)
 #include <sstream>
 #include <vector>
 
@@ -69,3 +70,4 @@ INSTANTIATE_CLASS(MatWriteLayer);
 REGISTER_LAYER_CLASS(MatWrite);
 
 }  // namespace caffe
+#endif

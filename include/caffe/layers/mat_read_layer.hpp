@@ -1,3 +1,4 @@
+#if ndefined(_MSC_VER)
 #ifndef CAFFE_MAT_READ_LAYER_HPP_
 #define CAFFE_MAT_READ_LAYER_HPP_
 
@@ -39,3 +40,4 @@ class MatReadLayer : public Layer<Dtype> {
 }  // namespace caffe
 
 #endif  // CAFFE_MAT_READ_LAYER_HPP_
+#endif
