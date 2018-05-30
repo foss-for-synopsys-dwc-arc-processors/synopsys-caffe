@@ -1,4 +1,4 @@
-#if ndefined(_MSC_VER)
+#if !defined(_MSC_VER)
 #ifndef CAFFE_UTIL_MATIO_IO_H_
 #define CAFFE_UTIL_MATIO_IO_H_
 

@@ -1,4 +1,4 @@
-#if ndefined(_MSC_VER)
+#if !defined(_MSC_VER)
 #ifndef CAFFE_MAT_READ_LAYER_HPP_
 #define CAFFE_MAT_READ_LAYER_HPP_
 

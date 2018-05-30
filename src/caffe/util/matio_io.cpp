@@ -1,4 +1,4 @@
-#if ndefined(_MSC_VER)
+#if !defined(_MSC_VER)
 #include <stdint.h>
 
 #include <fstream>  // NOLINT(readability/streams)
