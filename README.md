@@ -6,7 +6,7 @@ It combines multiple customized branches and includes a large range of patches t
   
 Installation  
 ------------  
-Please check out the prerequisites and read the detailed notes at the [BVLC Caffe project site](http://caffe.berkeleyvision.org/installation.html) at first.  
+Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) at first.  
   
 Extra steps and explanations for Synopsys Caffe installation:  
 - Linux: Please follow the [instructions](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/10169e55f4d460c52067792d5f36b9113fa9a705#comments) to install and set the matio support.  
@@ -20,4 +20,4 @@ Synopsys Caffe support the features introduced in following customized branches.
 - [SSD](https://github.com/weiliu89/caffe/tree/ssd)  
 - [FlowNet2](https://github.com/lmb-freiburg/flownet2)  
 - [SRGAN](https://github.com/ShenghaiRong/caffe_srgan)  
-- [ICNet(PSPNet)](https://github.com/hszhao/ICNet)  
+- [ICNet (PSPNet)](https://github.com/hszhao/ICNet)  
