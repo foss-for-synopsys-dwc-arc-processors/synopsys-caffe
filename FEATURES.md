@@ -25,7 +25,7 @@ scale_factors, crop_width and crop_height in TransformationParameter
 
 YOLOv2 related  
 --------------  
-yolo_bn and yolo_eps in BatchNormParameter  
+add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter   
   
 Network Pruning related  
 -----------------------  
