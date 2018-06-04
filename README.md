@@ -9,8 +9,12 @@ Installation
 Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) at first.  
   
 Extra steps and explanations for Synopsys Caffe installation:  
-- Linux: Please follow the [instructions](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/10169e55f4d460c52067792d5f36b9113fa9a705#comments) to install and set the matio support.  
+Note: Please checkout the **master** branch for build on both platforms.  
+- Linux: Please follow the [instructions](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/10169e55f4d460c52067792d5f36b9113fa9a705#comments) to install and set the **matio** support.  
 - Windows: See detailed installation instructions [here](https://github.com/BVLC/caffe/blob/windows/README.md).  
+  Note:   
+  1. Download the Visual Studio 2015 Update 3. Choose to install the support for visual C++ instead of applying the default settings.
+  2. After installing the python, please use “pip install numpy” to install the **numpy** package before building Caffe.
   
 Reference for different Distributions  
 -------------------------------------  
