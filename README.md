@@ -9,7 +9,7 @@ Installation
 Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) at first.  
   
 Extra steps and explanations for Synopsys Caffe installation:  
-Note: Please checkout the **master** branch for build on both platforms.  
+Note: Please checkout the **master** branch for build on both platforms. The windows branch is deprecated, please do not use it.
 - Linux: Please follow the [instructions](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/10169e55f4d460c52067792d5f36b9113fa9a705#comments) to install and set the **matio** support before building Caffe.  
 - Windows: See detailed installation instructions [here](https://github.com/BVLC/caffe/blob/windows/README.md).  
   Note:   
