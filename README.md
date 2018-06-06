@@ -3,10 +3,35 @@ Synopsys Caffe is a modified version of the popular [Caffe Deep Learning framewo
 It combines multiple customized branches and includes a large range of patches to support diverse models. See [FEATURES.md](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/FEATURES.md) for a short overview.  
   
 ## Installation  
-Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) at first.  
+Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) if this is your first time to install Caffe.  
   
 ### Linux  
-Please follow the [instructions](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/commit/10169e55f4d460c52067792d5f36b9113fa9a705#comments) to install and set the **matio** support before building Caffe.  
+A simple guide:  
+1. Ensure that you have all the dependencies mentioned at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) for your OS installed (protobuf, leveldb, snappy, opencv, hdf5-serial, protobuf-compiler, BLAS, Python, CUDA etc.)  
+2. Also Install [matio](https://github.com/tbeu/matio) in your environment. After that, add [your installed matio path]/lib to the LD_LIBRARY_PATH.    
+```Shell
+export LD_LIBRARY_PATH=[your installed matio path]/lib:${LD_LIBRARY_PATH}
+```
+3. Checkout the Synopsys Caffe **master** branch. Configure the build by copying and modifying the example Makefile.config for your setup. 
+```Shell
+git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe.git
+cd synopsys-caffe
+cp Makefile.config.example Makefile.config
+# Modify Makefile.config to suit your needs, e.g. enable/disable the CPU-ONLY, CUDNN, NCCL and set the path for CUDA, Python and BLAS. 
+# If needed, add [your installed matio path]/include to INCLUDE_DIRS and [your installed matio path]/lib to LIBRARY_DIRS.
+```
+4. Build Caffe and run the tests.
+```Shell
+make all
+make pycaffe
+make test
+make runtest
+# If no error occurs, you can add the caffe path to the environment for easy use. 
+export SYNOPSYS_CAFFE_HOME=[your synopsys-caffe root folder path]
+export PATH=${SYNOPSYS_CAFFE_HOME}/build/tools:${PATH}
+export PYTHONPATH=${SYNOPSYS_CAFFE_HOME}/python:${PYTHONPATH}
+```
+ 
 ### Windows   
 A simple guide:
 1. Download the Visual Studio 2015 Update 3. Choose to install the support for visual C++ instead of applying the default settings.
@@ -18,7 +43,7 @@ C:\Projects> git clone https://github.com/foss-for-synopsys-dwc-arc-processors/s
 C:\Projects> cd synopsys-caffe
 :: Edit any of the options inside build_win.cmd to suit your needs
 C:\Projects\synopsys-caffe> scripts\build_win.cmd
-:: If no errors occurs, the caffe.exe will be created at C:\Projects\synopsys-caffe\build\tools\Release after a successful build.
+:: If no error occurs, the caffe.exe will be created at C:\Projects\synopsys-caffe\build\tools\Release after a successful build.
 ```
 Other detailed installation instructions can be found [here](https://github.com/BVLC/caffe/blob/windows/README.md).  
   
