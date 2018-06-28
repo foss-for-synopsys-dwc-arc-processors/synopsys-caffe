@@ -73,6 +73,17 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 	pad_type_ = 0;
   }
   //CUSTOMIZATION-->
+  if (pool_param.has_pad_l()){
+    pad_l_ = pool_param.pad_l();
+    pad_r_ = pool_param.pad_r();
+    pad_t_ = pool_param.pad_t();
+    pad_b_ = pool_param.pad_b();
+  } else{
+	pad_l_ = 0;
+	pad_r_ = 0;
+	pad_t_ = 0;
+	pad_b_ = 0;
+  }
 
   if (pad_h_ != 0 || pad_w_ != 0) {
     CHECK(this->layer_param_.pooling_param().pool()
@@ -105,16 +116,32 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     case 0:
       // Specify the structure by ceil or floor mode
       if (ceil_mode_) {
-        pooled_height_ = static_cast<int>(ceil(static_cast<float>(
-          height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
-        pooled_width_ = static_cast<int>(ceil(static_cast<float>(
-          width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+    	if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){
+    	  pooled_height_ = static_cast<int>(ceil(static_cast<float>(
+    	    height_ + pad_l_ + pad_r_ - kernel_h_) / stride_h_)) + 1;
+    	  pooled_width_ = static_cast<int>(ceil(static_cast<float>(
+    	    width_ + pad_t_ + pad_b_ - kernel_w_) / stride_w_)) + 1;
+    	}
+    	else{
+          pooled_height_ = static_cast<int>(ceil(static_cast<float>(
+            height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
+          pooled_width_ = static_cast<int>(ceil(static_cast<float>(
+            width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+    	}
       }
       else{
-        pooled_height_ = static_cast<int>(floor(static_cast<float>(
-    	  height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
-    	pooled_width_ = static_cast<int>(floor(static_cast<float>(
-    	  width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+    	if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){
+          pooled_height_ = static_cast<int>(floor(static_cast<float>(
+      	    height_ + pad_l_ + pad_r_ - kernel_h_) / stride_h_)) + 1;
+      	  pooled_width_ = static_cast<int>(floor(static_cast<float>(
+      	    width_ + pad_t_ + pad_b_ - kernel_w_) / stride_w_)) + 1;
+    	}
+    	else{
+          pooled_height_ = static_cast<int>(floor(static_cast<float>(
+    	    height_ + 2 * pad_h_ - kernel_h_) / stride_h_)) + 1;
+    	  pooled_width_ = static_cast<int>(floor(static_cast<float>(
+    	    width_ + 2 * pad_w_ - kernel_w_) / stride_w_)) + 1;
+    	}
       }
 	  break;
     case 1: //for "SAME"padding
@@ -125,8 +152,8 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       LOG(FATAL) << "Unknown pooling padding type.";
       break;
   }
-
   //CUSTOMIZATION-->
+
   if (pad_h_ || pad_w_) {
     // If we have padding, ensure that the last pooling starts strictly
     // inside the image (instead of at the padding); otherwise clip the last.
@@ -177,10 +204,17 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;
@@ -203,7 +237,6 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   //CUSTOMIZATION-->
 
-  //CUSTOMIZATION-->
   switch (this->layer_param_.pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     // Initialize
@@ -365,10 +398,17 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;

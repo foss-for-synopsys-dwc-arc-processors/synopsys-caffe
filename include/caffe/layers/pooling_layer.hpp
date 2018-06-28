@@ -55,6 +55,10 @@ class PoolingLayer : public Layer<Dtype> {
   Blob<int> max_idx_;
   int pad_type_; //CUSTOMIZATION
   bool ceil_mode_;
+  int pad_l_; //CUSTOMIZATION
+  int pad_r_; //CUSTOMIZATION
+  int pad_t_; //CUSTOMIZATION
+  int pad_b_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
