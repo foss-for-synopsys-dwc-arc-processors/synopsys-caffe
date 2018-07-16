@@ -783,7 +783,9 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
     } else {
     /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
     // Copy weight mask and bias mask from source to dest
-    if (strcmp(layers_[target_layer_id]->type(),"SqueezeInnerProduct")==0 || strcmp(layers_[target_layer_id]->type(),"SqueezeConvolution" )==0 ) {
+    if (strcmp(layers_[target_layer_id]->type(),"SqueezeInnerProduct")==0 ||
+        strcmp(layers_[target_layer_id]->type(),"SqueezeConvolution" )==0 ||
+        strcmp(layers_[target_layer_id]->type(),"SqueezeDeconvolution" ) == 0 ) {
       if(target_blobs.size() > source_layer.blobs_size()) {
         for (int j = 0; j < source_layer.blobs_size(); ++j) {
           const bool kReshape = false;
