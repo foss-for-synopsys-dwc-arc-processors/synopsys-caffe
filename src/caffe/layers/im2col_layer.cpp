@@ -71,6 +71,18 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   } else{
 	pad_type_ = 0;
   }
+
+  if (conv_param.has_pad_l()){
+    pad_l_ = conv_param.pad_l();
+    pad_r_ = conv_param.pad_r();
+    pad_t_ = conv_param.pad_t();
+    pad_b_ = conv_param.pad_b();
+  } else{
+    pad_l_ = 0;
+    pad_r_ = 0;
+    pad_t_ = 0;
+    pad_b_ = 0;
+  }
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).
@@ -124,19 +136,29 @@ void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top_shape[channel_axis_] *= kernel_shape_data[i];
     const int input_dim = bottom[0]->shape(channel_axis_ + i + 1);
     const int kernel_extent = dilation_data[i] * (kernel_shape_data[i] - 1) + 1;
-    //<--CUSTOMIZATION
     int output_dim;
-    switch (pad_type_) {
-      case 0:
+    //<--CUSTOMIZATION
+    if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){ //only support 2D
+       if (i==0) {
+         output_dim = (input_dim + pad_t_ + pad_b_ - kernel_extent) / stride_data[i] + 1;
+       }
+       if (i==1) {
+         output_dim = (input_dim + pad_l_ + pad_r_ - kernel_extent) / stride_data[i] + 1;
+       }
+     }
+    else{
+      switch (pad_type_) {
+        case 0:
     	  output_dim = (input_dim + 2 * pad_data[i] - kernel_extent)
-          / stride_data[i] + 1;
+              / stride_data[i] + 1;
     	  break;
-      case 1:
+        case 1:
     	  output_dim = ceil(float(input_dim)/float(stride_data[i]));
     	  break;
-      default:
+        default:
     	  LOG(FATAL) << "Unknown padding type.";
     	  break;
+      }
     }
     //CUSTOMIZATION-->
     top_shape[channel_axis_ + i + 1] = output_dim;
@@ -168,7 +190,7 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1],
           top_data + n * top_dim_);
     } else {
@@ -195,7 +217,7 @@ void Im2colLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1],
           bottom_diff + n * bottom_dim_);
     } else {

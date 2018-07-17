@@ -20,7 +20,8 @@ void im2col_cpu(const Dtype* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w,
     const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
     const int dilation_h, const int dilation_w,
     Dtype* data_col) {
 
@@ -29,12 +30,22 @@ void im2col_cpu(const Dtype* data_im, const int channels,
 	int output_h, output_w;
 	switch (pad_type) {
 	  case 0:
-		output_h = (height + 2 * pad_h -
-		  (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-		output_w = (width + 2 * pad_w -
-		  (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-		pad_top=pad_h;
-		pad_left=pad_w;
+		if (pad_l != 0 || pad_r != 0 || pad_t != 0 || pad_b != 0) {
+		  output_h = (height + pad_t + pad_b -
+		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  output_w = (width + pad_l + pad_r -
+		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_t;
+		  pad_left=pad_l;
+		}
+		else{
+		  output_h = (height + 2 * pad_h -
+		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  output_w = (width + 2 * pad_w -
+		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_h;
+		  pad_left=pad_w;
+		}
 		break;
 	  case 1: //For "SAME" padding
 		output_h = ceil(float(height)/float(stride_h));
@@ -93,13 +104,15 @@ void im2col_cpu(const Dtype* data_im, const int channels,
 template void im2col_cpu<float>(const float* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     float* data_col);
 template void im2col_cpu<double>(const double* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     double* data_col);
 
@@ -205,7 +218,8 @@ void col2im_cpu(const Dtype* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w,
     const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
     const int dilation_h, const int dilation_w,
     Dtype* data_im) {
     caffe_set(height * width * channels, Dtype(0), data_im);
@@ -215,12 +229,22 @@ void col2im_cpu(const Dtype* data_col, const int channels,
 	int output_h, output_w;
 	switch (pad_type) {
 	  case 0:
-		output_h = (height + 2 * pad_h -
-		  (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-		output_w = (width + 2 * pad_w -
-		  (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-		pad_top=pad_h;
-		pad_left=pad_w;
+		if (pad_l != 0 || pad_r != 0 || pad_t != 0 || pad_b != 0) {
+		  output_h = (height + pad_t + pad_b -
+	          (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  output_w = (width + pad_l + pad_r -
+			  (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_t;
+	      pad_left=pad_l;
+		}
+		else{
+		  output_h = (height + 2 * pad_h -
+		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  output_w = (width + 2 * pad_w -
+		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_h;
+		  pad_left=pad_w;
+		}
 		break;
 	  case 1: //For "SAME" padding
 		output_h = ceil(float(height)/float(stride_h));
@@ -276,13 +300,15 @@ void col2im_cpu(const Dtype* data_col, const int channels,
 template void col2im_cpu<float>(const float* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     float* data_im);
 template void col2im_cpu<double>(const double* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     double* data_im);
 

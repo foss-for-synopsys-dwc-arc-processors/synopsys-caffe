@@ -82,6 +82,18 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   } else{
 	pad_type_ = 0;
   }
+
+  if (conv_param.has_pad_l()){
+    pad_l_ = conv_param.pad_l();
+    pad_r_ = conv_param.pad_r();
+    pad_t_ = conv_param.pad_t();
+    pad_b_ = conv_param.pad_b();
+  } else{
+    pad_l_ = 0;
+    pad_r_ = 0;
+    pad_t_ = 0;
+    pad_b_ = 0;
+  }
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).

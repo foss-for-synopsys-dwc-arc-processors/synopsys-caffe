@@ -43,7 +43,8 @@ void im2col_gpu(const Dtype* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w,
     const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
     const int dilation_h, const int dilation_w,
     Dtype* data_col) {
   // We are going to launch channels * height_col * width_col kernels, each
@@ -53,12 +54,22 @@ void im2col_gpu(const Dtype* data_im, const int channels,
 	int height_col, width_col;
 	switch (pad_type) {
 	  case 0:
-		height_col = (height + 2 * pad_h -
-		  (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-		width_col = (width + 2 * pad_w -
-		  (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-		pad_top=pad_h;
-		pad_left=pad_w;
+		if (pad_l != 0 || pad_r != 0 || pad_t != 0 || pad_b != 0) {
+		  height_col = (height + pad_t + pad_b -
+		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  width_col = (width + pad_l + pad_r -
+		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_t;
+		  pad_left=pad_l;
+		}
+		else{
+		  height_col = (height + 2 * pad_h -
+		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+		  width_col = (width + 2 * pad_w -
+		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+		  pad_top=pad_h;
+		  pad_left=pad_w;
+		}
 		break;
 	  case 1: //For "SAME" padding
 		height_col = ceil(float(height)/float(stride_h));
@@ -98,12 +109,14 @@ void im2col_gpu(const Dtype* data_im, const int channels,
 template void im2col_gpu<float>(const float* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
     const int dilation_h, const int dilation_w, float* data_col);
 template void im2col_gpu<double>(const double* data_im, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
     const int dilation_h, const int dilation_w, double* data_col);
 
 template <typename Dtype, int num_axes>
@@ -345,7 +358,8 @@ template <typename Dtype>
 void col2im_gpu(const Dtype* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     Dtype* data_im) {
 	//<--CUSTOMIZATION
@@ -354,14 +368,26 @@ void col2im_gpu(const Dtype* data_col, const int channels,
   	int height_col, width_col;
   	switch (pad_type) {
   	  case 0:
-  		height_col = (height + 2 * pad_h -
-  		  (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-  		width_col = (width + 2 * pad_w -
-  		  (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-  		pad_top=pad_h;
-  		pad_left=pad_w;
-  		pad_bottom=pad_h;
-  		pad_right=pad_w;
+  		if (pad_l != 0 || pad_r != 0 || pad_t != 0 || pad_b != 0) {
+  		  height_col = (height + pad_t + pad_b -
+  		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+  		  width_col = (width + pad_l + pad_r -
+  		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+  		  pad_top=pad_t;
+  		  pad_left=pad_l;
+  		  pad_bottom=pad_b;
+  		  pad_right=pad_r;
+  		}
+  		else{
+  		  height_col = (height + 2 * pad_h -
+  		      (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+  		  width_col = (width + 2 * pad_w -
+  		      (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+  		  pad_top=pad_h;
+  		  pad_left=pad_w;
+  		  pad_bottom=pad_h;
+  		  pad_right=pad_w;
+  		}
   		break;
   	  case 1: //For "SAME" padding
   		height_col = ceil(float(height)/float(stride_h));
@@ -405,13 +431,15 @@ void col2im_gpu(const Dtype* data_col, const int channels,
 template void col2im_gpu<float>(const float* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     float* data_im);
 template void col2im_gpu<double>(const double* data_col, const int channels,
     const int height, const int width, const int kernel_h, const int kernel_w,
     const int pad_h, const int pad_w, const int stride_h, const int stride_w,
-	const int pad_type, //CUSTOMIZATION
+	const int pad_type, const int pad_l, const int pad_r, //CUSTOMIZATION
+	const int pad_t, const int pad_b, //CUSTOMIZATION
 	const int dilation_h, const int dilation_w,
     double* data_im);
 

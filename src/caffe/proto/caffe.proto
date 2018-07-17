@@ -1256,7 +1256,11 @@ message ConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATION, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  optional uint32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_b = 29 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
@@ -2244,7 +2248,11 @@ message SqueezeConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATON, act as dummy param in squeeze_conv
+  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv
+  optional uint32 pad_l = 36 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv
+  optional uint32 pad_r = 37 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv
+  optional uint32 pad_t = 38 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv
+  optional uint32 pad_b = 39 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
