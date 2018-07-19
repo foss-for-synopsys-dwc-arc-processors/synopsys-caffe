@@ -1,23 +1,52 @@
 #include <vector>
 
 #include "caffe/layers/conv_layer.hpp"
+#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const Dtype* weight = this->blobs_[0]->gpu_data();
+  Dtype input_scale = this->input_scale_; //CUSTOMIZATION
+  Dtype output_scale = this->output_scale_; //CUSTOMIZATION
+  Dtype weight_scale = this->weight_scale_; //CUSTOMIZATION
+  Dtype bias_scale = this->bias_scale_; //CUSTOMIZATION
+  Dtype* weight = this->blobs_[0]->mutable_gpu_data();
+  //<--CUSTOMIZATION
+  const int count_w = this->blobs_[0]->count();
+  if (weight_scale != Dtype(1)) {
+    caffe_gpu_scal(count_w, weight_scale, weight);
+  }
+  //CUSTOMIZATION-->
   for (int i = 0; i < bottom.size(); ++i) {
-    const Dtype* bottom_data = bottom[i]->gpu_data();
+    Dtype* bottom_data = bottom[i]->mutable_gpu_data();
+    //<--CUSTOMIZATION
+    const int count_b = bottom[i]->count();
+    if (input_scale != Dtype(1)) {
+      caffe_gpu_scal(count_b, input_scale, bottom_data);
+    }
+    //CUSTOMIZATION-->
     Dtype* top_data = top[i]->mutable_gpu_data();
     for (int n = 0; n < this->num_; ++n) {
       this->forward_gpu_gemm(bottom_data + n * this->bottom_dim_, weight,
           top_data + n * this->top_dim_);
       if (this->bias_term_) {
-        const Dtype* bias = this->blobs_[1]->gpu_data();
+        Dtype* bias = this->blobs_[1]->mutable_gpu_data();
+        //<--CUSTOMIZATION
+        const int count_bias = this->blobs_[1]->count();
+        if (bias_scale != Dtype(1)) {
+          caffe_gpu_scal(count_bias, bias_scale, bias);
+        }
+        //CUSTOMIZATION-->
         this->forward_gpu_bias(top_data + n * this->top_dim_, bias);
       }
+      //<--CUSTOMIZATION
+      const int count_t = top[i]->count();
+      if (output_scale != Dtype(1)) {
+        caffe_gpu_scal(count_t, output_scale, top_data);
+      }
+      //CUSTOMIZATION-->
     }
   }
 }

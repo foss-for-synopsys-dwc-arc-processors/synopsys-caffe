@@ -101,6 +101,11 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int pad_t_; //CUSTOMIZATION
   int pad_b_; //CUSTOMIZATION
 
+  Dtype input_scale_; //CUSTOMIZATION
+  Dtype output_scale_; //CUSTOMIZATION
+  Dtype weight_scale_; //CUSTOMIZATION
+  Dtype bias_scale_; //CUSTOMIZATION
+
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
   inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {

@@ -94,6 +94,27 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
     pad_t_ = 0;
     pad_b_ = 0;
   }
+
+  if (conv_param.has_input_scale()){
+    input_scale_ = conv_param.input_scale();
+  } else{
+	input_scale_ = 1;
+  }
+  if (conv_param.has_output_scale()){
+    output_scale_ = conv_param.output_scale();
+  } else{
+	output_scale_ = 1;
+  }
+  if (conv_param.has_weight_scale()){
+    weight_scale_ = conv_param.weight_scale();
+  } else{
+	weight_scale_ = 1;
+  }
+  if (conv_param.has_bias_scale()){
+    bias_scale_ = conv_param.bias_scale();
+  } else{
+	bias_scale_ = 1;
+  }
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).
