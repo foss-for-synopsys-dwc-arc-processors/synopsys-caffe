@@ -143,7 +143,7 @@ inline void createPoolingDesc(cudnnPoolingDescriptor_t* pool_desc,
     *mode = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
       *mode = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING;
       break;
       //CUSTOMIZATION-->

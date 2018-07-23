@@ -282,7 +282,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		top_data);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolForward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
@@ -598,7 +598,7 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 		bottom_diff);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolBackward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, top[0]->num(), channels_,

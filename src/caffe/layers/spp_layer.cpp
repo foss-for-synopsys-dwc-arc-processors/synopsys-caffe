@@ -51,9 +51,9 @@ LayerParameter SPPLayer<Dtype>::GetPoolingParam(const int pyramid_level,
         PoolingParameter_PoolMethod_AVE);
     break;
   //<--CUSTOMIZATION
-  case SPPParameter_PoolMethod_AVE_TF:
+  case SPPParameter_PoolMethod_AVE_EXC_PAD:
      pooling_param.mutable_pooling_param()->set_pool(
-         PoolingParameter_PoolMethod_AVE_TF);
+         PoolingParameter_PoolMethod_AVE_EXC_PAD);
      break;
      //CUSTOMIZATION-->
   case SPPParameter_PoolMethod_STOCHASTIC:

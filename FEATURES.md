@@ -90,7 +90,7 @@ weight_by_label_freqs in LossParameter
   
 TensorFlow (Converter) related
 ------------------------------
-AVE_TF (average pooling excluding the paddings) in PoolingParameter  
+AVE_EXC_PAD (average pooling excluding the paddings) in PoolingParameter  
 pad_type (asymmetric padding) in ConvolutionParameter and PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  

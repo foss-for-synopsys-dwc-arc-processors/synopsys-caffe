@@ -100,7 +100,7 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK(this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_AVE
 		|| this->layer_param_.pooling_param().pool() //CUSTOMIZATION
-        == PoolingParameter_PoolMethod_AVE_TF //CUSTOMIZATION
+        == PoolingParameter_PoolMethod_AVE_EXC_PAD //CUSTOMIZATION
         || this->layer_param_.pooling_param().pool()
         == PoolingParameter_PoolMethod_MAX)
         << "Padding implemented only for average and max pooling.";
@@ -341,7 +341,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
      for (int i = 0; i < top_count; ++i) {
        top_data[i] = 0;
      }
@@ -506,7 +506,7 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     }
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // The main loop
     for (int n = 0; n < top[0]->num(); ++n) {
       for (int c = 0; c < channels_; ++c) {

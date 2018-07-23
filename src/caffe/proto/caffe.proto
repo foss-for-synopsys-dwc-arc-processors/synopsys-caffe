@@ -1902,7 +1902,7 @@ message PoolingParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -2446,7 +2446,7 @@ message SPPParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional uint32 pyramid_height = 1;
   optional PoolMethod pool = 2 [default = MAX]; // The pooling method
@@ -2571,7 +2571,7 @@ message V0LayerParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional PoolMethod pool = 11 [default = MAX]; // The pooling method
   optional float dropout_ratio = 12 [default = 0.5]; // dropout ratio
