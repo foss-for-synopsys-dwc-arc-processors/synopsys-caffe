@@ -69,8 +69,13 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   //<--CUSTOMIZATION
   if (pool_param.has_pad_type()){
     pad_type_ = pool_param.pad_type();
+    CHECK(!pool_param.has_pad())
+        << "Either pad or pad_type should be specified; not both.";
+    CHECK(!pool_param.has_pad_h() && !pool_param.has_pad_w())
+        << "Either pad_h/w or pad_type should be specified; not both.";
+    LOG(INFO) << "Note parameter pad_type is DEPRECATED. Please use pad_l/r/t/b instead.";
   } else{
-	pad_type_ = 0;
+	pad_type_= 0;
   }
   //CUSTOMIZATION-->
   if (pool_param.has_pad_l()){
@@ -78,6 +83,12 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     pad_r_ = pool_param.pad_r();
     pad_t_ = pool_param.pad_t();
     pad_b_ = pool_param.pad_b();
+    CHECK(!pool_param.has_pad())
+        << "Either pad or pad_l/r/t/b should be specified; not both.";
+    CHECK(!pool_param.has_pad_h() && !pool_param.has_pad_w())
+        << "Either pad_h/w or pad_l/r/t/b should be specified; not both.";
+    CHECK(!pool_param.has_pad_type())
+        << "Either pad_type or pad_l/r/t/b should be specified; not both.";
   } else{
 	pad_l_ = 0;
 	pad_r_ = 0;

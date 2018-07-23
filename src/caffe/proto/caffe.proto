@@ -1257,6 +1257,7 @@ message ConvolutionParameter {
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
   optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATION, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
   optional uint32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
   optional uint32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
   optional uint32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
@@ -1910,6 +1911,7 @@ message PoolingParameter {
   optional uint32 pad_h = 9 [default = 0]; // The padding height
   optional uint32 pad_w = 10 [default = 0]; // The padding width
   optional uint32 pad_type = 13 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
   optional uint32 pad_l = 16 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
   optional uint32 pad_r = 17 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
   optional uint32 pad_t = 18 [default = 0]; //CUSTOMIZATONN, only work when pad_type is not set to 1
