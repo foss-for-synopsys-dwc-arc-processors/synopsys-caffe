@@ -9,14 +9,33 @@ void DeconvolutionLayer<Dtype>::compute_output_shape() {
   const int* kernel_shape_data = this->kernel_shape_.cpu_data();
   const int* stride_data = this->stride_.cpu_data();
   const int* pad_data = this->pad_.cpu_data();
+  const int pad_l = this->pad_l_; //CUSTOMIZATION
+  const int pad_r = this->pad_r_; //CUSTOMIZATION
+  const int pad_t = this->pad_t_; //CUSTOMIZATION
+  const int pad_b = this->pad_b_; //CUSTOMIZATION
   const int* dilation_data = this->dilation_.cpu_data();
   this->output_shape_.clear();
   for (int i = 0; i < this->num_spatial_axes_; ++i) {
     // i + 1 to skip channel axis
     const int input_dim = this->input_shape(i + 1);
     const int kernel_extent = dilation_data[i] * (kernel_shape_data[i] - 1) + 1;
-    const int output_dim = stride_data[i] * (input_dim - 1)
-        + kernel_extent - 2 * pad_data[i];
+    //<--CUSTOMIZATION
+    int output_dim;
+    if (pad_l!=0 || pad_r!=0 || pad_t!=0 || pad_b!=0){ //only support 2D
+      if (i==0) {
+        output_dim = stride_data[i] * (input_dim - 1)
+            + kernel_extent - pad_t - pad_b;
+      }
+      if (i==1) {
+        output_dim = stride_data[i] * (input_dim - 1)
+            + kernel_extent - pad_l - pad_r;
+      }
+    }
+    else{
+      output_dim = stride_data[i] * (input_dim - 1)
+          + kernel_extent - 2 * pad_data[i];
+    }
+    //CUSTOMIZATION-->
     this->output_shape_.push_back(output_dim);
   }
 }
