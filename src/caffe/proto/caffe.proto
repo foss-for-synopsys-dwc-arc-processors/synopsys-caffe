@@ -1721,6 +1721,11 @@ message InnerProductParameter {
   optional bool weight_fixed = 7 [default = false];
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
+
+  optional float input_scale = 10 [default = 1]; //CUSTOMIZATION
+  optional float output_scale = 11 [default = 1]; //CUSTOMIZATION
+  optional float weight_scale = 12 [default = 1]; //CUSTOMIZATION
+  optional float bias_scale = 13 [default = 1]; //CUSTOMIZATION
 }
 
 message InputParameter {
