@@ -48,7 +48,7 @@ class SqueezeDeconvolutionLayer : public BaseConvolutionLayer<Dtype> {
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void AggregateParams(const int, const Dtype* , const Dtype* ,
-    Dtype* , Dtype* , unsigned int* );
+    unsigned int* );
   virtual void CalculateMask(const int, const Dtype* , Dtype* ,
     Dtype , Dtype , Dtype );
 
