@@ -52,7 +52,8 @@ void SqueezeInnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bot
   SqueezeInnerProductParameter squeeze_inner_param = this->layer_param_.squeeze_inner_product_param();
 
   if(this->blobs_.size() == 2 && (this->bias_term_)){
-    this->blobs_.resize(4);
+    //Resized the blobs to store WeightMask,BiasMask, mu and std values
+    this->blobs_.resize(5);
     // Intialize and fill the weightmask & biasmask
     this->blobs_[2].reset(new Blob<Dtype>(this->blobs_[0]->shape()));
     shared_ptr<Filler<Dtype> > weight_mask_filler(GetFiller<Dtype>(
@@ -62,14 +63,17 @@ void SqueezeInnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bot
     shared_ptr<Filler<Dtype> > bias_mask_filler(GetFiller<Dtype>(
         squeeze_inner_param.bias_mask_filler()));
     bias_mask_filler->Fill(this->blobs_[3].get());
-  }  
+    //Blob is set to the shape (1,1,1,2) to store mu and std values alone
+    this->blobs_[4].reset(new Blob<Dtype>(1,1,1,2));
+  }
   else if(this->blobs_.size()==1 && (!this->bias_term_)){
-    this->blobs_.resize(2);
+    this->blobs_.resize(3);
     // Intialize and fill the weightmask
     this->blobs_[1].reset(new Blob<Dtype>(this->blobs_[0]->shape()));
     shared_ptr<Filler<Dtype> > weight_mask_filler(GetFiller<Dtype>(
         squeeze_inner_param.weight_mask_filler()));
     weight_mask_filler->Fill(this->blobs_[1].get());
+    this->blobs_[2].reset(new Blob<Dtype>(1,1,1,2));
   }
   // Intialize the tmp tensor 
   this->weight_tmp_.Reshape(this->blobs_[0]->shape());
@@ -114,7 +118,7 @@ void SqueezeInnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom
 
 template <typename Dtype>
 void SqueezeInnerProductLayer<Dtype>::AggregateParams(const int n, const Dtype* wb, const Dtype* mask,
-    Dtype* mu, Dtype* std, unsigned int *count) {
+    unsigned int *count) {
 
   for (unsigned int k = 0;k < n; ++k) {
     this->mu  += fabs(mask[k] * wb[k]);
@@ -146,6 +150,7 @@ void SqueezeInnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
   const Dtype* bias = NULL;
   Dtype* biasMask = NULL;
   Dtype* biasTmp = NULL;
+  Dtype* prune_threshold_params = NULL;
   int maskcount = 0;
   if (this->bias_term_) {
     weight = this->blobs_[0]->mutable_cpu_data();
@@ -153,12 +158,14 @@ void SqueezeInnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
     weightTmp = this->weight_tmp_.mutable_cpu_data();
     bias = this->blobs_[1]->mutable_cpu_data();
     biasMask = this->blobs_[3]->mutable_cpu_data();
+    prune_threshold_params = this->blobs_[4]->mutable_cpu_data(); // To store mu and std values
     biasTmp = this->bias_tmp_.mutable_cpu_data();
     maskcount = this->blobs_[2]->count();
   }
   else {
     weight = this->blobs_[0]->mutable_cpu_data();
     weightMask = this->blobs_[1]->mutable_cpu_data();
+    prune_threshold_params = this->blobs_[2]->mutable_cpu_data();
     weightTmp = this->weight_tmp_.mutable_cpu_data();
     maskcount = this->blobs_[1]->count();
   }
@@ -175,21 +182,21 @@ void SqueezeInnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
     // Calculate the mean and standard deviation of learnable parameters 
     if (this->std==0 && this->iter_==0) {
       unsigned int ncount = 0;
-      AggregateParams(this->blobs_[0]->count(), weight, weightMask, &mu, &std, &ncount);
+      AggregateParams(this->blobs_[0]->count(), weight, weightMask, &ncount);
       if (this->bias_term_) {
-        AggregateParams(this->blobs_[1]->count(), bias, biasMask, &mu, &std, &ncount);
+        AggregateParams(this->blobs_[1]->count(), bias, biasMask, &ncount);
       }
-      this->mu /= ncount; this->std -= ncount*mu*mu;
-      this->std /= ncount; this->std = sqrt(std);
+      // Storing mu and std values into the blob
+      prune_threshold_params[0] = this->mu;
+      prune_threshold_params[1] = this->std;
     }
-
     // No pruning done during Retraining
     // Perform pruning or Splicing
     Dtype r = static_cast<Dtype>(rand())/static_cast<Dtype>(RAND_MAX);
     if (pow( 1 + (this->gamma) * (this->iter_), -(this->power)) > r && (this->iter_) < (this->iter_stop_)) {
-      CalculateMask(this->blobs_[0]->count(), weight, weightMask, this->mu, this->std, this->crate);
+      CalculateMask(this->blobs_[0]->count(), weight, weightMask, prune_threshold_params[0],prune_threshold_params[1], this->crate);
       if (this->bias_term_) {
-        CalculateMask(this->blobs_[1]->count(), bias, biasMask, this->mu, this->std, this->crate);
+        CalculateMask(this->blobs_[1]->count(), bias, biasMask, prune_threshold_params[0], prune_threshold_params[1], this->crate);
       }
     }
     // Dynamic Splicing
@@ -211,11 +218,13 @@ void SqueezeInnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
         int start_index = 0;
         int end_index = 0;
         for (unsigned int k = 0; k < zero_count; ++k) {
-          if (prune_node[k].first > (0.25 * (this->mu + this->std))) {
+          if (prune_node[k].first > (0.25 * (prune_threshold_params[0] + prune_threshold_params[1]))) {
             start_index = k;
             break;
           }
         }
+        if(start_index == 0)
+          start_index = zero_count - to_bespliced; //Update start index
         end_index = start_index + to_bespliced;
         if (end_index > zero_count) {
           start_index = start_index - (end_index - zero_count);

@@ -16,7 +16,7 @@ __global__ void SqueezeCMomentCollect(const int n, const Dtype* wb, const Dtype*
   const int NUM_THREADS = 512;
   __shared__ Dtype param [4 * NUM_THREADS];
   __shared__ unsigned int tcount [2 * NUM_THREADS];
-  unsigned int t = threadIdx.x; 
+  unsigned int t = threadIdx.x;
   unsigned int s = 2 * blockIdx.x * NUM_THREADS;
   if (s + t < n){
     param[t] = fabs(mask[s + t] * wb[s + t]);
@@ -36,10 +36,10 @@ __global__ void SqueezeCMomentCollect(const int n, const Dtype* wb, const Dtype*
   else{
     param[t + NUM_THREADS] = 0; param[t + 3 * NUM_THREADS] = 0; tcount[t + NUM_THREADS] = 0;
   }
-  __syncthreads(); 
+  __syncthreads();
   for(unsigned int stride = NUM_THREADS; stride >= 1; stride >>= 1) {
     if (t < stride ){
-      param[t] += param[t + stride]; 
+      param[t] += param[t + stride];
       param[t + 2 * NUM_THREADS] += param[t + 2 * NUM_THREADS + stride];
       tcount[t] += tcount[t + stride];
     }
@@ -48,16 +48,16 @@ __global__ void SqueezeCMomentCollect(const int n, const Dtype* wb, const Dtype*
   if (t == 0){
     mu   [blockIdx.x] = param[0];
     std  [blockIdx.x] = param[2 * NUM_THREADS];
-    count[blockIdx.x] = tcount[0]; 
+    count[blockIdx.x] = tcount[0];
   }
 }
 
 // The constant NUM_THREADS should be equal to the value in SqueezeCMomentCalc
 template <typename Dtype>
 __global__ void SqueezeCNzeroCollect(const int n, const Dtype* mask, unsigned int* count ) {
-  const int NUM_THREADS = 512;  
+  const int NUM_THREADS = 512;
   __shared__ unsigned int tcount [2 * NUM_THREADS];
-  unsigned int t = threadIdx.x; 
+  unsigned int t = threadIdx.x;
   unsigned int s = 2 * blockIdx.x * NUM_THREADS;
   tcount[t] = 0;
   if (s + t < n && mask[s + t] != 0){
@@ -67,7 +67,7 @@ __global__ void SqueezeCNzeroCollect(const int n, const Dtype* mask, unsigned in
   if (s + t + NUM_THREADS < n && mask[s + t + NUM_THREADS] != 0){
     tcount[t + NUM_THREADS] = 1;
   }
-  __syncthreads(); 
+  __syncthreads();
   for(unsigned int stride = NUM_THREADS; stride >= 1; stride >>= 1) {
     if (t < stride ){
       tcount[t] += tcount[t + stride];
@@ -110,7 +110,7 @@ __global__ void ValidateMask(const int n,  Dtype* wb) {
   }
 }
 
-//Calculate Mean and std deviation of weights 
+//Calculate Mean and std deviation of weights
 template <typename Dtype>
 void SqueezeCMomentCalc(const int n, const Dtype* wb, const Dtype* mask, Dtype* mu, Dtype* std, unsigned int* ncount){
   const unsigned int NUM_THREADS = 512;
@@ -135,25 +135,6 @@ void SqueezeCMomentCalc(const int n, const Dtype* wb, const Dtype* mask, Dtype* 
   free(pmu_c);free(pstd_c);free(pncount_c);
 }
 
-//Count the number of non-zero weights
-template <typename Dtype>
-void SqueezeCNZeroCalc(const int n, const Dtype* mask, unsigned int* ncount ){
-  const unsigned int NUM_THREADS = 512;
-  unsigned int* pncount_g;
-  unsigned int* pncount_c;
-  int num_p = (n + (NUM_THREADS << 1) - 1) / (NUM_THREADS << 1);
-  cudaMalloc(&pncount_g, sizeof(unsigned int) * num_p);
-  pncount_c = (unsigned int*) malloc(num_p * sizeof(unsigned int));
-  SqueezeCNzeroCollect<Dtype><<<num_p,NUM_THREADS>>>(n, mask, pncount_g);
-  CUDA_POST_KERNEL_CHECK;
-  cudaMemcpy(pncount_c, pncount_g, sizeof(unsigned int) * num_p, cudaMemcpyDeviceToHost);
-  for (int i = 0; i < num_p; i++) {
-    *ncount += pncount_c[i];
-  }
-  cudaFree(pncount_g);
-  free(pncount_c);
-}
-
 template <typename Dtype>
 void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
@@ -163,6 +144,9 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
   const Dtype* bias = NULL;
   Dtype* biasMask = NULL;
   Dtype* biasTmp = NULL;
+  Dtype* prune_threshold_params_gpu = NULL; // To store mu and std values
+  Dtype* prune_threshold_params_cpu = NULL;
+  prune_threshold_params_cpu = (Dtype*)malloc(sizeof(Dtype) * 2);
   int maskcount = 0;
   if (this->bias_term_) {
     weight = this->blobs_[0]->mutable_gpu_data();
@@ -170,18 +154,19 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
     weightTmp = this->weight_tmp_.mutable_gpu_data();
     bias = this->blobs_[1]->mutable_gpu_data();
     biasMask = this->blobs_[3]->mutable_gpu_data();
+    prune_threshold_params_gpu = this->blobs_[4]->mutable_gpu_data();
     biasTmp = this->bias_tmp_.mutable_gpu_data();
     maskcount = this->blobs_[2]->count();
   }
   else {
     weight = this->blobs_[0]->mutable_gpu_data();
     weightMask = this->blobs_[1]->mutable_gpu_data();
+    prune_threshold_params_gpu = this->blobs_[2]->mutable_gpu_data();
     weightTmp = this->weight_tmp_.mutable_gpu_data();
     maskcount = this->blobs_[1]->count();
   }
-  
+
   if (this->phase_ == TRAIN) {
-  
       // Validate mask value to avoid corrupted mask value
     ValidateMask<Dtype><<<CAFFE_GET_BLOCKS(maskcount),
     CAFFE_CUDA_NUM_THREADS>>>(maskcount,weightMask);
@@ -190,27 +175,33 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
     // Calculate the mean and standard deviation of learnable parameters
     if ((this->std == 0 && this->iter_ == 0) || this->iter_== 40 || this->iter_== 80 || this->iter_== 120 || this->iter_== 160) {
       unsigned int ncount = 0;
-      SqueezeCMomentCalc(this->blobs_[0]->count(), weight, weightMask, &mu, &std, &ncount);
+      SqueezeCMomentCalc(this->blobs_[0]->count(), weight, weightMask, &this->mu, &this->std, &ncount);
       if (this->bias_term_) {
-        SqueezeCMomentCalc(this->blobs_[1]->count(), bias, biasMask, &mu, &std, &ncount); 
+        SqueezeCMomentCalc(this->blobs_[1]->count(), bias, biasMask, &this->mu, &this->std, &ncount);
       }
-      this->mu /= ncount; this->std -= ncount * mu * mu; 
-      this->std /= ncount; this->std = sqrt(std);
+      this->mu /= ncount; this->std -= ncount * this->mu * this->mu;
+      this->std /= ncount; this->std = sqrt(this->std);
+      prune_threshold_params_cpu[0] = this->mu;
+      prune_threshold_params_cpu[1] = this->std;
       LOG(INFO)<<mu<<"  "<<std<<"  "<<ncount<<"\n";
+      // Copy mu and std value from host to device
+      cudaMemcpy(prune_threshold_params_gpu, prune_threshold_params_cpu, sizeof(Dtype)*2, cudaMemcpyHostToDevice);
     }
+    // Copy mu and std value from Device to host
+    cudaMemcpy(prune_threshold_params_cpu, prune_threshold_params_gpu, sizeof(Dtype)*2, cudaMemcpyDeviceToHost);
     // No pruning/splicing during Retraining
     // Calculate the weight mask and bias mask with probability
     Dtype r = static_cast<Dtype>(rand())/static_cast<Dtype>(RAND_MAX);
     if (pow(1 + (this->gamma) * (this->iter_), -(this->power)) > r && (this->iter_) < (this->iter_stop_)) {
       SqueezeCMaskCalc<Dtype><<<CAFFE_GET_BLOCKS(this->blobs_[0]->count()),
         CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[0]->count(), weight,
-        weightMask, this->mu, this->std, this->crate);
+        weightMask, prune_threshold_params_cpu[0], prune_threshold_params_cpu[1], this->crate);
 
       CUDA_POST_KERNEL_CHECK;
       if (this->bias_term_) {
         SqueezeCMaskCalc<Dtype><<<CAFFE_GET_BLOCKS(this->blobs_[1]->count()),
-          CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[1]->count(), bias, 
-          biasMask, this->mu, this->std, this->crate);
+          CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[1]->count(), bias,
+          biasMask, prune_threshold_params_cpu[0], prune_threshold_params_cpu[1], this->crate);
         CUDA_POST_KERNEL_CHECK;
       }
     }
@@ -238,11 +229,13 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
         int start_index = 0;
         int end_index = 0;
         for (unsigned int k = 0; k < zero_count; ++k) {
-          if (prune_node[k].first > (0.25 * (this->mu + this->std))) {
+          if (prune_node[k].first > (0.25 * (prune_threshold_params_cpu[0] + prune_threshold_params_cpu[1]))) {
             start_index = k;
             break;
           }
         }
+        if(start_index == 0)
+          start_index = zero_count - to_bespliced;  //Update start index
         end_index = start_index + to_bespliced;
         if (end_index > zero_count) {
           start_index = start_index - (end_index - zero_count);
@@ -258,7 +251,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
       }
     }
   }
- 
+
   // Calculate the current (masked) weight and bias
   SqueezeCMaskApply<Dtype><<<CAFFE_GET_BLOCKS(this->blobs_[0]->count()),
     CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[0]->count(), weight, weightMask, weightTmp);
@@ -269,7 +262,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
     CUDA_POST_KERNEL_CHECK;
   }
 
-	// Forward calculation with (masked) weight and bias 
+   // Forward calculation with (masked) weight and bias
   for (int i = 0; i < bottom.size(); ++i) {
     const Dtype* bottom_data = bottom[i]->gpu_data();
     Dtype* top_data = top[i]->mutable_gpu_data();
@@ -281,6 +274,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bot
       }
     }
   }
+  free(prune_threshold_params_cpu);
 }
 
 template <typename Dtype>

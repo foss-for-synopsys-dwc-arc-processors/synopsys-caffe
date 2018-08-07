@@ -24,7 +24,7 @@ class SqueezeInnerProductLayer : public Layer<Dtype> {
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
   virtual void AggregateParams(const int, const Dtype* , const Dtype* ,
-    Dtype* , Dtype* , unsigned int* );
+    unsigned int* );
   virtual void CalculateMask(const int, const Dtype* , Dtype* ,
     Dtype , Dtype , Dtype );
 

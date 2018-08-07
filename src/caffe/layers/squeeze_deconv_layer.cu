@@ -134,26 +134,6 @@ void SqueezeCMomentCalc(const int n, const Dtype* wb, const Dtype* mask, Dtype* 
   free(pmu_c);free(pstd_c);free(pncount_c);
 }
 
-//Count the number of non-zero weights
-template <typename Dtype>
-void SqueezeCNZeroCalc(const int n, const Dtype* mask, unsigned int* ncount ){
-  const unsigned int NUM_THREADS = 512;
-  unsigned int* pncount_g;
-  unsigned int* pncount_c;
-  int num_p = (n + (NUM_THREADS << 1) - 1) / (NUM_THREADS << 1);
-  cudaMalloc(&pncount_g, sizeof(unsigned int) * num_p);
-  pncount_c = (unsigned int*) malloc(num_p * sizeof(unsigned int));
-  SqueezeCNzeroCollect<Dtype><<<num_p,NUM_THREADS>>>(n, mask, pncount_g);
-  CUDA_POST_KERNEL_CHECK;
-  cudaMemcpy(pncount_c, pncount_g, sizeof(unsigned int) * num_p, cudaMemcpyDeviceToHost);
-  for (int i = 0; i < num_p; i++) {
-    *ncount += pncount_c[i];
-  }
-  cudaFree(pncount_g);
-  free(pncount_c);
-}
-
-
 template <typename Dtype>
 void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
@@ -163,6 +143,9 @@ void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
   const Dtype* bias = NULL;
   Dtype* biasMask = NULL;
   Dtype* biasTmp = NULL;
+  Dtype* prune_threshold_params_gpu = NULL; // To store mu and std values
+  Dtype* prune_threshold_params_cpu = NULL;
+  prune_threshold_params_cpu = (Dtype*)malloc(sizeof(Dtype) * 2);
   int maskcount = 0;
   if (this->bias_term_) {
     weight = this->blobs_[0]->mutable_gpu_data();
@@ -170,12 +153,14 @@ void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
     weightTmp = this->weight_tmp_.mutable_gpu_data();
     bias = this->blobs_[1]->mutable_gpu_data();
     biasMask = this->blobs_[3]->mutable_gpu_data();
+    prune_threshold_params_gpu = this->blobs_[4]->mutable_gpu_data();
     biasTmp = this->bias_tmp_.mutable_gpu_data();
     maskcount = this->blobs_[2]->count();
   }
   else {
     weight = this->blobs_[0]->mutable_gpu_data();
     weightMask = this->blobs_[1]->mutable_gpu_data();
+    prune_threshold_params_gpu = this->blobs_[2]->mutable_gpu_data();
     weightTmp = this->weight_tmp_.mutable_gpu_data();
     maskcount = this->blobs_[1]->count();
   }
@@ -190,27 +175,33 @@ void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
     // Calculate the mean and standard deviation of learnable parameters
     if ((this->std == 0 && this->iter_ == 0) || this->iter_== 40 || this->iter_== 80 || this->iter_== 120 || this->iter_== 160) {
       unsigned int ncount = 0;
-      SqueezeCMomentCalc(this->blobs_[0]->count(), weight, weightMask, &mu, &std, &ncount);
+      SqueezeCMomentCalc(this->blobs_[0]->count(), weight, weightMask, &this->mu, &this->std, &ncount);
       if (this->bias_term_) {
-        SqueezeCMomentCalc(this->blobs_[1]->count(), bias, biasMask, &mu, &std, &ncount);
+        SqueezeCMomentCalc(this->blobs_[1]->count(), bias, biasMask, &this->mu, &this->std, &ncount);
       }
-      this->mu /= ncount; this->std -= ncount * mu * mu;
-      this->std /= ncount; this->std = sqrt(std);
+      this->mu /= ncount; this->std -= ncount * this->mu * this->mu;
+      this->std /= ncount; this->std = sqrt(this->std);
+      prune_threshold_params_cpu[0] = this->mu;
+      prune_threshold_params_cpu[1] = this->std;
       LOG(INFO)<<mu<<"  "<<std<<"  "<<ncount<<"\n";
+      // Copy mu and std value from host to device
+      cudaMemcpy(prune_threshold_params_gpu, prune_threshold_params_cpu, sizeof(Dtype)*2, cudaMemcpyHostToDevice);
     }
-//No pruning/splicing during Retraining
+    // Copy mu and std value from Device to host
+    cudaMemcpy(prune_threshold_params_cpu, prune_threshold_params_gpu, sizeof(Dtype)*2, cudaMemcpyDeviceToHost);
+    //No pruning/splicing during Retraining
     // Calculate the weight mask and bias mask with probability
     Dtype r = static_cast<Dtype>(rand())/static_cast<Dtype>(RAND_MAX);
     if (pow(1 + (this->gamma) * (this->iter_), -(this->power)) > r && (this->iter_) < (this->iter_stop_)) {
       SqueezeCMaskCalc<Dtype><<<CAFFE_GET_BLOCKS(this->blobs_[0]->count()),
         CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[0]->count(), weight,
-        weightMask, this->mu, this->std, this->crate);
+        weightMask, prune_threshold_params_cpu[0], prune_threshold_params_cpu[1], this->crate);
 
       CUDA_POST_KERNEL_CHECK;
       if (this->bias_term_) {
         SqueezeCMaskCalc<Dtype><<<CAFFE_GET_BLOCKS(this->blobs_[1]->count()),
           CAFFE_CUDA_NUM_THREADS>>>( this->blobs_[1]->count(), bias,
-          biasMask, this->mu, this->std, this->crate);
+          biasMask, prune_threshold_params_cpu[0], prune_threshold_params_cpu[1], this->crate);
         CUDA_POST_KERNEL_CHECK;
       }
     }
@@ -238,11 +229,13 @@ void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
         int start_index = 0;
         int end_index = 0;
         for (unsigned int k = 0; k < zero_count; ++k) {
-          if (prune_node[k].first > (0.25 * (this->mu + this->std))) {
+          if (prune_node[k].first > (0.25 * (prune_threshold_params_cpu[0] + prune_threshold_params_cpu[1]))) {
             start_index = k;
             break;
           }
         }
+        if(start_index == 0)
+          start_index = zero_count - to_bespliced;  //Update start index
         end_index = start_index + to_bespliced;
         if (end_index > zero_count) {
           start_index = start_index - (end_index - zero_count);
@@ -257,6 +250,7 @@ void SqueezeDeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& b
         this->dynamicsplicing = false;
       }
     }
+    free(prune_threshold_params_cpu);
   }
 
   // Calculate the current (masked) weight and bias
