@@ -27,7 +27,7 @@ git submodule update --init  # for datasets used in unit tests
 ./autogen.sh
 ./configure
 make
-make check
+#make check  # Check cost a long time
 make install
 
 if $WITH_CMAKE ; then
