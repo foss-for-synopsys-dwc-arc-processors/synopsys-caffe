@@ -260,7 +260,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
   // For SqueezeConvolution
-  if (!strcmp(this->type(), "SqueezeConvolution") or !strcmp(this->type(), "SqueezeDeconvolution") ) {
+  if (!strcmp(this->type(), "SqueezeConvolution") || !strcmp(this->type(), "SqueezeDeconvolution") ) {
     LayerSetUpInternal(this->layer_param_.squeeze_convolution_param(), bottom, top);
   }
   // For Convolution
