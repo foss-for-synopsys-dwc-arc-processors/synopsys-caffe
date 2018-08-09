@@ -1256,11 +1256,21 @@ message ConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATION, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
+  optional uint32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_b = 29 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
+
+  optional float input_scale = 30 [default = 1]; //CUSTOMIZATION
+  optional float output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional float weight_scale = 32 [default = 1]; //CUSTOMIZATION
+  optional float bias_scale = 33 [default = 1]; //CUSTOMIZATION
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -1711,6 +1721,11 @@ message InnerProductParameter {
   optional bool weight_fixed = 7 [default = false];
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
+
+  optional float input_scale = 10 [default = 1]; //CUSTOMIZATION
+  optional float output_scale = 11 [default = 1]; //CUSTOMIZATION
+  optional float weight_scale = 12 [default = 1]; //CUSTOMIZATION
+  optional float bias_scale = 13 [default = 1]; //CUSTOMIZATION
 }
 
 message InputParameter {
@@ -1892,7 +1907,7 @@ message PoolingParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -1901,6 +1916,11 @@ message PoolingParameter {
   optional uint32 pad_h = 9 [default = 0]; // The padding height
   optional uint32 pad_w = 10 [default = 0]; // The padding width
   optional uint32 pad_type = 13 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
+  optional uint32 pad_l = 16 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
+  optional uint32 pad_r = 17 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
+  optional uint32 pad_t = 18 [default = 0]; //CUSTOMIZATONN, only work when pad_type is not set to 1
+  optional uint32 pad_b = 19 [default = 0]; //CUSTOMIZATONN, only work when pad_type is not to 1
   optional uint32 kernel_size = 2; // The kernel size (square)
   optional uint32 kernel_h = 5; // The kernel height
   optional uint32 kernel_w = 6; // The kernel width
@@ -2240,11 +2260,20 @@ message SqueezeConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATON, act as dummy param in squeeze_conv
+  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional uint32 pad_l = 36 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional uint32 pad_r = 37 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional uint32 pad_t = 38 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional uint32 pad_b = 39 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
+
+  optional float input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional float output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional float weight_scale = 48 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional float bias_scale = 49 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -2422,7 +2451,7 @@ message SPPParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional uint32 pyramid_height = 1;
   optional PoolMethod pool = 2 [default = MAX]; // The pooling method
@@ -2547,7 +2576,7 @@ message V0LayerParameter {
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
   }
   optional PoolMethod pool = 11 [default = MAX]; // The pooling method
   optional float dropout_ratio = 12 [default = 0.5]; // dropout ratio

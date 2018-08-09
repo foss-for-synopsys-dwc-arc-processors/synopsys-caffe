@@ -77,10 +77,25 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   }
 
   //<--CUSTOMIZATION
-  if (conv_param.has_pad_type()){
-    pad_type_ = conv_param.pad_type();
+  if (conv_param.has_input_scale()){
+    input_scale_ = conv_param.input_scale();
   } else{
-	pad_type_ = 0;
+	input_scale_ = 1;
+  }
+  if (conv_param.has_output_scale()){
+    output_scale_ = conv_param.output_scale();
+  } else{
+	output_scale_ = 1;
+  }
+  if (conv_param.has_weight_scale()){
+    weight_scale_ = conv_param.weight_scale();
+  } else{
+	weight_scale_ = 1;
+  }
+  if (conv_param.has_bias_scale()){
+    bias_scale_ = conv_param.bias_scale();
+  } else{
+	bias_scale_ = 1;
   }
   //CUSTOMIZATION-->
 
@@ -107,6 +122,44 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
           conv_param.pad((num_pad_dims == 1) ? 0 : i);
     }
   }
+
+  //<--CUSTOMIZATION
+  if (conv_param.has_pad_type()){
+    pad_type_ = conv_param.pad_type();
+    CHECK_EQ(0, conv_param.pad_size())
+        << "Either pad or pad_type should be specified; not both.";
+    CHECK_EQ(0, conv_param.pad_h())
+        << "Either pad_h/w or pad_type should be specified; not both.";
+    CHECK_EQ(0, conv_param.pad_w())
+        << "Either pad_h/w or pad_type should be specified; not both.";
+    LOG(INFO) << "Note parameter pad_type is DEPRECATED. Please use pad_l/r/t/b instead.";
+  } else{
+	pad_type_ = 0;
+  }
+
+  if (conv_param.has_pad_l()){
+    pad_l_ = conv_param.pad_l();
+    pad_r_ = conv_param.pad_r();
+    pad_t_ = conv_param.pad_t();
+    pad_b_ = conv_param.pad_b();
+    CHECK_EQ(num_spatial_axes_, 2)
+        << "pad_l, pad_r, pad_t & pad_b can only be used for 2D convolution.";
+    CHECK_EQ(0, conv_param.pad_size())
+        << "Either pad or pad_l/r/t/b should be specified; not both.";
+    CHECK_EQ(0, conv_param.pad_h())
+        << "Either pad_h/w or pad_l/r/t/b should be specified; not both.";
+    CHECK_EQ(0, conv_param.pad_w())
+        << "Either pad_h/w or pad_l/r/t/b should be specified; not both.";
+    CHECK_EQ(0, conv_param.pad_type())
+            << "Either pad_type or pad_l/r/t/b should be specified; not both.";
+  } else{
+    pad_l_ = 0;
+    pad_r_ = 0;
+    pad_t_ = 0;
+    pad_b_ = 0;
+  }
+  //CUSTOMIZATION-->
+
   // Setup dilation dimensions (dilation_).
   dilation_.Reshape(spatial_dim_blob_shape);
   int* dilation_data = dilation_.mutable_cpu_data();
@@ -207,7 +260,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
   // For SqueezeConvolution
-  if (!strcmp(this->type(), "SqueezeConvolution")) {
+  if (!strcmp(this->type(), "SqueezeConvolution") || !strcmp(this->type(), "SqueezeDeconvolution") ) {
     LayerSetUpInternal(this->layer_param_.squeeze_convolution_param(), bottom, top);
   }
   // For Convolution

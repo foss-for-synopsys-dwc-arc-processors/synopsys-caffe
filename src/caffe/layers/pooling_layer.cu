@@ -221,10 +221,17 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;
@@ -275,7 +282,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 		top_data);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolForward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
@@ -532,10 +539,17 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;
@@ -584,7 +598,7 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 		bottom_diff);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolBackward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, top[0]->num(), channels_,

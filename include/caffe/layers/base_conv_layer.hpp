@@ -96,6 +96,15 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   bool force_nd_im2col_;
   int gan_mode_;
   int pad_type_; //CUSTOMIZATION
+  int pad_l_; //CUSTOMIZATION
+  int pad_r_; //CUSTOMIZATION
+  int pad_t_; //CUSTOMIZATION
+  int pad_b_; //CUSTOMIZATION
+
+  Dtype input_scale_; //CUSTOMIZATION
+  Dtype output_scale_; //CUSTOMIZATION
+  Dtype weight_scale_; //CUSTOMIZATION
+  Dtype bias_scale_; //CUSTOMIZATION
 
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
@@ -106,7 +115,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1], col_buff);
     } else {
       im2col_nd_cpu(data, num_spatial_axes_, conv_input_shape_.cpu_data(),
@@ -121,7 +130,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1], data);
     } else {
       col2im_nd_cpu(col_buff, num_spatial_axes_, conv_input_shape_.cpu_data(),
@@ -137,7 +146,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1], col_buff);
     } else {
       im2col_nd_gpu(data, num_spatial_axes_, num_kernels_im2col_,
@@ -155,7 +164,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
           pad_.cpu_data()[0], pad_.cpu_data()[1],
           stride_.cpu_data()[0], stride_.cpu_data()[1],
-		  pad_type_, //CUSTOMIZATION
+		  pad_type_, pad_l_, pad_r_, pad_t_, pad_b_, //CUSTOMIZATION
           dilation_.cpu_data()[0], dilation_.cpu_data()[1], data);
     } else {
       col2im_nd_gpu(col_buff, num_spatial_axes_, num_kernels_col2im_,

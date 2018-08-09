@@ -3,14 +3,14 @@
 #include <cmath>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/squeeze_conv_layer.hpp"
+#include "caffe/layers/squeeze_deconv_layer.hpp"
 
 using namespace std;
 
 namespace caffe {
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void SqueezeDeconvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   BaseConvolutionLayer <Dtype>::LayerSetUp(bottom, top);
 
@@ -58,7 +58,7 @@ void SqueezeConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bott
 }
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::compute_output_shape() {
+void SqueezeDeconvolutionLayer<Dtype>::compute_output_shape() {
   const int* kernel_shape_data = this->kernel_shape_.cpu_data();
   const int* stride_data = this->stride_.cpu_data();
   const int* pad_data = this->pad_.cpu_data();
@@ -68,14 +68,14 @@ void SqueezeConvolutionLayer<Dtype>::compute_output_shape() {
     // i + 1 to skip channel axis
     const int input_dim = this->input_shape(i + 1);
     const int kernel_extent = dilation_data[i] * (kernel_shape_data[i] - 1) + 1;
-    const int output_dim = (input_dim + 2 * pad_data[i] - kernel_extent)
-        / stride_data[i] + 1;
+    const int output_dim = stride_data[i] * (input_dim - 1)
+        + kernel_extent - 2 * pad_data[i];
     this->output_shape_.push_back(output_dim);
   }
 }
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::AggregateParams(const int n, const Dtype* wb, const Dtype* mask,
+void SqueezeDeconvolutionLayer<Dtype>::AggregateParams(const int n, const Dtype* wb, const Dtype* mask,
     unsigned int *count) {
   for (unsigned int k = 0;k < n; ++k) {
     this->mu  += fabs(mask[k] * wb[k]);
@@ -85,7 +85,7 @@ void SqueezeConvolutionLayer<Dtype>::AggregateParams(const int n, const Dtype* w
 }
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::CalculateMask(const int n, const Dtype* wb, Dtype* mask,
+void SqueezeDeconvolutionLayer<Dtype>::CalculateMask(const int n, const Dtype* wb, Dtype* mask,
     Dtype mu, Dtype std, Dtype r) {
   for (unsigned int k = 0;k < n;++k) {
         // The constants 0.9 and 1.1 is to set margin that witholds few parameters undergoing pruning / splicing
@@ -97,7 +97,7 @@ void SqueezeConvolutionLayer<Dtype>::CalculateMask(const int n, const Dtype* wb,
 }
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void SqueezeDeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const Dtype* weight = NULL;
   Dtype* weightMask = NULL;
@@ -125,8 +125,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
     maskcount = this->blobs_[1]->count();
   }
   vector<int> index_zero;
-
-  // Core logic for Pruning/Splicing
+    // Core logic for Pruning/Splicing
   if (this->phase_ == TRAIN) {
     //To avoid corrupted mask value
     for (int l =0; l<maskcount; l++)
@@ -143,7 +142,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
       if (this->bias_term_) {
         AggregateParams(this->blobs_[1]->count(), bias, biasMask, &ncount);
       }
-      this->mu /= ncount; this->std -= ncount * this->mu * this->mu;
+      this->mu /= ncount; this->std -= ncount *this->mu * this->mu;
       this->std /= ncount; this->std = sqrt(this->std);
       // Storing mu and std values into the blob
       prune_threshold_params[0] = this->mu;
@@ -158,11 +157,13 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
         CalculateMask(this->blobs_[1]->count(), bias, biasMask, prune_threshold_params[0], prune_threshold_params[1], this->crate);
       }
     }
-    // Dynamic Splicing
-    // Unprune the pruned weights based on the splicing ratio
+
+
+// Dynamic Splicing
+// Randomly unprune the pruned weights based on the splicing ratio
     if(this->dynamicsplicing)
     {
-      if (this->iter_ == 0) {
+        if (this->iter_ == 0) {
         // Vector Pair holds weights and corresponding index for pruned nodes
         std::vector<std::pair<float, int> > prune_node;
         for (unsigned int k = 0; k < this->blobs_[0]->count(); ++k) {
@@ -183,7 +184,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
           }
         }
         if(start_index == 0)
-          start_index = zero_count - to_bespliced; //Update start index
+          start_index = zero_count - to_bespliced;  //Update start index
         end_index = start_index + to_bespliced;
         if (end_index > zero_count) {
           start_index = start_index - (end_index - zero_count);
@@ -206,15 +207,14 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
       biasTmp[k] = bias[k]*biasMask[k];
     }
   }
-
-  // Forward calculation with (masked) weight and bias
   for (int i = 0; i < bottom.size(); ++i) {
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* top_data = top[i]->mutable_cpu_data();
     for (int n = 0; n < this->num_; ++n) {
-      this->forward_cpu_gemm(bottom_data + bottom[i]->offset(n), weightTmp,
+      this->backward_cpu_gemm(bottom_data + bottom[i]->offset(n), weightTmp,
           top_data + top[i]->offset(n));
       if (this->bias_term_) {
+        //const Dtype* bias = this->blobs_[1]->cpu_data();
         this->forward_cpu_bias(top_data + top[i]->offset(n), biasTmp);
       }
     }
@@ -222,7 +222,7 @@ void SqueezeConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
 }
 
 template <typename Dtype>
-void SqueezeConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void SqueezeDeconvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   const Dtype* weightTmp = this->weight_tmp_.cpu_data();
   const Dtype* weightMask = NULL;
@@ -231,47 +231,50 @@ void SqueezeConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& to
   else
     weightMask = this->blobs_[1]->cpu_data();
   Dtype* weight_diff = this->blobs_[0]->mutable_cpu_diff();
-  for (int i = 0; i < top.size(); ++i) {
+  for (int i =0; i< top.size(); ++i)
+  {
     const Dtype* top_diff = top[i]->cpu_diff();
+    //const Dtype* bottom_data = bottom_data[i]->cpu_data();
+    //Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
     // Bias gradient, if necessary.
     if (this->bias_term_ && this->param_propagate_down_[1]) {
-      const Dtype* biasMask = this->blobs_[3]->cpu_data();
-      Dtype* bias_diff = this->blobs_[1]->mutable_cpu_diff();
-      for (unsigned int k = 0;k < this->blobs_[1]->count(); ++k) {
-        bias_diff[k] = bias_diff[k]*biasMask[k];
-      }
+        Dtype* bias_diff = this->blobs_[1]->mutable_cpu_diff();
+        const Dtype* biasMask = this->blobs_[3]->cpu_data();
+        for (unsigned int k = 0;k < this->blobs_[1]->count(); ++k) {
+            bias_diff[k] = bias_diff[k]*biasMask[k];
+        }
       for (int n = 0; n < this->num_; ++n) {
         this->backward_cpu_bias(bias_diff, top_diff + top[i]->offset(n));
       }
     }
-    if (this->param_propagate_down_[0] || propagate_down[i]) {
-      const Dtype* bottom_data = bottom[i]->cpu_data();
-      Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
-      for (unsigned int k = 0;k < this->blobs_[0]->count(); ++k) {
-        weight_diff[k] = weight_diff[k]*weightMask[k];
-      }
-      for (int n = 0; n < this->num_; ++n) {
-        // gradient w.r.t. weight. Note that we will accumulate diffs.
-        if (this->param_propagate_down_[0]) {
-          this->weight_cpu_gemm(bottom_data + bottom[i]->offset(n),
-              top_diff + top[i]->offset(n), weight_diff);
+    if (this->param_propagate_down_[0] || propagate_down[i]){
+        const Dtype* bottom_data = bottom[i]->cpu_data();
+        Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
+        for (unsigned int k = 0;k < this->blobs_[0]->count(); ++k) {
+            weight_diff[k] = weight_diff[k]*weightMask[k];
         }
-        // gradient w.r.t. bottom data, if necessary.
-        if (propagate_down[i]) {
-          this->backward_cpu_gemm(top_diff + top[i]->offset(n), weightTmp,
-              bottom_diff + bottom[i]->offset(n));
+        for(int n = 0; n < this->num_; ++n){
+            // Gradient w.r.t. weight. Note that we will accumulate diffs.
+            if (this->param_propagate_down_[0]) {
+                this->weight_cpu_gemm(top_diff + top[i]->offset(n),
+                    bottom_data + bottom[i]->offset(n), weight_diff);
+            }
+            // Gradient w.r.t. bottom data, if necessary, reusing the column buffer
+            // we might have just computed above.
+            if (propagate_down[i]) {
+                this->forward_cpu_gemm(top_diff + top[i]->offset(n), weightTmp,
+                    bottom_diff + bottom[i]->offset(n),
+                    this->param_propagate_down_[0]);
+            }
         }
-      }
     }
   }
 }
-
 #ifdef CPU_ONLY
-STUB_GPU(SqueezeConvolutionLayer);
+STUB_GPU(SqueezeDeconvolutionLayer);
 #endif
 
-INSTANTIATE_CLASS(SqueezeConvolutionLayer);
-//REGISTER_LAYER_CLASS(SqueezeConvolution);
-
-}  // namespace caffe
+INSTANTIATE_CLASS(SqueezeDeconvolutionLayer);
+REGISTER_LAYER_CLASS(SqueezeDeconvolution);
+}// namespace caffe
 /***********************************************************************************************************************/

@@ -60,6 +60,11 @@ class Im2colLayer : public Layer<Dtype> {
   bool force_nd_im2col_;
 
   int pad_type_; //CUSTOMIZATION
+  int pad_l_; //CUSTOMIZATION
+  int pad_r_; //CUSTOMIZATION
+  int pad_t_; //CUSTOMIZATION
+  int pad_b_; //CUSTOMIZATION
+
 };
 
 }  // namespace caffe
