@@ -258,7 +258,9 @@ class DataTransformer {
    */
   void Transform(const Datum& datum, Blob<Dtype>* transformed_blob,
                  NormalizedBBox* crop_bbox, bool* do_mirror);
-
+  void Transform_Yolo(const AnnotatedDatum& anno_datum, 
+                Blob<Dtype>* transformed_blob, NormalizedBBox* crop_bbox,
+                RepeatedPtrField<AnnotationGroup>* transformed_anno_group_all);
   // Tranformation parameters
   TransformationParameter param_;
 

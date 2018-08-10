@@ -126,6 +126,10 @@ message NormalizedBBox {
   optional bool difficult = 6;
   optional float score = 7;
   optional float size = 8;
+  optional float x_center = 9;
+  optional float y_center = 10;
+  optional float width = 11;
+  optional float height = 12;
 }
 
 // Annotation for each object instance.
@@ -596,6 +600,10 @@ message LayerParameter {
   optional BlackAugmentationParameter black_augmentation_param = 161;
   // If should run reshape every iteration
   optional bool reshape_every_iter = 157 [default = true];
+
+  //Yolo related
+  optional ReorgParameter reorg_param = 198;
+  optional YoloV2LossParameter yolo_v2_loss_param = 199;
 }
 
 message AccumParameter {
@@ -908,6 +916,8 @@ message TransformationParameter {
   optional uint32 crop_width = 19 [default = 0];
   // the height for cropped region
   optional uint32 crop_height = 20 [default = 0];
+  // To invoke yolo Preprocessing steps
+  optional bool caffe_yolo = 21 [default = false];
 }
 
 // Message that stores parameters used by data transformer for resize policy
@@ -948,6 +958,8 @@ message ResizeParameter {
   }
   //interpolation for for resizing
   repeated Interp_mode interp_mode = 7;
+  //jitter value for yolo
+  optional float jitter = 10 [default = 0.3];
 }
 
 message SaltPepperParameter {
@@ -1024,6 +1036,12 @@ message DistortionParameter {
 
   // The probability of randomly order the image channels.
   optional float random_order_prob = 11 [default = 0.0];
+
+  // Lower bound for the random exposure factor for yolo.
+  optional float exposure_lower = 12 [default = 0.0];
+  // Upper bound for the random exposure factor for yolo
+  optional float exposure_upper = 13 [default = 0.0];
+
 }
 
 // Message that stores parameters used by data transformer for expansion policy
@@ -1366,6 +1384,9 @@ message DataParameter {
   // Prefetch queue (Increase if data feeding bandwidth varies, within the
   // limit of device memory for GPU training)
   optional uint32 prefetch = 10 [default = 4];
+
+  //To store last layer feature map size for yolo
+  repeated uint32 side = 11;
 
   // Read data from BinaryDB files using multiple threads. If this parameter
   // is set to ZERO, each top blob will get a separate thread.
@@ -2446,6 +2467,20 @@ message WindowDataParameter {
   optional string root_folder = 13 [default = ""];
 }
 
+message YoloV2LossParameter {
+  repeated float anchors = 1;
+  required int32 side = 2;
+  required int32 num_classes = 3;
+  optional int32 num_object = 4;
+  optional float box_scale = 5  [default = .5];
+  optional float class_scale = 6  [default = .5];
+  optional float noobject_scale = 7  [default = .5];
+  optional float object_scale = 8  [default = .5];
+  optional bool  rescore = 9  [default = true];
+  optional bool  constraint = 10 [default = true];
+  optional float thresh = 11 [default = 0.7];
+}
+
 message SPPParameter {
   enum PoolMethod {
     MAX = 0;
@@ -2554,6 +2589,7 @@ message V1LayerParameter {
   optional TransformationParameter transform_param = 36;
   optional LossParameter loss_param = 42;
   optional V0LayerParameter layer = 1;
+  optional YoloV2LossParameter yolo_v2_loss_param = 300;
 }
 
 // DEPRECATED: V0LayerParameter is the old way of specifying layer parameters
@@ -2659,4 +2695,9 @@ message PReLUParameter {
   optional FillerParameter filler = 1;
   // Whether or not slope parameters are shared across channels.
   optional bool channel_shared = 2 [default = false];
+}
+
+message ReorgParameter {
+  optional uint32 stride = 1;
+  optional bool reverse = 2 [default = false];
 }
