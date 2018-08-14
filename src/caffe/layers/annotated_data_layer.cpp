@@ -367,7 +367,7 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
               int obj_index = locations + dif_index;
               int class_index = locations * 2 + dif_index;
               int cor_index = locations * 3 + dif_index * 4;
-              top_label[dif_index] = bbox.difficult();;
+              top_label[dif_index] = bbox.difficult();
               top_label[obj_index] = 1;
               top_label[class_index] = class_label;
               top_label[cor_index + 0] = bbox.x_center();

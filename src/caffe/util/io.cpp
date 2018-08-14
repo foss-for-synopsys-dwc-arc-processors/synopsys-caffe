@@ -232,10 +232,10 @@ void GetImageSize(const string& filename, int* height, int* width) {
 
 bool ReadRichImageToAnnotatedDatum(const string& filename,
     const string& labelfile, const int height, const int width,
-    const int min_dim, const int max_dim, const bool caffe_yolo,
-    const bool is_color, const string& encoding,
-    const AnnotatedDatum_AnnotationType type, const string& labeltype,
-    const std::map<string, int>& name_to_label, AnnotatedDatum* anno_datum) {
+    const int min_dim, const int max_dim, const bool is_color,
+    const string& encoding, const AnnotatedDatum_AnnotationType type,
+    const string& labeltype, const std::map<string,
+    int>& name_to_label, AnnotatedDatum* anno_datum, const bool caffe_yolo) {
   // Read image to datum.
   bool status = ReadImageToDatum(filename, -1, height, width,
                                  min_dim, max_dim, is_color, encoding,
@@ -253,7 +253,7 @@ bool ReadRichImageToAnnotatedDatum(const string& filename,
       GetImageSize(filename, &ori_height, &ori_width);
       if (labeltype == "xml") {
         return ReadXMLToAnnotatedDatum(labelfile, ori_height, ori_width,
-                                       caffe_yolo, name_to_label, anno_datum);
+                                       name_to_label, anno_datum, caffe_yolo);
       } else if (labeltype == "json") {
         return ReadJSONToAnnotatedDatum(labelfile, ori_height, ori_width,
                                         name_to_label, anno_datum);
@@ -295,8 +295,8 @@ bool ReadFileToDatum(const string& filename, const int label,
 
 // Parse VOC/ILSVRC detection annotation.
 bool ReadXMLToAnnotatedDatum(const string& labelfile, const int img_height,
-    const int img_width, const bool caffe_yolo,
-    const std::map<string, int>& name_to_label, AnnotatedDatum* anno_datum) {
+    const int img_width, const std::map<string, int>& name_to_label,
+    AnnotatedDatum* anno_datum, const bool caffe_yolo) {
   ptree pt;
   read_xml(labelfile, pt);
 
@@ -320,6 +320,7 @@ bool ReadXMLToAnnotatedDatum(const string& labelfile, const int img_height,
   BOOST_FOREACH(ptree::value_type &v1, pt.get_child("annotation")) {
     ptree pt1 = v1.second;
     if (v1.first == "object") {
+      vector<float> box(4, 0);
       Annotation* anno = NULL;
       bool difficult = false;
       ptree object = v1.second;
@@ -385,18 +386,14 @@ bool ReadXMLToAnnotatedDatum(const string& labelfile, const int img_height,
           LOG_IF(WARNING, ymin > ymax) << labelfile <<
               " bounding box irregular.";
           // Store the normalized bounding box.
-          NormalizedBBox* bbox = anno->mutable_bbox();
           if(caffe_yolo) {
-            if(difficult == 1)
-              continue;
-            anno->set_instance_id(instance_id++);
-            bbox->set_x_center((static_cast<float>(xmin + (xmax - xmin) / 2.) - 1) / width);
-            bbox->set_y_center((static_cast<float>(ymin + (ymax - ymin) / 2.) - 1) / height);
-            bbox->set_width(static_cast<float>(xmax - xmin) / width);
-            bbox->set_height(static_cast<float>(ymax - ymin) / height);
-            bbox->set_difficult(difficult);
+            box[0] = (static_cast<float>(xmin + (xmax - xmin) / 2.) - 1) / width;
+            box[1] = (static_cast<float>(ymin + (ymax - ymin) / 2.) - 1) / height;
+            box[2] = static_cast<float>(xmax - xmin) / width;
+            box[3] = static_cast<float>(ymax - ymin) / height;
           }
           else {
+            NormalizedBBox* bbox = anno->mutable_bbox();
             bbox->set_xmin(static_cast<float>(xmin) / width);
             bbox->set_ymin(static_cast<float>(ymin) / height);
             bbox->set_xmax(static_cast<float>(xmax) / width);
@@ -404,6 +401,18 @@ bool ReadXMLToAnnotatedDatum(const string& labelfile, const int img_height,
             bbox->set_difficult(difficult);
           }
         }
+      }
+      if(caffe_yolo) {
+        // Store the normalized bounding box.
+        NormalizedBBox* bbox = anno->mutable_bbox();
+        if(difficult)
+          continue;
+        anno->set_instance_id(instance_id++);
+        bbox->set_x_center(box[0]);
+        bbox->set_y_center(box[1]);
+        bbox->set_width(box[2]);
+        bbox->set_height(box[3]);
+        bbox->set_difficult(difficult);
       }
     }
   }
