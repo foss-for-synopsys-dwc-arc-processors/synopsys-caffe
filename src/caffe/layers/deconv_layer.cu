@@ -8,8 +8,16 @@ template <typename Dtype>
 void DeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const Dtype* weight = this->blobs_[0]->gpu_data();
+  Dtype input_scale = this->input_scale_; //CUSTOMIZATION
+  Dtype output_scale = this->output_scale_; //CUSTOMIZATION
   for (int i = 0; i < bottom.size(); ++i) {
-    const Dtype* bottom_data = bottom[i]->gpu_data();
+    Dtype* bottom_data = bottom[i]->mutable_gpu_data();
+    //<--CUSTOMIZATION
+    const int count_b = bottom[i]->count();
+    if (input_scale != Dtype(1)) {
+      caffe_gpu_scal(count_b, input_scale, bottom_data);
+    }
+    //CUSTOMIZATION-->
     Dtype* top_data = top[i]->mutable_gpu_data();
     for (int n = 0; n < this->num_; ++n) {
       this->backward_gpu_gemm(bottom_data + n * this->bottom_dim_, weight,
@@ -19,6 +27,12 @@ void DeconvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         this->forward_gpu_bias(top_data + n * this->top_dim_, bias);
       }
     }
+    //<--CUSTOMIZATION
+    const int count_t = top[i]->count();
+    if (output_scale != Dtype(1)) {
+      caffe_gpu_scal(count_t, output_scale, top_data);
+    }
+    //CUSTOMIZATION-->
   }
 }
 

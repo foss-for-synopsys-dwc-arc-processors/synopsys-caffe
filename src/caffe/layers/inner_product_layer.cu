@@ -17,20 +17,7 @@ void InnerProductLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   }
   //CUSTOMIZATION-->
   Dtype* top_data = top[0]->mutable_gpu_data();
-  Dtype* weight = this->blobs_[0]->mutable_gpu_data();
-  //<--CUSTOMIZATION
-  const int count_w = this->blobs_[0]->count();
-  if (weight_scale_ != Dtype(1)) {
-    caffe_gpu_scal(count_w, weight_scale_, weight);
-  }
-  if (bias_term_){
-	  Dtype* bias = this->blobs_[1]->mutable_gpu_data();
-	  const int count_bias = this->blobs_[1]->count();
-	  if (bias_scale_ != Dtype(1)) {
-	    caffe_gpu_scal(count_bias, bias_scale_, bias);
-      }
-  }
-  //CUSTOMIZATION-->
+  const Dtype* weight = this->blobs_[0]->gpu_data();
   if (M_ == 1) {
     caffe_gpu_gemv<Dtype>(CblasNoTrans, N_, K_, (Dtype)1.,
                          weight, bottom_data, (Dtype)0., top_data);

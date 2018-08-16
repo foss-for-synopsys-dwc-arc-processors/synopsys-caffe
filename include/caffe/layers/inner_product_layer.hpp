@@ -50,8 +50,6 @@ class InnerProductLayer : public Layer<Dtype> {
 
   Dtype input_scale_; //CUSTOMIZATION
   Dtype output_scale_; //CUSTOMIZATION
-  Dtype weight_scale_; //CUSTOMIZATION
-  Dtype bias_scale_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

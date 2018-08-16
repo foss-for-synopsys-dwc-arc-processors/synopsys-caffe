@@ -1269,8 +1269,6 @@ message ConvolutionParameter {
 
   optional float input_scale = 30 [default = 1]; //CUSTOMIZATION
   optional float output_scale = 31 [default = 1]; //CUSTOMIZATION
-  optional float weight_scale = 32 [default = 1]; //CUSTOMIZATION
-  optional float bias_scale = 33 [default = 1]; //CUSTOMIZATION
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -1724,8 +1722,6 @@ message InnerProductParameter {
 
   optional float input_scale = 10 [default = 1]; //CUSTOMIZATION
   optional float output_scale = 11 [default = 1]; //CUSTOMIZATION
-  optional float weight_scale = 12 [default = 1]; //CUSTOMIZATION
-  optional float bias_scale = 13 [default = 1]; //CUSTOMIZATION
 }
 
 message InputParameter {

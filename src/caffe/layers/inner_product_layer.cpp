@@ -17,8 +17,6 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   gan_mode_ = 1;
   input_scale_ = this->layer_param_.inner_product_param().input_scale();  //CUSTOMIZATION
   output_scale_ = this->layer_param_.inner_product_param().output_scale();  //CUSTOMIZATION
-  weight_scale_ = this->layer_param_.inner_product_param().weight_scale();  //CUSTOMIZATION
-  bias_scale_ = this->layer_param_.inner_product_param().bias_scale();  //CUSTOMIZATION
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
   // Dimensions starting from "axis" are "flattened" into a single
