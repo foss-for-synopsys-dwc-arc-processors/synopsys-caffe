@@ -371,7 +371,7 @@ namespace caffe {
 
 
 #ifdef CPU_ONLY
-    STUB_GPU(YoloV2LossLayer);
+    //STUB_GPU(YoloV2LossLayer);
 #endif
    
     INSTANTIATE_CLASS(YoloV2LossLayer);
