@@ -362,7 +362,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
   float dx = rand_uniform(0, resize_width - nw);
   float dy = rand_uniform(0, resize_height - nh);
 
-  float resized_image[resize_width * resize_height * 3];
+  float* resized_image = new float[resize_width * resize_height * 3];
   for(int i = 0; i < (resize_width * resize_height * 3); i++)
      resized_image[i] = 0.5;
   place_image(cv_img, nw, nh, dx, dy, resized_image, resize_width, resize_height, scale);
