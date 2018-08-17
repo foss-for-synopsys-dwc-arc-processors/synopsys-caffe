@@ -161,6 +161,25 @@ void caffe_gpu_scale<double>(const int n, const double alpha, const double *x,
 }
 
 template <typename Dtype>
+__global__ void round_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    y[index] = round(y[index]);
+  }
+}
+
+template <>
+void caffe_gpu_round<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  round_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_round<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  round_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <typename Dtype>
 __global__ void set_kernel(const int n, const Dtype alpha, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
     y[index] = alpha;
