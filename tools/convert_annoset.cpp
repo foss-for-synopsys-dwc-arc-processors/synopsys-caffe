@@ -61,6 +61,8 @@ DEFINE_bool(encoded, false,
     "When this option is on, the encoded image will be save in datum");
 DEFINE_string(encode_type, "",
     "Optional: What type should we encode the image as ('png','jpg',...).");
+DEFINE_bool(caffe_yolo, false,
+    "When this option is on, generate data to train converted Yolo model on Caffe.");
 
 int main(int argc, char** argv) {
 #ifdef USE_OPENCV
@@ -92,6 +94,7 @@ int main(int argc, char** argv) {
   const string label_type = FLAGS_label_type;
   const string label_map_file = FLAGS_label_map_file;
   const bool check_label = FLAGS_check_label;
+  const bool caffe_yolo = FLAGS_caffe_yolo;
   std::map<std::string, int> name_to_label;
 
   std::ifstream infile(argv[2]);
@@ -163,7 +166,7 @@ int main(int argc, char** argv) {
       labelname = root_folder + boost::get<std::string>(lines[line_id].second);
       status = ReadRichImageToAnnotatedDatum(filename, labelname, resize_height,
           resize_width, min_dim, max_dim, is_color, enc, type, label_type,
-          name_to_label, &anno_datum);
+          name_to_label, &anno_datum, caffe_yolo);
       anno_datum.set_type(AnnotatedDatum_AnnotationType_BBOX);
     }
     if (status == false) {
