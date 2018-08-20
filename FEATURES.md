@@ -3,12 +3,12 @@ A Short Summary of New Features in Synopsys Caffe
 
 Synopsys Caffe Version: 2018.09  
 New added features are compared with the original BVLC Caffe 1.0.0
-
+  
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
-------------------------------
-pad_type ("SAME" style padding) in ConvolutionParameter and PoolingParameter  
+----------------------------------------------------------
+pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
-AVE_EXC_PAD (average pooling excluding the paddings) in PoolingParameter  
+AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
 pad.py (customized Python layer)  
@@ -20,6 +20,20 @@ evprune (Network Pruning Tool) related
 squeeze_conv_layer  
 squeeze_inner_product_layer  
 squeeze_deconv_layer  
+  
+YOLOv2 related  
+--------------  
+add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter  
+caffe_yolo in TransformationParameter  
+jitter in ResizeParameter  
+exposure_lower, exposure_upper in DistortionParameter  
+side in DataParameter  
+reorg_layer  
+yolo_v2_loss_layer  
+  
+model reference acceleration related  
+------------------------------------  
+input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
   
 ICNet (PSPNet) related  
 ---------------------  
@@ -39,11 +53,7 @@ unique_label_layer
 bn_layer (slope_filler, bias_filler, momentum and icnet in BNParameter)  
 update_global_stats and icnet in BatchNormParameter  
 scale_factors, crop_width and crop_height in TransformationParameter  
-  
-YOLOv2 related  
---------------  
-add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter   
-  
+      
 SRGAN related  
 -------------
 gan_loss_layer  
