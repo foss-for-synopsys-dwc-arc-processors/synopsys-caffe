@@ -77,6 +77,12 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   } else{
 	pad_type_= 0;
   }
+
+  if (pool_param.has_output_shift_instead_division()){
+    output_shift_instead_division_ = pool_param.output_shift_instead_division();
+  } else{
+    output_shift_instead_division_ = 0;
+  }
   //CUSTOMIZATION-->
   if (pool_param.has_pad_l()){
     pad_l_ = pool_param.pad_l();

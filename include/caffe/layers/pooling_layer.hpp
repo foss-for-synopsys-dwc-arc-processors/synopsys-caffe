@@ -59,6 +59,7 @@ class PoolingLayer : public Layer<Dtype> {
   int pad_r_; //CUSTOMIZATION
   int pad_t_; //CUSTOMIZATION
   int pad_b_; //CUSTOMIZATION
+  int output_shift_instead_division_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
