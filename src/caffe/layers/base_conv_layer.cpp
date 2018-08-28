@@ -129,9 +129,30 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
 
   if (conv_param.has_pad_l()){
     pad_l_ = conv_param.pad_l();
+  }
+  else{
+    pad_l_ = 0;
+  }
+  if (conv_param.has_pad_r()){
     pad_r_ = conv_param.pad_r();
+  }
+  else{
+   	pad_r_ = 0;
+  }
+  if (conv_param.has_pad_t()){
     pad_t_ = conv_param.pad_t();
+  }
+  else{
+    pad_t_ = 0;
+  }
+  if (conv_param.has_pad_b()){
     pad_b_ = conv_param.pad_b();
+  }
+  else{
+   	pad_b_ = 0;
+  }
+
+  if(pad_l_ !=0 || pad_r_ !=0 || pad_t_ !=0 || pad_b_!=0){
     CHECK_EQ(num_spatial_axes_, 2)
         << "pad_l, pad_r, pad_t & pad_b can only be used for 2D convolution.";
     CHECK_EQ(0, conv_param.pad_size())
@@ -142,11 +163,6 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
         << "Either pad_h/w or pad_l/r/t/b should be specified; not both.";
     CHECK_EQ(0, conv_param.pad_type())
             << "Either pad_type or pad_l/r/t/b should be specified; not both.";
-  } else{
-    pad_l_ = 0;
-    pad_r_ = 0;
-    pad_t_ = 0;
-    pad_b_ = 0;
   }
   //CUSTOMIZATION-->
 

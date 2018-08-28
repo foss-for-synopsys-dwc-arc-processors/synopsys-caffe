@@ -83,24 +83,41 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   } else{
     output_shift_instead_division_ = 0;
   }
-  //CUSTOMIZATION-->
+
   if (pool_param.has_pad_l()){
     pad_l_ = pool_param.pad_l();
+  }
+  else{
+ 	pad_l_ = 0;
+  }
+  if (pool_param.has_pad_r()){
     pad_r_ = pool_param.pad_r();
+  }
+  else{
+ 	pad_r_ = 0;
+  }
+  if (pool_param.has_pad_t()){
     pad_t_ = pool_param.pad_t();
+  }
+  else{
+ 	pad_t_ = 0;
+  }
+  if (pool_param.has_pad_b()){
     pad_b_ = pool_param.pad_b();
+  }
+  else{
+ 	pad_b_ = 0;
+  }
+
+  if(pad_l_ !=0 || pad_r_ !=0 || pad_t_ !=0 || pad_b_!=0){
     CHECK(!pool_param.has_pad())
         << "Either pad or pad_l/r/t/b should be specified; not both.";
     CHECK(!pool_param.has_pad_h() && !pool_param.has_pad_w())
         << "Either pad_h/w or pad_l/r/t/b should be specified; not both.";
     CHECK(!pool_param.has_pad_type())
         << "Either pad_type or pad_l/r/t/b should be specified; not both.";
-  } else{
-	pad_l_ = 0;
-	pad_r_ = 0;
-	pad_t_ = 0;
-	pad_b_ = 0;
   }
+  //CUSTOMIZATION-->
 
   if (pad_h_ != 0 || pad_w_ != 0) {
     CHECK(this->layer_param_.pooling_param().pool()
@@ -135,9 +152,9 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       if (ceil_mode_) {
     	if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){
     	  pooled_height_ = static_cast<int>(ceil(static_cast<float>(
-    	    height_ + pad_l_ + pad_r_ - kernel_h_) / stride_h_)) + 1;
+    	    height_ + pad_t_ + pad_b_ - kernel_h_) / stride_h_)) + 1;
     	  pooled_width_ = static_cast<int>(ceil(static_cast<float>(
-    	    width_ + pad_t_ + pad_b_ - kernel_w_) / stride_w_)) + 1;
+    	    width_ + pad_l_ + pad_r_ - kernel_w_) / stride_w_)) + 1;
     	}
     	else{
           pooled_height_ = static_cast<int>(ceil(static_cast<float>(
@@ -149,9 +166,9 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       else{
     	if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){
           pooled_height_ = static_cast<int>(floor(static_cast<float>(
-      	    height_ + pad_l_ + pad_r_ - kernel_h_) / stride_h_)) + 1;
+      	    height_ + pad_t_ + pad_b_ - kernel_h_) / stride_h_)) + 1;
       	  pooled_width_ = static_cast<int>(floor(static_cast<float>(
-      	    width_ + pad_t_ + pad_b_ - kernel_w_) / stride_w_)) + 1;
+      	    width_ + pad_l_ + pad_r_ - kernel_w_) / stride_w_)) + 1;
     	}
     	else{
           pooled_height_ = static_cast<int>(floor(static_cast<float>(
@@ -168,6 +185,19 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     default:
       LOG(FATAL) << "Unknown pooling padding type.";
       break;
+  }
+
+  if (pad_l_ || pad_r_ || pad_t_ || pad_b_) {
+    // If we have padding, ensure that the last pooling starts strictly
+    // inside the image (instead of at the padding); otherwise clip the last.
+    if ((pooled_height_ - 1) * stride_h_ >= height_ + pad_t_) {
+      --pooled_height_;
+    }
+    if ((pooled_width_ - 1) * stride_w_ >= width_ + pad_l_) {
+      --pooled_width_;
+    }
+    CHECK_LT((pooled_height_ - 1) * stride_h_, height_ + pad_t_);
+    CHECK_LT((pooled_width_ - 1) * stride_w_, width_ + pad_l_);
   }
   //CUSTOMIZATION-->
 
