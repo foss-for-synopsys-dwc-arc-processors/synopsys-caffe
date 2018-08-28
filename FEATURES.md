@@ -16,7 +16,7 @@ stridedslice.py (customized Python layer)
 shape.py (customized Python layer)  
   
 evprune (Network Pruning Tool) related  
------------------------  
+--------------------------------------
 squeeze_conv_layer  
 squeeze_inner_product_layer  
 squeeze_deconv_layer  
@@ -31,9 +31,10 @@ side in DataParameter
 reorg_layer  
 yolo_v2_loss_layer  
   
-model reference acceleration related  
-------------------------------------  
+reference model acceleration related (only valid for CUDA forwards implementation)  
+----------------------------------------------------------------------------------  
 input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
+output_shift_instead_division in PoolingParameter  
   
 ICNet (PSPNet) related  
 ---------------------  
