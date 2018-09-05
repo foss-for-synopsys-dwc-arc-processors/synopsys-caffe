@@ -35,6 +35,7 @@ reference model acceleration related (only valid for CUDA forwards implementatio
 ----------------------------------------------------------------------------------  
 input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
 output_shift_instead_division in PoolingParameter  
+saturate in ReLUParameter  
   
 ICNet (PSPNet) related  
 ---------------------  
