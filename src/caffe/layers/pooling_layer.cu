@@ -109,7 +109,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     const int n = index / pooled_width / pooled_height / channels;
     //<--CUSTOMIZATION
     //int hstart = ph * stride_h - pad_h;
-    //int wstart = pw * stride_w - pad_w;output_shift_instead_division)
+    //int wstart = pw * stride_w - pad_w;
     int hstart = ph * stride_h - pad_top;
     int wstart = pw * stride_w - pad_left;
     //int hend = min(hstart + kernel_h, height + pad_h);
@@ -117,7 +117,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     int hend = min(hstart + kernel_h, height + pad_bottom);
     int wend = min(wstart + kernel_w, width + pad_right);
     //CUSTOMIZATION-->
-    //const int pool_size = (hend - hstart) * (wend - wstart);
+    const int full_pool_size = (hend - hstart) * (wend - wstart); //
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
     hend = min(hend, height);
@@ -132,7 +132,10 @@ __global__ void AvePoolForward_TF(const int nthreads,
       }
     }
     if (output_shift_instead_division != Dtype(0)) {
-      top_data[index] = aveval / output_shift_instead_division;
+      if (full_pool_size == pool_size)
+        top_data[index] = aveval / output_shift_instead_division;
+      else
+        top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
     }
     else{
       top_data[index] = aveval / pool_size;
