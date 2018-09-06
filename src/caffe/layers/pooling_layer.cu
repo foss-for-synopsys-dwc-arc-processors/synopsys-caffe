@@ -85,6 +85,7 @@ __global__ void AvePoolForward(const int nthreads,
     }
     if (output_shift_instead_division != Dtype(0)) {
       top_data[index] = aveval / output_shift_instead_division;
+      top_data[index] = rint(top_data[index]);
     }
     else{
       top_data[index] = aveval / pool_size;
@@ -136,6 +137,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
         top_data[index] = aveval / output_shift_instead_division;
       else
         top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
+      top_data[index] = rint(top_data[index]);
     }
     else{
       top_data[index] = aveval / pool_size;
