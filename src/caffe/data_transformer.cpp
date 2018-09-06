@@ -448,6 +448,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
     else {
       LOG(FATAL) << "Unknown annotation type.";
     }
+    delete [] resized_image;
 }
 
 template<typename Dtype>
