@@ -163,7 +163,7 @@ void caffe_gpu_scale<double>(const int n, const double alpha, const double *x,
 template <typename Dtype>
 __global__ void round_kernel(const int n, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
-    y[index] = round(y[index]);
+    y[index] = rint(y[index]);
   }
 }
 

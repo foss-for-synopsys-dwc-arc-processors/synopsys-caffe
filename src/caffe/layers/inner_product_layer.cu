@@ -38,6 +38,7 @@ void InnerProductLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const int count_t = top[0]->count();
     if (output_scale_ != Dtype(1)) {
       caffe_gpu_scal(count_t, output_scale_, top_data);
+      caffe_gpu_round(count_t, top_data);
     }
   //CUSTOMIZATION-->
 }

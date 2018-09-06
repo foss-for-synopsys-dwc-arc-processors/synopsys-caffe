@@ -32,6 +32,7 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const int count_t = top[i]->count();
     if (output_scale != Dtype(1)) {
       caffe_gpu_scal(count_t, output_scale, top_data);
+      caffe_gpu_round(count_t, top_data);
     }
     //CUSTOMIZATION-->
   }
