@@ -36,11 +36,13 @@ export PATH=${SYNOPSYS_CAFFE_HOME}/build/tools:${PATH}
 export PYTHONPATH=${SYNOPSYS_CAFFE_HOME}/python:${PYTHONPATH}
 ```
 5. display *.prototxt as a image.
+```Shell
 # caffe provides a python script to convert *.prototxt to *.png format.
 sudo yum install python-pydot
 sudo yum install graphviz
 python ${SYNOPSYS_CAFFE_HOME}/python/draw_net.py ${SYNOPSYS_CAFFE_HOME}/examples/cifar10/cifar10_quick_train_test.prototxt cifar10.png
 display cifar10.png
+```
 
 
 ### Windows
