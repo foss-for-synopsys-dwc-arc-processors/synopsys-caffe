@@ -1,3 +1,4 @@
+
 # Synopsys Caffe
 
 [![Build Status](https://travis-ci.org/foss-for-synopsys-dwc-arc-processors/synopsys-caffe.svg?branch=master)](https://travis-ci.org/foss-for-synopsys-dwc-arc-processors/synopsys-caffe)
@@ -34,6 +35,13 @@ export SYNOPSYS_CAFFE_HOME=[your synopsys-caffe root folder path]
 export PATH=${SYNOPSYS_CAFFE_HOME}/build/tools:${PATH}
 export PYTHONPATH=${SYNOPSYS_CAFFE_HOME}/python:${PYTHONPATH}
 ```
+5. display *.prototxt as a image.
+# caffe provides a python script to convert *.prototxt to *.png format.
+sudo yum install python-pydot
+sudo yum install graphviz
+python ${SYNOPSYS_CAFFE_HOME}/python/draw_net.py ${SYNOPSYS_CAFFE_HOME}/examples/cifar10/cifar10_quick_train_test.prototxt cifar10.png
+display cifar10.png
+
 
 ### Windows
 A simple guide:
