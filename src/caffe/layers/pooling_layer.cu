@@ -5,6 +5,9 @@
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#define SATURATE_MAX 4095
+#define SATURATE_MIN -4096
+
 namespace caffe {
 
 template <typename Dtype>
@@ -86,6 +89,10 @@ __global__ void AvePoolForward(const int nthreads,
     if (output_shift_instead_division != Dtype(0)) {
       top_data[index] = aveval / output_shift_instead_division;
       top_data[index] = rint(top_data[index]);
+      if(top_data[index] > SATURATE_MAX)
+        top_data[index] = SATURATE_MAX;
+      if(top_data[index] < SATURATE_MIN)
+        top_data[index] = SATURATE_MIN;
     }
     else{
       top_data[index] = aveval / pool_size;
@@ -138,6 +145,10 @@ __global__ void AvePoolForward_TF(const int nthreads,
       else
         top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
       top_data[index] = rint(top_data[index]);
+      if(top_data[index] > SATURATE_MAX)
+        top_data[index] = SATURATE_MAX;
+      if(top_data[index] < SATURATE_MIN)
+        top_data[index] = SATURATE_MIN;
     }
     else{
       top_data[index] = aveval / pool_size;
