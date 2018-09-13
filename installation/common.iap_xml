@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using InstallAnywhere 2017 Premier, Build 5608
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Thu Sep 13 05:47:01 PDT 2018 -->
-<InstallAnywhere_Deployment_Project increments="4012">
+     DATE:   Thu Sep 13 06:05:21 PDT 2018 -->
+<InstallAnywhere_Deployment_Project increments="4146">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="18" minor="0" revision="0"/>
@@ -10,9 +10,9 @@
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,51,50,45,54,52,50,46,49,51,46,49,46,101,108,54,46,120,56,54,95,54,52,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,56,46,48,95,57,50,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,96,-41,-10,112,-64,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,2,0,40,34,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,96,-41,8,48,-16,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,8,6,41,35,5,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="186">
+	<installationObjects uniqueObjects="190">
 		<object class="com.zerog.ia.installer.Installer" objectID="5399733e9e4e">
 			<property name="belongsToUninstallPhase">
 				<boolean>false</boolean>
@@ -2232,7 +2232,7 @@ Please refer to release notes for additional details.]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e679af469290">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e68a75cc9328">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2289,7 +2289,7 @@ Please refer to release notes for additional details.]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e679af489290">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="e68a75cd9328">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2359,7 +2359,7 @@ Please refer to release notes for additional details.]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[September 13, 2018 5:47:01 AM PDT]]></string>
+						<string><![CDATA[September 13, 2018 6:05:20 AM PDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -4228,14 +4228,14 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				<int>0</int>
 			</property>
 			<property name="savedExpressions">
-				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="e6784f0d9224">
+				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="e685fb979225">
 					<property name="expressions">
 						<object class="java.util.Vector"/>
 					</property>
 				</object>
 			</property>
 			<property name="fileExtensions">
-				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="e6784f1a9224">
+				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="e685fba49225">
 					<property name="fileExtensionEntries">
 						<object class="java.util.ArrayList" list="true"/>
 					</property>
@@ -4744,6 +4744,116 @@ and any path to a file to save to the file]]></string>
 												</object>
 												<object refID="d63ac84ab943"/>
 											</visualChildren>
+										</object>
+										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="e68670589288">
+											<property name="belongsToUninstallPhase">
+												<boolean>false</boolean>
+											</property>
+											<property name="rollbackEnabledCancel">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledError">
+												<boolean>true</boolean>
+											</property>
+											<property name="ruleExpression">
+												<string><![CDATA[CP491]]></string>
+											</property>
+											<property name="unixPermissions">
+												<string><![CDATA[664]]></string>
+											</property>
+											<property name="sourceName">
+												<string><![CDATA[tools.zip]]></string>
+											</property>
+											<property name="overrideUnixPermissions">
+												<boolean>false</boolean>
+											</property>
+											<property name="sourcePath">
+												<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
+											</property>
+											<property name="shouldUninstall">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledCancel">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledError">
+												<boolean>true</boolean>
+											</property>
+											<property name="destinationName">
+												<string><![CDATA[tools.zip]]></string>
+											</property>
+											<property name="fileSize">
+												<long>-1</long>
+											</property>
+											<property name="macBinary">
+												<boolean>false</boolean>
+											</property>
+											<property name="targetCheckKind">
+												<int>0</int>
+											</property>
+											<property name="ruleExpression">
+												<string><![CDATA[CP491]]></string>
+											</property>
+											<rules logicalOperation="AND">
+												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="e687dd6b9288">
+													<property name="belongsToUninstallPhase">
+														<boolean>false</boolean>
+													</property>
+													<property name="rollbackEnabledCancel">
+														<boolean>true</boolean>
+													</property>
+													<property name="rollbackEnabledError">
+														<boolean>true</boolean>
+													</property>
+													<property name="ruleExpression">
+														<string><![CDATA[]]></string>
+													</property>
+													<property name="installOnPlatformList">
+														<object class="java.util.Vector">
+															<method name="addElement">
+																<string><![CDATA[^Windows.*]]></string>
+															</method>
+														</object>
+													</property>
+													<property name="doNotInstallOnPlatformList">
+														<object class="java.util.Vector">
+															<method name="addElement">
+																<string><![CDATA[Mac OS X]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Solaris]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[SunOS]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[HP-UX]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Linux]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[AIX]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[FreeBSD]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[NetWare]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+														</object>
+													</property>
+													<property name="ruleId">
+														<string><![CDATA[CP491]]></string>
+													</property>
+												</object>
+											</rules>
 										</object>
 									</installChildren>
 								</object>
@@ -5746,7 +5856,8 @@ gunzip caffe-linux.tgz]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="script">
-												<string><![CDATA[del /F $USER_INSTALL_DIR$$/$caffe-win.zip]]></string>
+												<string><![CDATA[del /F $USER_INSTALL_DIR$$/$caffe-win.zip
+del /F $USER_INSTALL_DIR$$/$tools.zip]]></string>
 											</property>
 											<property name="showIndeterminateDialog">
 												<boolean>false</boolean>
@@ -5830,6 +5941,101 @@ gunzip caffe-linux.tgz]]></string>
 												</object>
 											</rules>
 										</object>
+										<object class="com.zerog.ia.installer.actions.ExpandFile" objectID="e6895bbc929d">
+											<property name="belongsToUninstallPhase">
+												<boolean>false</boolean>
+											</property>
+											<property name="rollbackEnabledCancel">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledError">
+												<boolean>true</boolean>
+											</property>
+											<property name="ruleExpression">
+												<string><![CDATA[CP291]]></string>
+											</property>
+											<property name="existingFilePath">
+												<string><![CDATA[$USER_INSTALL_DIR$$/$tools.zip]]></string>
+											</property>
+											<property name="sourceFileType">
+												<int>1</int>
+											</property>
+											<property name="shouldUninstall">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledCancel">
+												<boolean>true</boolean>
+											</property>
+											<property name="rollbackEnabledError">
+												<boolean>true</boolean>
+											</property>
+											<property name="sizeOfArchive">
+												<long>-1</long>
+											</property>
+											<property name="ruleExpression">
+												<string><![CDATA[CP291]]></string>
+											</property>
+											<rules logicalOperation="AND">
+												<object class="com.zerog.ia.installer.rules.PlatformChk" objectID="e68a40479306">
+													<property name="belongsToUninstallPhase">
+														<boolean>false</boolean>
+													</property>
+													<property name="rollbackEnabledCancel">
+														<boolean>true</boolean>
+													</property>
+													<property name="rollbackEnabledError">
+														<boolean>true</boolean>
+													</property>
+													<property name="ruleExpression">
+														<string><![CDATA[]]></string>
+													</property>
+													<property name="installOnPlatformList">
+														<object class="java.util.Vector">
+															<method name="addElement">
+																<string><![CDATA[^Windows.*]]></string>
+															</method>
+														</object>
+													</property>
+													<property name="doNotInstallOnPlatformList">
+														<object class="java.util.Vector">
+															<method name="addElement">
+																<string><![CDATA[Mac OS X]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Solaris]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[SunOS]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[HP-UX]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Linux]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[AIX]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[FreeBSD]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[NetWare]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[OS/400]]></string>
+															</method>
+															<method name="addElement">
+																<string><![CDATA[Unlisted Platforms]]></string>
+															</method>
+														</object>
+													</property>
+													<property name="ruleId">
+														<string><![CDATA[CP291]]></string>
+													</property>
+												</object>
+											</rules>
+										</object>
 									</installChildren>
 								</object>
 							</installChildren>
@@ -5892,9 +6098,11 @@ gunzip caffe-linux.tgz]]></string>
 								<object refID="e0deff5d9295"/>
 								<object refID="5abdf1b5929b"/>
 								<object refID="ed6ea63896a8"/>
+								<object refID="e68670589288"/>
 								<object refID="5f4a642293df"/>
 								<object refID="5abf79f79333"/>
 								<object refID="ed70fbf89767"/>
+								<object refID="e6895bbc929d"/>
 								<object refID="5abe512392be"/>
 								<object refID="ed7201f597ac"/>
 								<object refID="5ecd67d592c0"/>
