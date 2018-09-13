@@ -142,14 +142,81 @@ __global__ void AvePoolForward_TF(const int nthreads,
     if (output_shift_instead_division != Dtype(0)) {
       if (full_pool_size == pool_size)
         top_data[index] = aveval / output_shift_instead_division;
-      else
-        top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
+      else {
+    	//special fix: Non zero paddings for the case when:
+    	//1)the kernel runs off the edge only by 1 pixel
+    	//2)and the kernel_size-1 is a power of 2
+    	//refer to "Repair by changing padding" at
+    	//https://wwwin.synopsys.com/~tpennell/cnn_papers/29_average_pooling_repair_shop.htm
+    	bool wfix = (pw * stride_w - pad_left == -1) || (wstart + kernel_w - width == 1);
+    	bool hfix = (ph * stride_h - pad_top == -1) || (hstart + kernel_h - height == 1);
+
+        if (wfix && hfix)
+        {
+		  Dtype aveval_fix;
+		  for (int h = hstart; h < hend; ++h) {
+			aveval_fix = 0;
+			for (int w = wstart; w < wend; ++w) {
+		      aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (wend - wstart));
+		  }
+
+		  for (int w = wstart; w < wend; ++w) {
+			aveval_fix = 0;
+			for (int h = hstart; h < hend; ++h) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (hend - hstart));
+		  }
+
+		  aveval_fix = 0;
+		  for (int h = hstart; h < hend; ++h) {
+			for (int w = wstart; w < wend; ++w) {
+		      aveval_fix += bottom_slice[h * width + w];
+			}
+		  }
+		  aveval += rint(aveval_fix / pool_size);
+
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else if (hfix && !wfix)
+    	{
+		  Dtype aveval_fix;
+		  for (int w = wstart; w < wend; ++w) {
+			aveval_fix = 0;
+			for (int h = hstart; h < hend; ++h) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (hend - hstart));
+		  }
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else if (wfix && !hfix)
+    	{
+		  Dtype aveval_fix;
+		  for (int h = hstart; h < hend; ++h) {
+			aveval_fix = 0;
+			for (int w = wstart; w < wend; ++w) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (wend - wstart));
+		  }
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else
+          top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
+      }
       top_data[index] = rint(top_data[index]);
       if(top_data[index] > SATURATE_MAX)
         top_data[index] = SATURATE_MAX;
       if(top_data[index] < SATURATE_MIN)
         top_data[index] = SATURATE_MIN;
     }
+
     else{
       top_data[index] = aveval / pool_size;
     }
