@@ -57,7 +57,7 @@ void CorrelateData(int num, int topwidth, int topheight, int topchannels, int to
                 // Compute correlation
                 for (int top_channel = 0; top_channel < topchannels; top_channel++)
                 {
-                    double sum = 0;
+                    Dtype sum = 0;
 
                     int s2o = (top_channel % neighborhood_grid_width - neighborhood_grid_radius) * stride2;
                     int s2p = (top_channel / neighborhood_grid_width - neighborhood_grid_radius) * stride2;
@@ -94,12 +94,12 @@ void CorrelateData(int num, int topwidth, int topheight, int topchannels, int to
 }
 
 template <typename Dtype>
-void CorrelateDataSubtract(int num, int item, int topwidth, int topheight, int topchannels, int topcount,
+void CorrelateDataSubtract(const int nthreads, int num, int item, int topwidth, int topheight, int topchannels, int topcount,
                            int max_displacement, int neighborhood_grid_radius, int neighborhood_grid_width, int kernel_radius, int stride1, int stride2,
                            int bottomwidth, int bottomheight, int bottomchannels,
                            const Dtype *bottom0, const Dtype *bottom1, Dtype *top)
 {
-    for (int index = 0; index < topcount; index++)
+    for (int index = 0; index < nthreads; index++)
     {
         int x = index % topwidth; //w-pos
         int y = (index / topwidth) % topheight; //h-pos
@@ -130,7 +130,7 @@ void CorrelateDataSubtract(int num, int item, int topwidth, int topheight, int t
                     int idx2 = ((item * bottomheight + y2 + j) * bottomwidth + x2 + i) * bottomchannels + l;
 
                     // Do the correlation:
-                    sum += abs(bottom0[idx1] - bottom1[idx2]);
+                    sum += fabs(bottom0[idx1] - bottom1[idx2]);
                 }
             }
         }
@@ -228,6 +228,9 @@ void CorrelationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const int topcount = top_width_ * top_height_ * top_channels_;
     const int pheight = bheight + 2 * pad_size_;
     const int pwidth = bwidth + 2 * pad_size_;
+    
+    memset(rbot1_->mutable_cpu_data(), 0, sizeof(Dtype) * rbot1_->count());
+    memset(rbot2_->mutable_cpu_data(), 0, sizeof(Dtype) * rbot2_->count());
 
     blob_rearrange_kernel2<Dtype>(rbot1_->mutable_cpu_data(), bottom[0]->cpu_data(), bnum, bchannels, bheight, bwidth, pheight, pwidth, pad_size_);
     blob_rearrange_kernel2<Dtype>(rbot2_->mutable_cpu_data(), bottom[1]->cpu_data(), bnum, bchannels, bheight, bwidth, pheight, pwidth, pad_size_);
@@ -252,8 +255,9 @@ void CorrelationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         // CorrelationLayer
         for(int n = 0; n < num; n++) {
             
+            int topThreadCount = topcount;
             CorrelateDataSubtract<Dtype>(
-                num, n, top_width_, top_height_, top_channels_, topcount,
+                topThreadCount, num, n, top_width_, top_height_, top_channels_, topcount,
                 max_displacement_, neighborhood_grid_radius_, neighborhood_grid_width_, kernel_radius_,
                 stride1_, stride2_,
                 width, height, channels,
