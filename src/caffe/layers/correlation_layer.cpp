@@ -1,3 +1,5 @@
+// Modified by Synopsys Inc - Forward_cpu implementation
+
 #include <vector>
 
 #include "caffe/filler.hpp"
