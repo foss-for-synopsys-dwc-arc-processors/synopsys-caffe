@@ -71,7 +71,7 @@ augmentation_layer
 black_augmentation_layer  
 channel_norm_layer  
 correlation_1d_layer  
-correlation_layer ( + cpu version) 
+correlation_layer  
 custom_data_layer  
 data_augmentation_layer  
 downsample_layer  
@@ -84,7 +84,7 @@ generate_augmentation_parameters_layer
 l1_loss_layer  
 lpq_loss_layer  
 mean_layer  
-resample_layer ( + cpu version) 
+resample_layer  
   
 SSD related
 -----------
