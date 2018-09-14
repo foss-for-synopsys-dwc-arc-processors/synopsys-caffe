@@ -35,7 +35,7 @@ void CorrelateData(int num, int topwidth, int topheight, int topchannels, int to
 
     for (int n = 0; n < num; ++n)
     {
-        Dtype patch_data[kernel_size * kernel_size * bottomchannels];
+        Dtype* patch_data = new Dtype[kernel_size * kernel_size * bottomchannels];
 
         for (int y = 0; y < topheight; ++y)
             for (int x = 0; x < topwidth; ++x)
@@ -91,6 +91,7 @@ void CorrelateData(int num, int topwidth, int topheight, int topchannels, int to
                     top[index + n * topcount] = sum / (float) sumelems;
                 }
             }
+            delete [] patch_data;
     }
     // Aggregate  
 }
