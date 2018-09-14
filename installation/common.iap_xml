@@ -39,7 +39,7 @@
 				<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 			</property>
 			<property name="userSplashName">
-				<string><![CDATA[splash_screen_800x640px.JPG]]></string>
+				<string><![CDATA[splash_screen_800x640px.jpg]]></string>
 			</property>
 			<property name="splashScreenGUITitle">
 				<string><![CDATA[]]></string>
@@ -4764,7 +4764,7 @@ and any path to a file to save to the file]]></string>
 										<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
 									</property>
 									<property name="imageName">
-										<string><![CDATA[splash_screen_380x270px.JPG]]></string>
+										<string><![CDATA[splash_screen_380x270px.jpg]]></string>
 									</property>
 								</object>
 								<object class="com.zerog.ia.installer.VMComponent" objectID="539974479e7a">
