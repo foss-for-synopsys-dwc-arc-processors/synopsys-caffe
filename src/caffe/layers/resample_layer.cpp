@@ -1,4 +1,5 @@
 // Copyright 2014 BVLC and contributors.
+// Modified by Synopsys Inc - Forward_cpu implementation
 
 #include <vector>
 
