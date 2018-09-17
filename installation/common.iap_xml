@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using InstallAnywhere 2017 Premier, Build 5608
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Fri Sep 14 06:37:13 PDT 2018 -->
+     DATE:   Mon Sep 17 07:19:31 PDT 2018 -->
 <InstallAnywhere_Deployment_Project increments="3986">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
@@ -10,7 +10,7 @@
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,51,50,45,54,57,54,46,50,48,46,49,46,101,108,54,46,120,56,54,95,54,52,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,56,46,48,95,57,50,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,96,-41,77,-80,-128,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,14,15,44,40,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,96,-25,-19,-128,-112,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,6,13,38,39,5,1,0,0</authorizationID>
 	</essentialScriptInfo>
 	<installationObjects uniqueObjects="188">
 		<object class="com.zerog.ia.installer.Installer" objectID="5399733e9e4e">
@@ -2232,7 +2232,7 @@ Please refer to release notes for additional details.]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="ebcdfe0ea82c">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="fb67cc26a82a">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2289,7 +2289,7 @@ Please refer to release notes for additional details.]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="ebcdfe0fa82c">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="fb67cc28a82a">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2359,7 +2359,7 @@ Please refer to release notes for additional details.]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[September 14, 2018 6:37:12 AM PDT]]></string>
+						<string><![CDATA[September 17, 2018 7:19:30 AM PDT]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -2367,7 +2367,7 @@ Please refer to release notes for additional details.]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.installer.options.heap.size.max]]></string>
-						<string><![CDATA[150331648]]></string>
+						<string><![CDATA[500331648]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.platform.linux.vm]]></string>
@@ -4228,14 +4228,14 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				<int>0</int>
 			</property>
 			<property name="savedExpressions">
-				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="ebcd7edba7b5">
+				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="fb65d1cca7b0">
 					<property name="expressions">
 						<object class="java.util.Vector"/>
 					</property>
 				</object>
 			</property>
 			<property name="fileExtensions">
-				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="ebcd7ef7a7b5">
+				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="fb65d1dca7b0">
 					<property name="fileExtensionEntries">
 						<object class="java.util.ArrayList" list="true"/>
 					</property>
