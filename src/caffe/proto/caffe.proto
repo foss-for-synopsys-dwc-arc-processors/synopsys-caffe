@@ -1285,8 +1285,8 @@ message ConvolutionParameter {
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
 
-  optional float input_scale = 30 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -1589,6 +1589,7 @@ message EltwiseParameter {
   // Whether to use an asymptotically slower (for >2 inputs) but stabler method
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION, only valid for SUM
 }
 
 // Message that stores parameters used by ELULayer
@@ -1741,8 +1742,8 @@ message InnerProductParameter {
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
 
-  optional float input_scale = 10 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 11 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 10 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 11 [default = 1]; //CUSTOMIZATION
 }
 
 message InputParameter {
@@ -2291,10 +2292,8 @@ message SqueezeConvolutionParameter {
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
 
-  optional float input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional float output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional float weight_scale = 48 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional float bias_scale = 49 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
