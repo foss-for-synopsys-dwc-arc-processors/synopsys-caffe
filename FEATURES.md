@@ -34,6 +34,7 @@ yolo_v2_loss_layer
 reference model acceleration related (only valid for CUDA forwards implementation)  
 ----------------------------------------------------------------------------------  
 input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
+output_scale in EltwiseParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ReLUParameter  
   
