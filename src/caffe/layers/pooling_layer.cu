@@ -171,12 +171,14 @@ __global__ void AvePoolForward_TF(const int nthreads,
 		  }
 
 		  aveval_fix = 0;
-		  for (int h = hstart; h < hend; ++h) {
-			for (int w = wstart; w < wend; ++w) {
-		      aveval_fix += bottom_slice[h * width + w];
+		  for (int w = wstart; w < wend; ++w) {
+			Dtype aveval_fix_tmp = 0;
+		    for (int h = hstart; h < hend; ++h) {
+		      aveval_fix_tmp += bottom_slice[h * width + w];
 			}
+		    aveval_fix += rint(aveval_fix_tmp / (hend - hstart));
 		  }
-		  aveval += rint(aveval_fix / pool_size);
+		  aveval += rint(aveval_fix / (wend - wstart));
 
 		  top_data[index] = aveval / output_shift_instead_division;
     	}
