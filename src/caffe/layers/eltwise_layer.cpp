@@ -25,6 +25,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     }
   }
   stable_prod_grad_ = this->layer_param_.eltwise_param().stable_prod_grad();
+  output_scale_ = this->layer_param_.eltwise_param().output_scale();
 }
 
 template <typename Dtype>

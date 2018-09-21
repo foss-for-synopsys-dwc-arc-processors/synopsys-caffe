@@ -3,15 +3,26 @@
 
 #include "caffe/layers/relu_layer.hpp"
 
+#define SATURATE_MAX 4095
+#define SATURATE_MIN -4096
+
 namespace caffe {
 
 template <typename Dtype>
 __global__ void ReLUForward(const int n, const Dtype* in, Dtype* out,
-    Dtype negative_slope, Dtype relu6) { //CUSTOMIZATION
+    Dtype negative_slope, Dtype relu6, Dtype saturate) { //CUSTOMIZATION
   CUDA_KERNEL_LOOP(index, n) {
     out[index] = in[index] > 0 ? in[index] : in[index] * negative_slope;
     if(relu6) //CUSTOMIZATON
       out[index] = out[index] > 6 ? 6: out[index]; //CUSTOMIZATON
+    //<--CUSTOMIZATION
+    if(saturate){
+      if(out[index] > SATURATE_MAX)
+        out[index] = SATURATE_MAX;
+      if(out[index] < SATURATE_MIN)
+        out[index] = SATURATE_MIN;
+    }
+    //CUSTOMIZATION-->
   }
 }
 
@@ -23,9 +34,10 @@ void ReLULayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const int count = bottom[0]->count();
   Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
   Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
+  Dtype saturate = this->layer_param_.relu_param().saturate(); //CUSTOMIZATION
   // NOLINT_NEXT_LINE(whitespace/operators)
   ReLUForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
-      count, bottom_data, top_data, negative_slope, relu6); //CUSTOMIZATION
+      count, bottom_data, top_data, negative_slope, relu6, saturate); //CUSTOMIZATION
   CUDA_POST_KERNEL_CHECK;
   // << " count: " << count << " bottom_data: "
   //     << (unsigned long)bottom_data

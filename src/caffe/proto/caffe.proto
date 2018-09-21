@@ -126,6 +126,10 @@ message NormalizedBBox {
   optional bool difficult = 6;
   optional float score = 7;
   optional float size = 8;
+  optional float x_center = 9;
+  optional float y_center = 10;
+  optional float width = 11;
+  optional float height = 12;
 }
 
 // Annotation for each object instance.
@@ -596,6 +600,10 @@ message LayerParameter {
   optional BlackAugmentationParameter black_augmentation_param = 161;
   // If should run reshape every iteration
   optional bool reshape_every_iter = 157 [default = true];
+
+  //Yolo related
+  optional ReorgParameter reorg_param = 198;
+  optional YoloV2LossParameter yolo_v2_loss_param = 199;
 }
 
 message AccumParameter {
@@ -908,6 +916,8 @@ message TransformationParameter {
   optional uint32 crop_width = 19 [default = 0];
   // the height for cropped region
   optional uint32 crop_height = 20 [default = 0];
+  // To invoke yolo Preprocessing steps
+  optional bool caffe_yolo = 21 [default = false];
 }
 
 // Message that stores parameters used by data transformer for resize policy
@@ -948,6 +958,8 @@ message ResizeParameter {
   }
   //interpolation for for resizing
   repeated Interp_mode interp_mode = 7;
+  //jitter value for yolo
+  optional float jitter = 10 [default = 0.3];
 }
 
 message SaltPepperParameter {
@@ -1024,6 +1036,12 @@ message DistortionParameter {
 
   // The probability of randomly order the image channels.
   optional float random_order_prob = 11 [default = 0.0];
+
+  // Lower bound for the random exposure factor for yolo.
+  optional float exposure_lower = 12 [default = 0.0];
+  // Upper bound for the random exposure factor for yolo
+  optional float exposure_upper = 13 [default = 0.0];
+
 }
 
 // Message that stores parameters used by data transformer for expansion policy
@@ -1256,11 +1274,19 @@ message ConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATION, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
+  optional uint32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional uint32 pad_b = 29 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
+
+  optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -1356,6 +1382,9 @@ message DataParameter {
   // Prefetch queue (Increase if data feeding bandwidth varies, within the
   // limit of device memory for GPU training)
   optional uint32 prefetch = 10 [default = 4];
+
+  //To store last layer feature map size for yolo
+  repeated uint32 side = 11;
 
   // Read data from BinaryDB files using multiple threads. If this parameter
   // is set to ZERO, each top blob will get a separate thread.
@@ -1560,6 +1589,7 @@ message EltwiseParameter {
   // Whether to use an asymptotically slower (for >2 inputs) but stabler method
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION, only valid for SUM
 }
 
 // Message that stores parameters used by ELULayer
@@ -1711,6 +1741,9 @@ message InnerProductParameter {
   optional bool weight_fixed = 7 [default = false];
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
+
+  optional double input_scale = 10 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 11 [default = 1]; //CUSTOMIZATION
 }
 
 message InputParameter {
@@ -1889,10 +1922,12 @@ message PermuteParameter {
 
 message PoolingParameter {
   enum PoolMethod {
+    option allow_alias = true;
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
+    AVE_TF=3; //DEPRECATED CUSTOMIZATION
   }
   optional PoolMethod pool = 1 [default = MAX]; // The pooling method
   // Pad, kernel size, and stride are all given as a single value for equal
@@ -1901,12 +1936,18 @@ message PoolingParameter {
   optional uint32 pad_h = 9 [default = 0]; // The padding height
   optional uint32 pad_w = 10 [default = 0]; // The padding width
   optional uint32 pad_type = 13 [default = 0]; //CUSTOMIZATON, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
+  //DEPRECATED. Should specify pad_l/r/t/b instead.
+  optional uint32 pad_l = 16 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
+  optional uint32 pad_r = 17 [default = 0]; //CUSTOMIZATON, only work when pad_type is not set to 1
+  optional uint32 pad_t = 18 [default = 0]; //CUSTOMIZATONN, only work when pad_type is not set to 1
+  optional uint32 pad_b = 19 [default = 0]; //CUSTOMIZATONN, only work when pad_type is not to 1
   optional uint32 kernel_size = 2; // The kernel size (square)
   optional uint32 kernel_h = 5; // The kernel height
   optional uint32 kernel_w = 6; // The kernel width
   optional uint32 stride = 3 [default = 1]; // The stride (equal in Y, X)
   optional uint32 stride_h = 7; // The stride height
   optional uint32 stride_w = 8; // The stride width
+  optional uint32 output_shift_instead_division = 21 [default = 0]; //CUSTOMIZATION, only valid for Average pooling
   enum Engine {
     DEFAULT = 0;
     CAFFE = 1;
@@ -2037,6 +2078,7 @@ message ReLUParameter {
   // for Audio, Speech, and Language Processing.
   optional float negative_slope = 1 [default = 0];
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
+  optional bool saturate = 4 [default = false]; //CUSTOMIZATION, control the output in range [-4096, 4095]
   enum Engine {
     DEFAULT = 0;
     CAFFE = 1;
@@ -2240,11 +2282,18 @@ message SqueezeConvolutionParameter {
   // specify both spatial dimensions.
   optional uint32 pad_h = 9 [default = 0]; // The padding height (2D only)
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
-  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATON, act as dummy param in squeeze_conv
+  optional uint32 pad_type = 29 [default = 0]; //CUSTOMIZATION
+  optional uint32 pad_l = 36 [default = 0]; //CUSTOMIZATION
+  optional uint32 pad_r = 37 [default = 0]; //CUSTOMIZATION
+  optional uint32 pad_t = 38 [default = 0]; //CUSTOMIZATION
+  optional uint32 pad_b = 39 [default = 0]; //CUSTOMIZATION
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
+
+  optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -2417,12 +2466,28 @@ message WindowDataParameter {
   optional string root_folder = 13 [default = ""];
 }
 
+message YoloV2LossParameter {
+  repeated float anchors = 1;
+  required int32 side = 2;
+  required int32 num_classes = 3;
+  optional int32 num_object = 4;
+  optional float box_scale = 5  [default = .5];
+  optional float class_scale = 6  [default = .5];
+  optional float noobject_scale = 7  [default = .5];
+  optional float object_scale = 8  [default = .5];
+  optional bool  rescore = 9  [default = true];
+  optional bool  constraint = 10 [default = true];
+  optional float thresh = 11 [default = 0.7];
+}
+
 message SPPParameter {
   enum PoolMethod {
+    option allow_alias = true;
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
+    AVE_TF=3; //DEPRECATED CUSTOMIZATION
   }
   optional uint32 pyramid_height = 1;
   optional PoolMethod pool = 2 [default = MAX]; // The pooling method
@@ -2525,6 +2590,7 @@ message V1LayerParameter {
   optional TransformationParameter transform_param = 36;
   optional LossParameter loss_param = 42;
   optional V0LayerParameter layer = 1;
+  optional YoloV2LossParameter yolo_v2_loss_param = 300;
 }
 
 // DEPRECATED: V0LayerParameter is the old way of specifying layer parameters
@@ -2544,10 +2610,12 @@ message V0LayerParameter {
   optional uint32 group = 9 [default = 1]; // The group size for group conv
   optional uint32 stride = 10 [default = 1]; // The stride
   enum PoolMethod {
+    option allow_alias = true;
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
-    AVE_TF=3; //CUSTOMIZATION
+    AVE_EXC_PAD=3; //CUSTOMIZATION
+    AVE_TF=3; //DEPRECATED CUSTOMIZATION
   }
   optional PoolMethod pool = 11 [default = MAX]; // The pooling method
   optional float dropout_ratio = 12 [default = 0.5]; // dropout ratio
@@ -2630,4 +2698,9 @@ message PReLUParameter {
   optional FillerParameter filler = 1;
   // Whether or not slope parameters are shared across channels.
   optional bool channel_shared = 2 [default = false];
+}
+
+message ReorgParameter {
+  optional uint32 stride = 1;
+  optional bool reverse = 2 [default = false];
 }

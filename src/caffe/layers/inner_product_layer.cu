@@ -9,7 +9,13 @@ namespace caffe {
 template <typename Dtype>
 void InnerProductLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->gpu_data();
+  Dtype* bottom_data = bottom[0]->mutable_gpu_data();
+  //<--CUSTOMIZATION
+  const int count_b = bottom[0]->count();
+  if (input_scale_ != Dtype(1)) {
+    caffe_gpu_scal(count_b, input_scale_, bottom_data);
+  }
+  //CUSTOMIZATION-->
   Dtype* top_data = top[0]->mutable_gpu_data();
   const Dtype* weight = this->blobs_[0]->gpu_data();
   if (M_ == 1) {
@@ -28,6 +34,13 @@ void InnerProductLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
                             bias_multiplier_.gpu_data(),
                             this->blobs_[1]->gpu_data(), (Dtype)1., top_data);
   }
+  //<--CUSTOMIZATION
+    const int count_t = top[0]->count();
+    if (output_scale_ != Dtype(1)) {
+      caffe_gpu_scal(count_t, output_scale_, top_data);
+      caffe_gpu_round(count_t, top_data);
+    }
+  //CUSTOMIZATION-->
 }
 
 template <typename Dtype>

@@ -5,6 +5,9 @@
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#define SATURATE_MAX 4095
+#define SATURATE_MIN -4096
+
 namespace caffe {
 
 template <typename Dtype>
@@ -54,7 +57,7 @@ __global__ void AvePoolForward(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
-	Dtype* const top_data) {
+	Dtype* const top_data, const int output_shift_instead_division) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -83,7 +86,17 @@ __global__ void AvePoolForward(const int nthreads,
         aveval += bottom_slice[h * width + w];
       }
     }
-    top_data[index] = aveval / pool_size;
+    if (output_shift_instead_division != Dtype(0)) {
+      top_data[index] = aveval / output_shift_instead_division;
+      top_data[index] = rint(top_data[index]);
+      if(top_data[index] > SATURATE_MAX)
+        top_data[index] = SATURATE_MAX;
+      if(top_data[index] < SATURATE_MIN)
+        top_data[index] = SATURATE_MIN;
+    }
+    else{
+      top_data[index] = aveval / pool_size;
+    }
   }
 }
 
@@ -96,7 +109,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMI
-    Dtype* const top_data) {
+    Dtype* const top_data, const int output_shift_instead_division) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -112,7 +125,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     int hend = min(hstart + kernel_h, height + pad_bottom);
     int wend = min(wstart + kernel_w, width + pad_right);
     //CUSTOMIZATION-->
-    //const int pool_size = (hend - hstart) * (wend - wstart);
+    const int full_pool_size = (hend - hstart) * (wend - wstart); //
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
     hend = min(hend, height);
@@ -126,7 +139,89 @@ __global__ void AvePoolForward_TF(const int nthreads,
         aveval += bottom_slice[h * width + w];
       }
     }
-    top_data[index] = aveval / pool_size;
+    if (output_shift_instead_division != Dtype(0)) {
+      if (full_pool_size == pool_size)
+        top_data[index] = aveval / output_shift_instead_division;
+      else {
+    	//special fix: Non zero paddings for the case when:
+    	//1)the kernel runs off the edge only by 1 pixel
+    	//2)and the kernel_size-1 is a power of 2
+    	//refer to "Repair by changing padding" at
+    	//https://wwwin.synopsys.com/~tpennell/cnn_papers/29_average_pooling_repair_shop.htm
+    	bool wfix = (pw * stride_w - pad_left == -1) || (wstart + kernel_w - width == 1);
+    	bool hfix = (ph * stride_h - pad_top == -1) || (hstart + kernel_h - height == 1);
+
+        if (wfix && hfix)
+        {
+		  Dtype aveval_fix;
+		  for (int h = hstart; h < hend; ++h) {
+			aveval_fix = 0;
+			for (int w = wstart; w < wend; ++w) {
+		      aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (wend - wstart));
+		  }
+
+		  for (int w = wstart; w < wend; ++w) {
+			aveval_fix = 0;
+			for (int h = hstart; h < hend; ++h) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (hend - hstart));
+		  }
+
+		  aveval_fix = 0;
+		  for (int w = wstart; w < wend; ++w) {
+			Dtype aveval_fix_tmp = 0;
+		    for (int h = hstart; h < hend; ++h) {
+		      aveval_fix_tmp += bottom_slice[h * width + w];
+			}
+		    aveval_fix += rint(aveval_fix_tmp / (hend - hstart));
+		  }
+		  aveval += rint(aveval_fix / (wend - wstart));
+
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else if (hfix && !wfix)
+    	{
+		  Dtype aveval_fix;
+		  for (int w = wstart; w < wend; ++w) {
+			aveval_fix = 0;
+			for (int h = hstart; h < hend; ++h) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (hend - hstart));
+		  }
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else if (wfix && !hfix)
+    	{
+		  Dtype aveval_fix;
+		  for (int h = hstart; h < hend; ++h) {
+			aveval_fix = 0;
+			for (int w = wstart; w < wend; ++w) {
+			  aveval_fix += bottom_slice[h * width + w];
+			}
+			aveval += rint(aveval_fix / (wend - wstart));
+		  }
+		  top_data[index] = aveval / output_shift_instead_division;
+    	}
+
+    	else
+          top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
+      }
+      top_data[index] = rint(top_data[index]);
+      if(top_data[index] > SATURATE_MAX)
+        top_data[index] = SATURATE_MAX;
+      if(top_data[index] < SATURATE_MIN)
+        top_data[index] = SATURATE_MIN;
+    }
+
+    else{
+      top_data[index] = aveval / pool_size;
+    }
   }
 }
 //CUSTOMIZATION-->
@@ -221,10 +316,17 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;
@@ -272,10 +374,10 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         kernel_w_, stride_h_, stride_w_,
 		//pad_h_, pad_w_,
 		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
-		top_data);
+		top_data, output_shift_instead_division_);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolForward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, bottom_data, bottom[0]->num(), channels_,
@@ -283,7 +385,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         kernel_w_, stride_h_, stride_w_,
 		//pad_h_, pad_w_,
 		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
-		top_data);
+		top_data, output_shift_instead_division_);
     break;
     //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
@@ -532,10 +634,17 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   int pad_top=0, pad_bottom=0, pad_left=0, pad_right=0;
   switch (pad_type_) {
     case 0:
-      pad_top=pad_h_;
-      pad_bottom=pad_h_;
-      pad_left=pad_w_;
-      pad_right=pad_w_;
+	  if (pad_l_ != 0 || pad_r_ != 0 || pad_t_ != 0 || pad_b_ != 0) {
+		pad_top = pad_t_;
+		pad_bottom = pad_b_;
+		pad_left = pad_l_;
+		pad_right = pad_r_;
+	  } else {
+		pad_top = pad_h_;
+		pad_bottom = pad_h_;
+		pad_left = pad_w_;
+		pad_right = pad_w_;
+	  }
       break;
     case 1:  //for "SAME"padding
       int pad_along_height, pad_along_width;
@@ -584,7 +693,7 @@ void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 		bottom_diff);
     break;
   //<--CUSTOMIZATION
-  case PoolingParameter_PoolMethod_AVE_TF:
+  case PoolingParameter_PoolMethod_AVE_EXC_PAD:
     // NOLINT_NEXT_LINE(whitespace/operators)
     AvePoolBackward_TF<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
         count, top_diff, top[0]->num(), channels_,

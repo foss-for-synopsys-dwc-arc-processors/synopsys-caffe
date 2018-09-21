@@ -50,6 +50,12 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     for (int i = 0; i < bottom.size(); ++i) {
       caffe_gpu_axpy(count, coeffs_[i], bottom[i]->gpu_data(), top_data);
     }
+    //<--CUSTOMIZATION
+    if (output_scale_ != Dtype(1)) {
+      caffe_gpu_scal(count, output_scale_, top_data);
+      caffe_gpu_round(count, top_data);
+    }
+    //CUSTOMIZATION-->
     break;
   case EltwiseParameter_EltwiseOp_MAX:
     mask = max_idx_.mutable_gpu_data();

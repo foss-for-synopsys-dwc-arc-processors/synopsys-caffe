@@ -9,6 +9,7 @@
 #include "caffe/data_transformer.hpp"
 #include "caffe/util/bbox_util.hpp"
 #include "caffe/util/im_transforms.hpp"
+#include "caffe/util/yolo_preprocess.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
@@ -178,6 +179,7 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
     }
     // Transform the cv::image into blob.
     return Transform(cv_img, transformed_blob, crop_bbox, do_mirror);
+
 #else
     LOG(FATAL) << "Encoded datum requires OpenCV; compile with USE_OPENCV.";
 #endif  // USE_OPENCV
@@ -251,12 +253,16 @@ void DataTransformer<Dtype>::Transform(
   // Transform datum.
   const Datum& datum = anno_datum.datum();
   NormalizedBBox crop_bbox;
-  Transform(datum, transformed_blob, &crop_bbox, do_mirror);
-
-  // Transform annotation.
-  const bool do_resize = true;
-  TransformAnnotation(anno_datum, do_resize, crop_bbox, *do_mirror,
-                      transformed_anno_group_all);
+  if(param_.caffe_yolo()) {
+    Transform_Yolo(anno_datum, transformed_blob, &crop_bbox, transformed_anno_group_all);
+  }
+  else {
+    Transform(datum, transformed_blob, &crop_bbox, do_mirror);
+    // Transform annotation.
+    const bool do_resize = true;
+    TransformAnnotation(anno_datum, do_resize, crop_bbox, *do_mirror,
+                        transformed_anno_group_all);
+  }
 }
 
 template<typename Dtype>
@@ -286,6 +292,163 @@ void DataTransformer<Dtype>::Transform(
     vector<AnnotationGroup>* transformed_anno_vec) {
   bool do_mirror;
   Transform(anno_datum, transformed_blob, transformed_anno_vec, &do_mirror);
+}
+
+template<typename Dtype>
+void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
+               Blob<Dtype>* transformed_blob, NormalizedBBox* crop_bbox,
+               RepeatedPtrField<AnnotationGroup>* transformed_anno_group_all) {
+  const Datum& datum = anno_datum.datum();
+  cv::Mat cv_img;
+  // If datum is encoded, decode and transform the cv::image.
+  if (datum.encoded()) {
+#ifdef USE_OPENCV
+    CHECK(!(param_.force_color() && param_.force_gray()))
+        << "cannot set both force_color and force_gray";
+    if (param_.force_color() || param_.force_gray()) {
+    // If force_color then decode in color otherwise decode in gray.
+      cv_img = DecodeDatumToCVMat(datum, param_.force_color());
+    } else {
+      cv_img = DecodeDatumToCVMatNative(datum);
+    }
+#else
+    LOG(FATAL) << "Encoded datum requires OpenCV; compile with USE_OPENCV.";
+#endif  // USE_OPENCV
+  } else {
+    if (param_.force_color() || param_.force_gray()) {
+      LOG(ERROR) << "force_color and force_gray only for encoded datum";
+    }
+  }
+  cv_img = hwc_to_chw(cv_img);
+  bgr_to_rgb(cv_img);
+
+  // Check dimensions.
+  const int img_channels = cv_img.channels();
+  const int img_height = cv_img.rows;
+  const int img_width = cv_img.cols;
+  const int channels = transformed_blob->channels();
+  const int num = transformed_blob->num();
+
+  CHECK_GT(img_channels, 0);
+  CHECK(cv_img.depth() == CV_8U) << "Image data type must be unsigned byte";
+  CHECK_EQ(channels, img_channels);
+  CHECK_GE(num, 1);
+
+  const Dtype scale = param_.scale();
+  const int resize_width = param_.resize_param().width();
+  const int resize_height = param_.resize_param().height();
+  const float jitter = param_.resize_param().jitter();
+  const float hue = param_.distort_param().hue_prob();
+  const float saturation_lower = param_.distort_param().saturation_lower();
+  const float saturation_upper = param_.distort_param().saturation_upper();
+  const float exposure_lower = param_.distort_param().exposure_lower();
+  const float exposure_upper = param_.distort_param().exposure_upper();
+
+  float dw = jitter * img_width;
+  float dh = jitter * img_height;
+
+  float new_ar = (img_width + rand_uniform(-dw, dw)) / (img_height + rand_uniform(-dh, dh));
+  float scale_value = rand_uniform(.25, 2);
+  float nw, nh;
+
+  if(new_ar < 1){
+      nh = scale_value * resize_height;
+      nw = nh * new_ar;
+  } else {
+      nw = scale_value * resize_width;
+      nh = nw / new_ar;
+  }
+
+  float dx = rand_uniform(0, resize_width - nw);
+  float dy = rand_uniform(0, resize_height - nh);
+
+  float* resized_image = new float[resize_width * resize_height * 3];
+  for(int i = 0; i < (resize_width * resize_height * 3); i++)
+     resized_image[i] = 0.5;
+  place_image(cv_img, nw, nh, dx, dy, resized_image, resize_width, resize_height, scale);
+
+  random_distort_image(resized_image, resize_width, resize_height, img_channels, hue, saturation_lower, saturation_upper, exposure_lower, exposure_upper);
+
+  int flip = rand() % 2;
+  if(flip)
+    flip_image(resized_image, resize_width,resize_height, img_channels);
+
+  transformed_blob->Reshape(num, img_channels, resize_height, resize_width);
+
+  Dtype* transformed_data = transformed_blob->mutable_cpu_data();
+  for(int i = 0; i < (resize_width * resize_height * 3); i++) {
+    transformed_data[i] = resized_image[i];
+  }
+    if (anno_datum.type() == AnnotatedDatum_AnnotationType_BBOX) {
+      // Go through each AnnotationGroup.
+      for (int g = 0; g < anno_datum.annotation_group_size(); ++g) {
+        const AnnotationGroup& anno_group = anno_datum.annotation_group(g);
+        AnnotationGroup transformed_anno_group;
+        // Go through each Annotation.
+        bool has_valid_annotation = false;
+        for (int a = 0; a < anno_group.annotation_size(); ++a) {
+          const Annotation& anno = anno_group.annotation(a);
+          const NormalizedBBox& bbox = anno.bbox();
+          NormalizedBBox resize_bbox;
+          // Adjust bounding box annotation.
+          float box_left, box_right, box_top, box_bottom;
+          if(bbox.x_center() == 0 && bbox.y_center() == 0) {
+            continue;
+          }
+          box_left = (bbox.x_center() - (bbox.width() / 2));
+          box_right = (bbox.x_center() + (bbox.width() / 2));
+          box_top = (bbox.y_center() - (bbox.height() / 2));
+          box_bottom = (bbox.y_center() + (bbox.height() / 2));
+
+          box_left = box_left * (nw/resize_width) - (-dx/resize_width);
+          box_right = box_right * (nw/resize_width) - (-dx/resize_width);
+          box_top = box_top * (nh/resize_height) - (-dy/resize_height);
+          box_bottom = box_bottom * (nh/resize_height) - (-dy/resize_height);
+          if(flip) {
+            float swap = box_left;
+            box_left = 1. - box_right;
+            box_right = 1. - swap;
+          }
+          box_left = constrain(0, 1, box_left);
+          box_right = constrain(0, 1, box_right);
+          box_top = constrain(0, 1, box_top);
+          box_bottom = constrain(0, 1, box_bottom);
+
+          float box_x_center = (box_left + box_right) / 2;
+          float box_y_center = (box_top + box_bottom) / 2;
+          float box_width = box_right - box_left;
+          float box_height = box_bottom - box_top;
+
+          box_width = constrain(0, 1, box_width);
+          box_height = constrain(0, 1, box_height);
+
+          resize_bbox.set_x_center(box_x_center);
+          resize_bbox.set_y_center(box_y_center);
+          resize_bbox.set_width(box_width);
+          resize_bbox.set_height(box_height);
+          if(box_width < 0.001 || box_height < 0.001) {
+            has_valid_annotation = false;
+          }
+          else {
+            has_valid_annotation = true;
+            Annotation* transformed_anno =
+                transformed_anno_group.add_annotation();
+            transformed_anno->set_instance_id(anno.instance_id());
+            NormalizedBBox* transformed_bbox = transformed_anno->mutable_bbox();
+            transformed_bbox->CopyFrom(resize_bbox);
+          }
+        }
+        // Save for output.
+        if (has_valid_annotation) {
+          transformed_anno_group.set_group_label(anno_group.group_label());
+          transformed_anno_group_all->Add()->CopyFrom(transformed_anno_group);
+          }
+      }
+    }
+    else {
+      LOG(FATAL) << "Unknown annotation type.";
+    }
+    delete [] resized_image;
 }
 
 template<typename Dtype>
@@ -1242,7 +1405,6 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
   const int datum_channels = datum.channels();
   int datum_height = datum.height();
   int datum_width = datum.width();
-
   // Check dimensions.
   CHECK_GT(datum_channels, 0);
   if (param_.has_resize_param()) {

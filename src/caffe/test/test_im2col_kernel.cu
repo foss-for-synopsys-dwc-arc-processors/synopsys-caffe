@@ -55,6 +55,10 @@ class Im2colKernelTest : public GPUDeviceTest<Dtype> {
     pad_ = 0;
     stride_ = 2;
     pad_type_ = 0; //CUSTOMIZATION
+    pad_l_ = 0; //CUSTOMIZATION
+    pad_r_ = 0; //CUSTOMIZATION
+    pad_t_ = 0; //CUSTOMIZATION
+    pad_b_ = 0; //CUSTOMIZATION
     dilation_ = 3;
     kernel_size_ = 3;
     height_col_ = (height_ + 2 * pad_ -
@@ -93,6 +97,10 @@ class Im2colKernelTest : public GPUDeviceTest<Dtype> {
   int pad_;
   int stride_;
   int pad_type_; //CUSTOMIZATION
+  int pad_l_; //CUSTOMIZATION
+  int pad_r_; //CUSTOMIZATION
+  int pad_t_; //CUSTOMIZATION
+  int pad_b_; //CUSTOMIZATION
   int dilation_;
   int kernel_size_;
   int height_col_;
@@ -123,7 +131,7 @@ TYPED_TEST(Im2colKernelTest, Test2D) {
       this->channels_, this->height_, this->width_,
       this->kernel_size_, this->kernel_size_, this->pad_, this->pad_,
       this->stride_, this->stride_,
-      this->pad_type_, //CUSTOMIZATION
+      this->pad_type_, this->pad_l_, this->pad_r_, this->pad_t_, this->pad_b_, //CUSTOMIZATION
       this->dilation_, this->dilation_,
       cpu_data + this->blob_top_cpu_->offset(n));
   }
