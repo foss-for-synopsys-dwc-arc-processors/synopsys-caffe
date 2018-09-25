@@ -225,9 +225,9 @@ void DetectionOutputLayer<Dtype>::Forward_gpu(
             }
             string image_name = pt.get<string>("image_id");
             float score = pt.get<float>("score");
-            vector<int> bbox;
+            vector<float> bbox;
             BOOST_FOREACH(ptree::value_type &elem, pt.get_child("bbox")) {
-              bbox.push_back(static_cast<int>(elem.second.get_value<float>()));
+              bbox.push_back(static_cast<float>(elem.second.get_value<float>()));
             }
             *(outfiles[label_name]) << image_name;
             *(outfiles[label_name]) << " " << score;
