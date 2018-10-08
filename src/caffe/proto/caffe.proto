@@ -602,8 +602,9 @@ message LayerParameter {
   optional bool reshape_every_iter = 157 [default = true];
 
   //Yolo related
-  optional ReorgParameter reorg_param = 198;
-  optional YoloV2LossParameter yolo_v2_loss_param = 199;
+  optional ReorgParameter reorg_param = 197;
+  optional YoloV2LossParameter yolo_v2_loss_param = 198;
+  optional YoloV3LossParameter yolo_v3_loss_param = 199;
 }
 
 message AccumParameter {
@@ -2468,8 +2469,8 @@ message WindowDataParameter {
 
 message YoloV2LossParameter {
   repeated float anchors = 1;
-  required int32 side = 2;
-  required int32 num_classes = 3;
+  optional int32 side = 2;
+  optional int32 num_classes = 3;
   optional int32 num_object = 4;
   optional float box_scale = 5  [default = .5];
   optional float class_scale = 6  [default = .5];
@@ -2478,6 +2479,18 @@ message YoloV2LossParameter {
   optional bool  rescore = 9  [default = true];
   optional bool  constraint = 10 [default = true];
   optional float thresh = 11 [default = 0.7];
+}
+
+message YoloV3LossParameter {
+  repeated int32 anchors = 1;
+  repeated int32 mask = 2;
+  optional int32 side = 3;
+  optional int32 num_classes = 4;
+  optional int32 num_object = 5;
+  optional float ignore_thresh = 6 [default = 0.7];
+  optional float truth_thresh = 7 [default = 1.0];
+  optional int32 net_w = 8;
+  optional int32 net_h = 9;
 }
 
 message SPPParameter {
@@ -2591,6 +2604,7 @@ message V1LayerParameter {
   optional LossParameter loss_param = 42;
   optional V0LayerParameter layer = 1;
   optional YoloV2LossParameter yolo_v2_loss_param = 300;
+  optional YoloV3LossParameter yolo_v3_loss_param = 301;
 }
 
 // DEPRECATED: V0LayerParameter is the old way of specifying layer parameters
