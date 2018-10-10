@@ -4,14 +4,14 @@ import numpy as np
 
 class Eltwise(caffe.Layer):
     """
-    Get a tensor's slice: implementation of the tf.slice().
+    Get a tensor's slice: implementation of element-wise operatios with broadcasting
     """
     def setup(self, bottom, top):
         # check number of inputs and outputs
         # bottom[1] is begin
         # bottom[2] is size
         if len(bottom) != 2:
-            raise Exception("Please input three Tensors!")
+            raise Exception("Please input two Tensors!")
         if len(top) != 1:
             raise Exception("Only output one Tensor at a time!")
         d = eval(self.param_str)
