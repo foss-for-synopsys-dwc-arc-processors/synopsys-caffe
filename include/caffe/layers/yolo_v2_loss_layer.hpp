@@ -15,8 +15,6 @@ namespace caffe {
     Dtype Overlap(Dtype x1, Dtype w1, Dtype x2, Dtype w2);
     template <typename Dtype>
     Dtype Calc_iou(const std::vector<Dtype>& box, const std::vector<Dtype>& truth);
-    template <typename Dtype>
-    Dtype Calc_rmse(const std::vector<Dtype>& box, const std::vector<Dtype>& truth);
 
     template<typename Dtype>
     class YoloV2LossLayer: public LossLayer<Dtype> {

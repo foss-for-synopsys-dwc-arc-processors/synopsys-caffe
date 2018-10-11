@@ -68,15 +68,6 @@ namespace caffe {
         return x;
     }
 
-    template <typename Dtype>
-    Dtype Calc_rmse(const Box<Dtype>& truth, const Box<Dtype>& box, Dtype &coord_loss, Dtype &area_loss, float scale) {
-        float coord_ = scale * (abs(box.x-truth.x) + abs(box.y-truth.y));
-        float area_  = scale * (abs(box.w-truth.w) + abs(box.h-truth.h));
-        coord_loss += coord_;
-        area_loss  += area_;
-        return (coord_ + area_);
-    }
-
    template <typename Dtype>
     float delta_region_box(Box<Dtype>& truth_box, Dtype* input, 
             std::vector<float>& biases, int n, int side, Dtype* diff, 
