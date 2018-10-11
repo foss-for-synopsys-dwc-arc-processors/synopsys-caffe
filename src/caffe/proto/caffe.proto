@@ -2487,10 +2487,11 @@ message YoloV3LossParameter {
   optional int32 side = 3;
   optional int32 num_classes = 4;
   optional int32 num_object = 5;
-  optional float ignore_thresh = 6 [default = 0.7];
-  optional float truth_thresh = 7 [default = 1.0];
-  optional int32 net_w = 8;
-  optional int32 net_h = 9;
+  optional int32 total_object = 6;
+  optional float ignore_thresh = 7 [default = 0.7];
+  optional float truth_thresh = 8 [default = 1.0];
+  optional int32 net_w = 9;
+  optional int32 net_h = 10;
 }
 
 message SPPParameter {
