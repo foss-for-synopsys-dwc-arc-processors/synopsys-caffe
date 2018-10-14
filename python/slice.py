@@ -74,15 +74,15 @@ class StridedSlice(caffe.Layer):
             raise NotImplementedError("new_axis_mask is not implemented")
         self.shrink_axis = []
         for i, d in enumerate(shape):
-            if self.begin_mask // 2**i:
+            if self.begin_mask & 1 << i:
                 begin[i] = 0
-            if self.end_mask // 2**i:
+            if self.end_mask & 1 << i:
                 end[i] = shape[i]
-            if self.ellipsis_mask // 2**i:
+            if self.ellipsis_mask & 1 << i:
                 begin[i] = 0
                 end[i] = shape[i]
                 strides[i] = 1
-            if self.shrink_axis_mask // 2**i:
+            if self.shrink_axis_mask & 1 << i:
                 end[i] = begin[i] + 1
                 strides[i] = 1
                 self.shrink_axis.append(i)
@@ -100,7 +100,7 @@ class StridedSlice(caffe.Layer):
             if self.strides[i] == 0:
                 raise Exception("Strides should never be equal to 0!")
             else:
-                num[i] = (abs(self.end[i]-self.begin[i])/abs(self.strides[i]))
+                num[i] = abs(self.end[i]-self.begin[i])/abs(self.strides[i])
         for i in reversed(self.shrink_axis):
             num.pop(i)
         top[0].reshape(*num)
