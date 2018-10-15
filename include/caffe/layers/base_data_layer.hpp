@@ -41,7 +41,7 @@ class BaseDataLayer : public Layer<Dtype> {
   TransformationParameter transform_param_;
   shared_ptr<DataTransformer<Dtype> > data_transformer_;
   bool output_labels_;
-  bool box_label_;
+  bool box_label_ = false;
   int top_size_;
 };
 

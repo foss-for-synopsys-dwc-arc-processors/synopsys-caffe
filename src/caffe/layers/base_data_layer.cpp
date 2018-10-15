@@ -53,11 +53,11 @@ void BasePrefetchingDataLayer<Dtype>::LayerSetUp(
   // calls so that the prefetch thread does not accidentally make simultaneous
   // cudaMalloc calls when the main thread is running. In some GPUs this
   // seems to cause failures if we do not so.
-  this->top_size_ = top.size();
   for (int i = 0; i < prefetch_.size(); ++i) {
     prefetch_[i]->data_.mutable_cpu_data();
     if (this->output_labels_) {
       if (this->box_label_) {
+        this->top_size_ = top.size();
         for (int j = 0; j < top.size() - 1; ++j) {
           prefetch_[i]->multi_label_[j]->mutable_cpu_data();
         }
