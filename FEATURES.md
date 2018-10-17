@@ -24,7 +24,14 @@ squeeze_conv_layer
 squeeze_inner_product_layer  
 squeeze_deconv_layer  
   
-YOLOv2 related  
+evquantize related (only valid for CUDA forwards implementation)  
+----------------------------------------------------------------------------------  
+input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
+output_scale in EltwiseParameter  
+output_shift_instead_division in PoolingParameter  
+saturate in ReLUParameter  
+  
+YOLO related  
 --------------  
 add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter  
 caffe_yolo in TransformationParameter  
@@ -33,14 +40,8 @@ exposure_lower, exposure_upper in DistortionParameter
 side in DataParameter  
 reorg_layer  
 yolo_v2_loss_layer  
-  
-reference model acceleration related (only valid for CUDA forwards implementation)  
-----------------------------------------------------------------------------------  
-input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
-output_scale in EltwiseParameter  
-output_shift_instead_division in PoolingParameter  
-saturate in ReLUParameter  
-  
+yolo_v3_loss_layer  
+    
 ICNet (PSPNet) related  
 ---------------------  
 adaptive_bias_channel_layer  
