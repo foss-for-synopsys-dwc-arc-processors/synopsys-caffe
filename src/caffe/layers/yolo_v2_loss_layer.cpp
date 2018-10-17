@@ -181,6 +181,8 @@ namespace caffe {
             const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
         Dtype* input_data = bottom[0]->mutable_cpu_data();
         const Dtype* label_data = bottom[1]->cpu_data();
+        vector<int> bottom_shape = bottom[0]->shape();
+        side_ = bottom_shape[2];
         const int pow_side = side_ * side_;
         const int size = pow_side * (5 + num_classes_);
         int index;

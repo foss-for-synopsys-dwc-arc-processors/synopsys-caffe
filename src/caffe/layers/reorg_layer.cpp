@@ -41,6 +41,11 @@ namespace caffe {
     void ReorgLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                         const vector<Blob<Dtype> *> &top) {
         const Dtype *bottom_data = bottom[0]->cpu_data();
+        vector<int> bottom_shape = bottom[0]->shape();
+        vector<int> top_shape = top[0]->shape();
+        width_ = bottom_shape[2];
+        height_ = bottom_shape[3];
+        top[0]->Reshape(bottom_shape[0],top_shape[1],width_/2,height_/2);
         Dtype *top_data = top[0]->mutable_cpu_data();
         reorg_cpu(bottom_data, width_, height_,
                   channels_, batch_num_, stride_, reverse_, top_data);

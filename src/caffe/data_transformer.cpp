@@ -335,8 +335,8 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
   CHECK_GE(num, 1);
 
   const Dtype scale = param_.scale();
-  const int resize_width = param_.resize_param().width();
-  const int resize_height = param_.resize_param().height();
+  int resize_width = param_.resize_param().width();
+  int resize_height = param_.resize_param().height();
   const float jitter = param_.resize_param().jitter();
   const float hue = param_.distort_param().hue_prob();
   const float saturation_lower = param_.distort_param().saturation_lower();
@@ -348,7 +348,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
   float dh = jitter * img_height;
 
   float new_ar = (img_width + rand_uniform(-dw, dw)) / (img_height + rand_uniform(-dh, dh));
-  float scale_value = rand_uniform(.25, 2);
+  float scale_value = 1;//rand_uniform(.25, 2);
   float nw, nh;
 
   if(new_ar < 1){
@@ -359,6 +359,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
       nh = nw / new_ar;
   }
 
+  resize_width = resize_height = new_dim; //Assigned new_dim as resize width and resize height
   float dx = rand_uniform(0, resize_width - nw);
   float dy = rand_uniform(0, resize_height - nh);
 
