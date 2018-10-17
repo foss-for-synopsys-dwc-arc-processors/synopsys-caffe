@@ -230,7 +230,7 @@ bool ReadXMLToAnnotatedDatum(const string& labelname, const int img_height,
 
 bool ReadJSONToAnnotatedDatum(const string& labelname, const int img_height,
     const int img_width, const std::map<string, int>& name_to_label,
-    AnnotatedDatum* anno_datum);
+    AnnotatedDatum* anno_datum, const bool caffe_yolo = false);
 
 bool ReadTxtToAnnotatedDatum(const string& labelname, const int height,
     const int width, AnnotatedDatum* anno_datum);

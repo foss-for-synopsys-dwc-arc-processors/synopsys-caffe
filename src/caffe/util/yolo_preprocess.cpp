@@ -238,8 +238,8 @@ void place_image(cv::Mat im, int w, int h, int dx, int dy, float *resized_image,
   for(c = 0; c < im.channels(); ++c){
       for(y = 0; y < h; ++y){
           for(x = 0; x < w; ++x){
-              int rx = ((float)x / w) * im.cols;
-              int ry = ((float)y / h) * im.rows;
+              float rx = ((float)x / w) * im.cols;
+              float ry = ((float)y / h) * im.rows;
               float val = bilinear_interpolate(im, rx, ry, c);
               set_pixel_with_scaling(resized_image, resize_w, resize_h,
                               im.channels(), x + dx, y + dy, c, val, scale);

@@ -66,7 +66,6 @@ void AnnotatedDataLayer<Dtype>::DataLayerSetUp(
   for (int i = 0; i < this->prefetch_.size(); ++i) {
     this->prefetch_[i]->data_.Reshape(top_shape);
   }
-  //LOG(INFO) << "output data size: " << top[0]->num() << ","
   LOG_IF(INFO, Caffe::root_solver())
       << "output data size: " << top[0]->num() << ","
       << top[0]->channels() << "," << top[0]->height() << ","
@@ -75,14 +74,12 @@ void AnnotatedDataLayer<Dtype>::DataLayerSetUp(
   if (this->output_labels_) {
     has_anno_type_ = anno_datum.has_type() || anno_data_param.has_anno_type();
     if(transform_param.has_caffe_yolo()) {
+      this->box_label_ = true;
       vector<int> label_shape(1, batch_size);
       if (param.side_size() > 0) {
         for (int i = 0; i < param.side_size(); ++i) {
           sides_.push_back(param.side(i));
         }
-      }
-      if (sides_.size() == 0) {
-        sides_.push_back(7);
       }
       CHECK_EQ(sides_.size(), top.size() - 1) << "side num not equal to top size";
       if (has_anno_type_) {
@@ -93,22 +90,27 @@ void AnnotatedDataLayer<Dtype>::DataLayerSetUp(
           LOG(WARNING) << "type stored in AnnotatedDatum is shadowed.";
           anno_type_ = anno_data_param.anno_type();
         }
-        if (anno_type_ == AnnotatedDatum_AnnotationType_BBOX) { 
+        for (int i = 0; i < this->prefetch_.size(); ++i) {
+          this->prefetch_[i]->multi_label_.clear();
+        }
+        if (anno_type_ == AnnotatedDatum_AnnotationType_BBOX) {
           // Yolo label format
           for (int i = 0; i < sides_.size(); ++i) {
             vector<int> label_shape(1, batch_size);
             int label_size = sides_[i] * sides_[i] * (1 + 1 + 1 + 4);
             label_shape.push_back(label_size);
             top[i+1]->Reshape(label_shape);
+            for (int j = 0; j < this->prefetch_.size(); ++j) {
+              shared_ptr<Blob<Dtype> > tmp_blob;
+              tmp_blob.reset(new Blob<Dtype>(label_shape));
+              this->prefetch_[j]->multi_label_.push_back(tmp_blob);
+            }
           }
         } else {
           LOG(FATAL) << "Unknown annotation type.";
         }
       } else {
         label_shape[0] = batch_size;
-      }
-      for (int i = 0; i < this->prefetch_.size(); ++i) { 
-        this->prefetch_[i]->label_.Reshape(label_shape);
       }
     }
     else {
@@ -214,7 +216,10 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   // Store transformed annotation.
   map<int, vector<AnnotationGroup> > all_anno;
   int num_bboxes = 0;
-
+  vector<Dtype*> top_label;
+  for (int i = 0; i < sides_.size(); ++i) {
+    top_label.push_back(batch->multi_label_[i]->mutable_cpu_data());
+  }
   for (int item_id = 0; item_id < batch_size; ++item_id) {
     timer.Start();
     // get a anno_datum
@@ -333,47 +338,47 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
           for (int i = 0; i < sides_.size(); ++i) {
             side = sides_[i];
             count = sides_[i] * sides_[i] * (1 + 1 + 1 + 4);
-          }
-          label_shape[0] = batch_size;
-          label_shape[1] = count;
-          batch->label_.Reshape(label_shape);
-          Dtype* top_label = batch->label_.mutable_cpu_data();
-          const vector<AnnotationGroup>& anno_vec = all_anno[item_id];
-          label_offset = count * item_id;
-          top_label = top_label + label_offset;
-          int locations = pow(side, 2);
-          CHECK_EQ(count, locations * 7) << "side and count not match";
-          // difficult
-          caffe_set(locations, Dtype(0), top_label);
-          // isobj
-          caffe_set(locations, Dtype(0), top_label + locations);
-          // class label
-          caffe_set(locations, Dtype(-1), top_label + locations * 2);
-          // bounding box
-          caffe_set(locations*4, Dtype(0), top_label + locations * 3);
-          for (int g = 0; g < anno_vec.size(); ++g) {
-            const AnnotationGroup& anno_group = anno_vec[g];
-            for (int a = 0; a < anno_group.annotation_size(); ++a) {
-              const Annotation& anno = anno_group.annotation(a);
-              const NormalizedBBox& bbox = anno.bbox();
-              float class_label = anno_group.group_label();
-              float x = bbox.x_center();
-              float y = bbox.y_center();
-              int x_index = floor(x * side);
-              int y_index = floor(y * side);
-              x_index = std::min(x_index, side - 1);
-              y_index = std::min(y_index, side - 1);
-              int dif_index = side * y_index + x_index;
-              int obj_index = locations + dif_index;
-              int class_index = locations * 2 + dif_index;
-              int cor_index = locations * 3 + dif_index * 4;
-              top_label[dif_index] = bbox.difficult();
-              top_label[obj_index] = 1;
-              top_label[class_index] = class_label;
-              top_label[cor_index + 0] = bbox.x_center();
-              top_label[cor_index + 1] = bbox.y_center();
-              top_label[cor_index + 2] = bbox.width();
-              top_label[cor_index + 3] = bbox.height();
+            label_shape[0] = batch_size;
+            label_shape[1] = count;
+            batch->multi_label_[i]->Reshape(label_shape);
+            top_label[i] = batch->multi_label_[i]->mutable_cpu_data();
+            const vector<AnnotationGroup>& anno_vec = all_anno[item_id];
+            label_offset = count * item_id;
+            top_label[i] = top_label[i] + label_offset;
+            int locations = pow(side, 2);
+            CHECK_EQ(count, locations * 7) << "side and count not match";
+            // difficult
+            caffe_set(locations, Dtype(0), top_label[i]);
+            // isobj
+            caffe_set(locations, Dtype(0), top_label[i] + locations);
+            // class label
+            caffe_set(locations, Dtype(-1), top_label[i] + locations * 2);
+            // bounding box
+            caffe_set(locations*4, Dtype(0), top_label[i] + locations * 3);
+            for (int g = 0; g < anno_vec.size(); ++g) {
+              const AnnotationGroup& anno_group = anno_vec[g];
+              for (int a = 0; a < anno_group.annotation_size(); ++a) {
+                const Annotation& anno = anno_group.annotation(a);
+                const NormalizedBBox& bbox = anno.bbox();
+                float class_label = anno_group.group_label();
+                float x = bbox.x_center();
+                float y = bbox.y_center();
+                int x_index = floor(x * side);
+                int y_index = floor(y * side);
+                x_index = std::min(x_index, side - 1);
+                y_index = std::min(y_index, side - 1);
+                int dif_index = side * y_index + x_index;
+                int obj_index = locations + dif_index;
+                int class_index = locations * 2 + dif_index;
+                int cor_index = locations * 3 + dif_index * 4;
+                top_label[i][dif_index] = bbox.difficult();
+                top_label[i][obj_index] = 1;
+                top_label[i][class_index] = class_label;
+                top_label[i][cor_index + 0] = bbox.x_center();
+                top_label[i][cor_index + 1] = bbox.y_center();
+                top_label[i][cor_index + 2] = bbox.width();
+                top_label[i][cor_index + 3] = bbox.height();
+              }
             }
           }
         }
@@ -401,7 +406,6 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
     //reader_.free().push(const_cast<AnnotatedDatum*>(&anno_datum));
     Next();
   }
-
   // Store "rich" annotation if needed.
   if (this->output_labels_ && has_anno_type_) {
     if(anno_type_ == AnnotatedDatum_AnnotationType_BBOX) {
