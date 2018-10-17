@@ -234,7 +234,6 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       {
         this->data_transformer_->once = false;
         this->data_transformer_->new_dim = ((rand() % 10) + 10) * 32;
-        LOG(INFO) <<"New dimension is : " <<this->data_transformer_->new_dim <<"\n";
       }
     }
     else{
