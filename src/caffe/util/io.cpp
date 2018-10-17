@@ -256,7 +256,7 @@ bool ReadRichImageToAnnotatedDatum(const string& filename,
                                        name_to_label, anno_datum, caffe_yolo);
       } else if (labeltype == "json") {
         return ReadJSONToAnnotatedDatum(labelfile, ori_height, ori_width,
-                                        name_to_label, anno_datum);
+                                        name_to_label, anno_datum, caffe_yolo);
       } else if (labeltype == "txt") {
         return ReadTxtToAnnotatedDatum(labelfile, ori_height, ori_width,
                                        anno_datum);
@@ -422,7 +422,7 @@ bool ReadXMLToAnnotatedDatum(const string& labelfile, const int img_height,
 // Parse MSCOCO detection annotation.
 bool ReadJSONToAnnotatedDatum(const string& labelfile, const int img_height,
     const int img_width, const std::map<string, int>& name_to_label,
-    AnnotatedDatum* anno_datum) {
+    AnnotatedDatum* anno_datum, const bool caffe_yolo) {
   ptree pt;
   read_json(labelfile, pt);
 
@@ -446,6 +446,7 @@ bool ReadJSONToAnnotatedDatum(const string& labelfile, const int img_height,
   // Get annotation info.
   int instance_id = 0;
   BOOST_FOREACH(ptree::value_type& v1, pt.get_child("annotation")) {
+    vector<float> box(4, 0);
     Annotation* anno = NULL;
     bool iscrowd = false;
     ptree object = v1.second;
@@ -477,8 +478,9 @@ bool ReadJSONToAnnotatedDatum(const string& labelfile, const int img_height,
       anno = anno_group->add_annotation();
       instance_id = 0;
     }
-    anno->set_instance_id(instance_id++);
-
+    if(!caffe_yolo) {
+      anno->set_instance_id(instance_id++);
+    }
     // Get iscrowd.
     iscrowd = object.get<int>("iscrowd", 0);
 
@@ -515,11 +517,27 @@ bool ReadJSONToAnnotatedDatum(const string& labelfile, const int img_height,
         " bounding box irregular.";
     // Store the normalized bounding box.
     NormalizedBBox* bbox = anno->mutable_bbox();
-    bbox->set_xmin(xmin / width);
-    bbox->set_ymin(ymin / height);
-    bbox->set_xmax(xmax / width);
-    bbox->set_ymax(ymax / height);
-    bbox->set_difficult(iscrowd);
+    if(caffe_yolo) {
+      if(iscrowd)
+        continue;
+      box[0] = (static_cast<float>(xmin + (xmax - xmin) / 2.) - 1) / width;
+      box[1] = (static_cast<float>(ymin + (ymax - ymin) / 2.) - 1) / height;
+      box[2] = static_cast<float>(xmax - xmin) / width;
+      box[3] = static_cast<float>(ymax - ymin) / height;
+      anno->set_instance_id(instance_id++);
+      bbox->set_x_center(box[0]);
+      bbox->set_y_center(box[1]);
+      bbox->set_width(box[2]);
+      bbox->set_height(box[3]);
+      bbox->set_difficult(iscrowd);
+    }
+    else {
+      bbox->set_xmin(xmin / width);
+      bbox->set_ymin(ymin / height);
+      bbox->set_xmax(xmax / width);
+      bbox->set_ymax(ymax / height);
+      bbox->set_difficult(iscrowd);
+    }
   }
   return true;
 }
