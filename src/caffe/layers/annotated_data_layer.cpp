@@ -221,19 +221,27 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   for (int i = 0; i < sides_.size(); ++i) {
     top_label.push_back(batch->multi_label_[i]->mutable_cpu_data());
   }
+
   for (int item_id = 0; item_id < batch_size; ++item_id) {
     if (this->layer_param_.data_param().random())
     {
       this->data_transformer_->im_count = this->data_transformer_->im_count + 1;
-      if ((this->data_transformer_->im_count / 10) == batch_size)
-      {
-        this->data_transformer_->once = true;
-        this->data_transformer_->im_count = 0;
-      }
       if (((this->data_transformer_->current_iteration % 10) == 0) && this->data_transformer_->once)
       {
         this->data_transformer_->once = false;
-        this->data_transformer_->new_dim = ((rand() % 10) + 10) * 32;
+        if ((this->data_transformer_->current_iteration + 200) >= (this->max_iter_))
+        {
+           this->data_transformer_->new_dim = 608;
+        }
+        else
+        {
+                this->data_transformer_->new_dim = ((rand() % 10) + 10) * 32;
+        }
+      }
+      if (((this->data_transformer_->im_count / (this->iter_size_)) / 10) == batch_size)
+      {
+        this->data_transformer_->once = true;
+        this->data_transformer_->im_count = 0;
       }
     }
     else{

@@ -233,6 +233,7 @@ void Solver<Dtype>::Step(int iters) {
     /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
     // Set current iteration number
     net_->set_current_iter_num(iter_);
+    net_->set_iteration_info(param_.max_iter(),param_.iter_size());
     /*************************************************************************************/
     // accumulate the loss and gradient
     Dtype loss = 0;
