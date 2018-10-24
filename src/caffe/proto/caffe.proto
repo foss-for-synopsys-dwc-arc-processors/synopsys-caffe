@@ -1949,6 +1949,7 @@ message PoolingParameter {
   optional uint32 stride_h = 7; // The stride height
   optional uint32 stride_w = 8; // The stride width
   optional uint32 output_shift_instead_division = 21 [default = 0]; //CUSTOMIZATION, only valid for Average pooling
+  optional bool saturate = 22 [default = false]; //CUSTOMIZATION, control the output in range [-4096, 4095]
   enum Engine {
     DEFAULT = 0;
     CAFFE = 1;

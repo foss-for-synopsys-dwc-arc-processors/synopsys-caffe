@@ -57,7 +57,7 @@ void BasePrefetchingDataLayer<Dtype>::LayerSetUp(
     prefetch_[i]->data_.mutable_cpu_data();
     if (this->output_labels_) {
       if (this->box_label_) {
-        this->top_size_ = top.size();
+        //this->top_size_ = top.size();
         for (int j = 0; j < top.size() - 1; ++j) {
           prefetch_[i]->multi_label_[j]->mutable_cpu_data();
         }

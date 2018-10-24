@@ -57,7 +57,7 @@ __global__ void AvePoolForward(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
-	Dtype* const top_data, const int output_shift_instead_division) {
+	Dtype* const top_data, const int output_shift_instead_division, const bool saturate) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -89,13 +89,25 @@ __global__ void AvePoolForward(const int nthreads,
     if (output_shift_instead_division != Dtype(0)) {
       top_data[index] = aveval / output_shift_instead_division;
       top_data[index] = rint(top_data[index]);
-      if(top_data[index] > SATURATE_MAX)
-        top_data[index] = SATURATE_MAX;
-      if(top_data[index] < SATURATE_MIN)
-        top_data[index] = SATURATE_MIN;
+      if(saturate)
+      {
+        if(top_data[index] > SATURATE_MAX)
+          top_data[index] = SATURATE_MAX;
+        if(top_data[index] < SATURATE_MIN)
+          top_data[index] = SATURATE_MIN;
+      }
     }
     else{
-      top_data[index] = aveval / pool_size;
+      if(saturate)
+      {
+    	top_data[index] = aveval;
+        if(top_data[index] > SATURATE_MAX)
+          top_data[index] = SATURATE_MAX;
+        if(top_data[index] < SATURATE_MIN)
+          top_data[index] = SATURATE_MIN;
+      }
+      else //original implementation
+        top_data[index] = aveval / pool_size;
     }
   }
 }
@@ -109,7 +121,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMI
-    Dtype* const top_data, const int output_shift_instead_division) {
+    Dtype* const top_data, const int output_shift_instead_division, const bool saturate) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -213,14 +225,26 @@ __global__ void AvePoolForward_TF(const int nthreads,
           top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
       }
       top_data[index] = rint(top_data[index]);
-      if(top_data[index] > SATURATE_MAX)
-        top_data[index] = SATURATE_MAX;
-      if(top_data[index] < SATURATE_MIN)
-        top_data[index] = SATURATE_MIN;
+      if(saturate)
+      {
+        if(top_data[index] > SATURATE_MAX)
+          top_data[index] = SATURATE_MAX;
+        if(top_data[index] < SATURATE_MIN)
+          top_data[index] = SATURATE_MIN;
+      }
     }
 
     else{
-      top_data[index] = aveval / pool_size;
+      if(saturate)
+      {
+      	top_data[index] = aveval;
+        if(top_data[index] > SATURATE_MAX)
+          top_data[index] = SATURATE_MAX;
+        if(top_data[index] < SATURATE_MIN)
+          top_data[index] = SATURATE_MIN;
+      }
+      else //original implementation
+        top_data[index] = aveval / pool_size;
     }
   }
 }
@@ -374,7 +398,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         kernel_w_, stride_h_, stride_w_,
 		//pad_h_, pad_w_,
 		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
-		top_data, output_shift_instead_division_);
+		top_data, output_shift_instead_division_, saturate_);
     break;
   //<--CUSTOMIZATION
   case PoolingParameter_PoolMethod_AVE_EXC_PAD:
@@ -385,7 +409,7 @@ void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
         kernel_w_, stride_h_, stride_w_,
 		//pad_h_, pad_w_,
 		pad_top, pad_left, pad_bottom, pad_right, //CUSTOMIZATION
-		top_data, output_shift_instead_division_);
+		top_data, output_shift_instead_division_, saturate_);
     break;
     //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
