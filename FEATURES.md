@@ -28,9 +28,9 @@ evquantize related (only valid for CUDA forwards implementation)
 ----------------------------------------------------------------------------------  
 input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
 output_scale in EltwiseParameter  
-output_shift_instead_division in PoolingParameter  
 input_scale in SoftmaxParameter  
-saturate in ReLUParameter  
+output_shift_instead_division in PoolingParameter  
+saturate in ReLUParameter and PoolingParameter  
   
 YOLO related  
 --------------  
