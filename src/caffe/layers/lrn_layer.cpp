@@ -14,6 +14,8 @@ void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   alpha_ = this->layer_param_.lrn_param().alpha();
   beta_ = this->layer_param_.lrn_param().beta();
   k_ = this->layer_param_.lrn_param().k();
+  input_scale_ = this->layer_param_.lrn_param().input_scale();
+  output_scale_ = this->layer_param_.lrn_param().output_scale();
   if (this->layer_param_.lrn_param().norm_region() ==
       LRNParameter_NormRegion_WITHIN_CHANNEL) {
     // Set up split_layer_ to use inputs in the numerator and denominator.

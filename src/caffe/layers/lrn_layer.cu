@@ -82,20 +82,34 @@ void LRNLayer<Dtype>::CrossChannelForward_gpu(
   // First, compute scale
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
+  //<--CUSTOMIZATION
+  const int count = bottom[0]->count();
+  caffe_copy(count, bottom_data, top_data);
+  if (input_scale_ != Dtype(1)) {
+    caffe_gpu_scal(count, input_scale_, top_data);
+  }
+  //CUSTOMIZATION-->
   Dtype* scale_data = scale_.mutable_gpu_data();
   // We will launch one kernel for each pixel location, and have the kernel
   // go through all the channels.
   int n_threads = num_ * height_ * width_;
   // NOLINT_NEXT_LINE(whitespace/operators)
   LRNFillScale<<<CAFFE_GET_BLOCKS(n_threads), CAFFE_CUDA_NUM_THREADS>>>(
-      n_threads, bottom_data, num_, channels_, height_, width_, size_,
+      n_threads, top_data, num_, channels_, height_, width_, size_, //CUSTOMIZATION
       alpha_ / size_, k_, scale_data);
   CUDA_POST_KERNEL_CHECK;
   n_threads = bottom[0]->count();
   // NOLINT_NEXT_LINE(whitespace/operators)
   LRNComputeOutput<<<CAFFE_GET_BLOCKS(n_threads), CAFFE_CUDA_NUM_THREADS>>>(
-      n_threads, bottom_data, scale_data, -beta_, top_data);
+      n_threads, top_data, scale_data, -beta_, top_data); //CUSTOMIZATION
   CUDA_POST_KERNEL_CHECK;
+  //<--CUSTOMIZATION
+  const int count_t = top[0]->count();
+  if (output_scale_ != Dtype(1)) {
+    caffe_gpu_scal(count_t, output_scale_, top_data);
+    caffe_gpu_int(count_t, top_data);
+  }
+  //CUSTOMIZATION-->
 }
 template void LRNLayer<float>::CrossChannelForward_gpu(
     const vector<Blob<float>*>& bottom, const vector<Blob<float>*>& top);

@@ -1791,6 +1791,8 @@ message LRNParameter {
     CUDNN = 2;
   }
   optional Engine engine = 6 [default = DEFAULT];
+  optional double input_scale = 7 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 8 [default = 1]; //CUSTOMIZATION
 }
 
 message MatReadParameter {

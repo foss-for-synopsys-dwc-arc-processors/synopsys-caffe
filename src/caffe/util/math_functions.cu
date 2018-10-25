@@ -180,6 +180,25 @@ void caffe_gpu_round<double>(const int N, double* y) {
 }
 
 template <typename Dtype>
+__global__ void int_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    y[index] = int(y[index]);
+  }
+}
+
+template <>
+void caffe_gpu_int<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  int_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_int<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  int_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <typename Dtype>
 __global__ void set_kernel(const int n, const Dtype alpha, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
     y[index] = alpha;
