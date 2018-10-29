@@ -348,7 +348,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
   float dh = jitter * img_height;
 
   float new_ar = (img_width + rand_uniform(-dw, dw)) / (img_height + rand_uniform(-dh, dh));
-  float scale_value = 1;//rand_uniform(.25, 2);
+  float scale_value = 1;//rand_uniform(.25, 2); Scale value is one as per darknet implementation
   float nw, nh;
 
   if(new_ar < 1){

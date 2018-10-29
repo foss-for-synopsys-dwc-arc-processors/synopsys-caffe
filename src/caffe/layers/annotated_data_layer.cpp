@@ -223,6 +223,7 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   }
 
   for (int item_id = 0; item_id < batch_size; ++item_id) {
+    // Logic to resize the input randomly.(Refered darknet implementation)
     if(transform_param.has_caffe_yolo()){
       if (this->layer_param_.data_param().random()){
         this->data_transformer_->im_count = this->data_transformer_->im_count + 1;
