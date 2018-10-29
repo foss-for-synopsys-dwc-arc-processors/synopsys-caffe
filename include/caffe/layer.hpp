@@ -322,6 +322,10 @@ class Layer {
   inline void set_current_iter_num(const int iter_num) {
     iter_ = iter_num;
   }
+  inline void set_iteration_info(int max_iter, int iter_size){
+    max_iter_ = max_iter;
+    iter_size_ = iter_size;
+  }
   /**************************************************************************************/
 
  inline Phase phase() { return phase_; }
@@ -335,6 +339,8 @@ class Layer {
   /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
   /** The current iteration number **/
   int iter_;
+  int max_iter_;
+  int iter_size_ = 1;
   /**************************************************************************************/
 
   /** The vector that stores the learnable parameters as a set of blobs. */

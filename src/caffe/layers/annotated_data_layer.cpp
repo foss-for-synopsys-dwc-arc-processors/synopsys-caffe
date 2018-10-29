@@ -216,11 +216,36 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   // Store transformed annotation.
   map<int, vector<AnnotationGroup> > all_anno;
   int num_bboxes = 0;
+  this->data_transformer_->current_iteration = this->iter_;
   vector<Dtype*> top_label;
   for (int i = 0; i < sides_.size(); ++i) {
     top_label.push_back(batch->multi_label_[i]->mutable_cpu_data());
   }
+
   for (int item_id = 0; item_id < batch_size; ++item_id) {
+    // Logic to resize the input randomly.(Refered darknet implementation)
+    if(transform_param.has_caffe_yolo()){
+      if (this->layer_param_.data_param().random()){
+        this->data_transformer_->im_count = this->data_transformer_->im_count + 1;
+        if (((this->data_transformer_->current_iteration % 10) == 0) && this->data_transformer_->once){
+          this->data_transformer_->once = false;
+          if ((this->data_transformer_->current_iteration + 200) >= (this->max_iter_)){
+             this->data_transformer_->new_dim = 608;
+          }
+          else{
+             this->data_transformer_->new_dim = ((rand() % 10) + 10) * 32;
+          }
+        }
+        if (((this->data_transformer_->im_count / (this->iter_size_)) / 10) == batch_size){
+          this->data_transformer_->once = true;
+          this->data_transformer_->im_count = 0;
+        }
+      }
+      else{
+        this->data_transformer_->new_dim = this->layer_param_.transform_param().resize_param().width();
+      }
+    }
+
     timer.Start();
     // get a anno_datum
     //AnnotatedDatum& anno_datum = *(reader_.full().pop("Waiting for data"));
@@ -235,6 +260,10 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       // on single input batches allows for inputs of varying dimension.
       // Use data_transformer to infer the expected blob shape from datum.
       vector<int> top_shape = this->data_transformer_->InferBlobShape(anno_datum.datum());
+      if (transform_param.has_caffe_yolo()){
+        top_shape[2] = this->data_transformer_->new_dim;
+        top_shape[3] = this->data_transformer_->new_dim;
+      }
       this->transformed_data_.Reshape(top_shape);
       // Reshape batch according to the batch_size.
       top_shape[0] = batch_size;
@@ -335,7 +364,16 @@ void AnnotatedDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
           int count = 0;
           int label_offset = 0;
           int side = 0;
+          int scale_param = 32;
           for (int i = 0; i < sides_.size(); ++i) {
+            if (i == 0){
+              sides_[i] = (this->data_transformer_->new_dim / scale_param);
+            }
+            else
+            {
+              scale_param = scale_param / 2 ;
+              sides_[i] = (this->data_transformer_->new_dim / scale_param);
+            }
             side = sides_[i];
             count = sides_[i] * sides_[i] * (1 + 1 + 1 + 4);
             label_shape[0] = batch_size;

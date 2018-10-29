@@ -216,6 +216,13 @@ class Net {
       layers_[layer_id]->set_current_iter_num(iter_num);
     }
   }
+  inline void set_iteration_info(int max_iter, int iter_size){
+    max_iter_ = max_iter;
+    iter_size_ = iter_size;
+    for (int layer_id = 0; layer_id < layers_.size(); ++layer_id) {
+      layers_[layer_id]->set_iteration_info(max_iter, iter_size);
+    }
+  }
   /************************************************************************************/
   bool has_blob(const string& blob_name) const;
   const shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
@@ -291,6 +298,8 @@ class Net {
   /**************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************/
   /// @brief The current iteration number
   int iter_;
+  int max_iter_;
+  int iter_size_ = 1;
   /*************************************************************************************/
   /// @brief Individual layers in the net
   vector<shared_ptr<Layer<Dtype> > > layers_;

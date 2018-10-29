@@ -20,6 +20,13 @@ namespace caffe {
 template <typename Dtype>
 class DataTransformer {
  public:
+
+  //Variable used in random resizing of input for yolo training
+  int im_count = 0;
+  int current_iteration = 0;
+  bool once = true;
+  int new_dim = 0;
+
   explicit DataTransformer(const TransformationParameter& param, Phase phase);
   virtual ~DataTransformer() {}
 
