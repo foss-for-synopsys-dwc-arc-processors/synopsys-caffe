@@ -11,6 +11,7 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* weight = this->blobs_[0]->gpu_data();
   Dtype input_scale = this->input_scale_; //CUSTOMIZATION
   Dtype output_scale = this->output_scale_; //CUSTOMIZATION
+  bool signed_saturate = this->signed_saturate_; //CUSTOMIZATION
   for (int i = 0; i < bottom.size(); ++i) {
     Dtype* bottom_data = bottom[i]->mutable_gpu_data();
     //<--CUSTOMIZATION
@@ -34,6 +35,8 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_scal(count_t, output_scale, top_data);
       caffe_gpu_round(count_t, top_data);
     }
+    if (signed_saturate)
+      caffe_gpu_saturate(count_t, top_data);
     //CUSTOMIZATION-->
   }
 }
