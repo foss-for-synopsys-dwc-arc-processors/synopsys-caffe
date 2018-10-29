@@ -8,6 +8,9 @@
 #include "caffe/common.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#define SIGNED_SATURATE_MAX 2047
+#define SIGNED_SATURATE_MIN -2048
+
 namespace caffe {
 
 template <>
@@ -177,6 +180,47 @@ template <>
 void caffe_gpu_round<double>(const int N, double* y) {
   // NOLINT_NEXT_LINE(whitespace/operators)
   round_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <typename Dtype>
+__global__ void int_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    y[index] = int(y[index]);
+  }
+}
+
+template <>
+void caffe_gpu_int<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  int_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_int<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  int_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <typename Dtype>
+__global__ void saturate_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    if(y[index] > SIGNED_SATURATE_MAX)
+      y[index] = SIGNED_SATURATE_MAX;
+    if(y[index] < SIGNED_SATURATE_MIN)
+      y[index] = SIGNED_SATURATE_MIN;
+  }
+}
+
+template <>
+void caffe_gpu_saturate<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  saturate_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_saturate<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  saturate_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
 }
 
 template <typename Dtype>

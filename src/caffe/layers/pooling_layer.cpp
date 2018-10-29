@@ -84,6 +84,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     output_shift_instead_division_ = 0;
   }
 
+  saturate_ = pool_param.saturate();
+
   if (pool_param.has_pad_l()){
     pad_l_ = pool_param.pad_l();
   }

@@ -26,10 +26,11 @@ squeeze_deconv_layer
   
 evquantize related (only valid for CUDA forwards implementation)  
 ----------------------------------------------------------------------------------  
-input_scale, output_scale in ConvolutionParameter and InnerProductParameter  
+input_scale, output_scale in ConvolutionParameter, InnerProductParameter and LRNParameter  
 output_scale in EltwiseParameter  
+input_scale in SoftmaxParameter  
 output_shift_instead_division in PoolingParameter  
-saturate in ReLUParameter  
+saturate in ReLUParameter and PoolingParameter  
   
 YOLO related  
 --------------  

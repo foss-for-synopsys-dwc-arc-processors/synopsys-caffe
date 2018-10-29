@@ -91,6 +91,12 @@ void SoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   int count = bottom[0]->count();
   int channels = top[0]->shape(softmax_axis_);
   caffe_copy(count, bottom_data, top_data);
+  //<--CUSTOMIZATION
+   if (input_scale_ != Dtype(1)) {
+     caffe_gpu_scal(count, input_scale_, top_data);
+     //caffe_gpu_round(count, top_data);
+   }
+   //CUSTOMIZATION-->
   // We need to subtract the max to avoid numerical issues, compute the exp,
   // and then normalize.
   // compute max
