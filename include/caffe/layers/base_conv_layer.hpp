@@ -103,6 +103,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
 
   Dtype input_scale_; //CUSTOMIZATION
   Dtype output_scale_; //CUSTOMIZATION
+  bool signed_saturate_; //CUSTOMIZATION
 
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists

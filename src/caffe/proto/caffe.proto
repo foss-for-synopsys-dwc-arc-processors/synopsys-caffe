@@ -1288,6 +1288,7 @@ message ConvolutionParameter {
 
   optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional bool signed_saturate = 32 [default = false]; //CUSTOMIZATION
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
@@ -2299,6 +2300,7 @@ message SqueezeConvolutionParameter {
 
   optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional bool signed_saturate = 48 [default = false]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
 
