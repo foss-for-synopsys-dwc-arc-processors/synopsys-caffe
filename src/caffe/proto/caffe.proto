@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 148 (last added: swish_param)
+// LayerParameter next available layer-specific ID: 208 (last added: depth_to_space_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -605,6 +605,8 @@ message LayerParameter {
   optional ReorgParameter reorg_param = 197;
   optional YoloV2LossParameter yolo_v2_loss_param = 198;
   optional YoloV3LossParameter yolo_v3_loss_param = 199;
+  //TensorFlow related
+  optional DepthToSpaceParameter depth_to_space_param = 208;
 }
 
 message AccumParameter {
@@ -2724,4 +2726,10 @@ message PReLUParameter {
 message ReorgParameter {
   optional uint32 stride = 1;
   optional bool reverse = 2 [default = false];
+}
+
+message DepthToSpaceParameter {
+  // implementation of tf.depth_to_space
+  required int32 block_size = 1;
+  optional string data_format = 2 [default = "NHWC"];
 }
