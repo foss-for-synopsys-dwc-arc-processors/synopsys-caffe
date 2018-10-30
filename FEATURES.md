@@ -6,6 +6,7 @@ New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
 ----------------------------------------------------------
+depthtospace_layer  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
@@ -31,17 +32,18 @@ output_scale in EltwiseParameter
 input_scale in SoftmaxParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ReLUParameter and PoolingParameter  
+signed_saturate in  ConvolutionParameter  
   
 YOLO related  
 --------------  
+reorg_layer  
+yolo_v2_loss_layer  
+yolo_v3_loss_layer  
 add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter  
 caffe_yolo in TransformationParameter  
 jitter in ResizeParameter  
 exposure_lower, exposure_upper in DistortionParameter  
-side in DataParameter  
-reorg_layer  
-yolo_v2_loss_layer  
-yolo_v3_loss_layer  
+side and random in DataParameter  
     
 ICNet (PSPNet) related  
 ---------------------  
