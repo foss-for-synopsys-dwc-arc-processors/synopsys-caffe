@@ -346,7 +346,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
 
   float dw = jitter * img_width;
   float dh = jitter * img_height;
-
+  resize_width = resize_height = new_dim; //Assigned new_dim as resize width and resize height
   float new_ar = (img_width + rand_uniform(-dw, dw)) / (img_height + rand_uniform(-dh, dh));
   float scale_value = 1;//rand_uniform(.25, 2); Scale value is one as per darknet implementation
   float nw, nh;
@@ -359,7 +359,7 @@ void DataTransformer<Dtype>::Transform_Yolo(const AnnotatedDatum& anno_datum,
       nh = nw / new_ar;
   }
 
-  resize_width = resize_height = new_dim; //Assigned new_dim as resize width and resize height
+
   float dx = rand_uniform(0, resize_width - nw);
   float dy = rand_uniform(0, resize_height - nh);
 
