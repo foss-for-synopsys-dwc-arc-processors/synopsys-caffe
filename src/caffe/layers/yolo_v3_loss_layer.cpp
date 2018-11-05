@@ -153,6 +153,17 @@ namespace caffe {
         const int size = pow_side * (5 + num_classes_);
         int index;
         
+        // Updates the net_w and net_h using side value (to get new dimension identified using random logic).
+        if (masks_[0] == 6){
+           net_h_ = net_w_ = side_ * 32;
+        }
+        if(masks_[0] == 3){
+           net_h_ = net_w_ = side_ * 16;
+        }
+        if(masks_[0] == 0){
+            net_h_ = net_w_ = side_ * 8;
+        }
+
         Dtype* diff = diff_.mutable_cpu_data();
         Dtype loss(0.0), class_loss(0.0), noobj_loss(0.0), obj_loss(0.0), coord_loss(0.0), area_loss(0.0);
         Dtype avg_cat(0.0), noobj_score(0.0), obj_score(0.0), avg_best_iou(0.0), recall(0.0), recall75(0.0);
