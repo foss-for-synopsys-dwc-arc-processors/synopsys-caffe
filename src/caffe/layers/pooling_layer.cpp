@@ -36,6 +36,7 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << "Stride is stride OR stride_h and stride_w are required.";
   global_pooling_ = pool_param.global_pooling();
   ceil_mode_ = pool_param.ceil_mode();
+  round_mode_ = pool_param.round_mode();
   if (global_pooling_) {
     kernel_h_ = bottom[0]->height();
     kernel_w_ = bottom[0]->width();
@@ -151,7 +152,7 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   switch (pad_type_) {
     case 0:
       // Specify the structure by ceil or floor mode
-      if (ceil_mode_) {
+      if (ceil_mode_ || round_mode_ == PoolingParameter_RoundMode_CEIL) {
     	if (pad_l_!=0 || pad_r_!=0 || pad_t_!=0 || pad_b_!=0){
     	  pooled_height_ = static_cast<int>(ceil(static_cast<float>(
     	    height_ + pad_t_ + pad_b_ - kernel_h_) / stride_h_)) + 1;
@@ -203,6 +204,10 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
   //CUSTOMIZATION-->
 
+  if (round_mode_ != PoolingParameter_RoundMode_CEIL && round_mode_ != PoolingParameter_RoundMode_FLOOR) {
+    LOG(FATAL) << "Unknown rounding mode.";
+  }
+
   if (pad_h_ || pad_w_) {
     // If we have padding, ensure that the last pooling starts strictly
     // inside the image (instead of at the padding); otherwise clip the last.
@@ -244,7 +249,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int top_count = top[0]->count();
   // We'll output the mask to top[1] if it's of size >1.
   const bool use_top_mask = top.size() > 1;
-  int* mask = NULL;  // suppress warnings about uninitalized variables
+  int* mask = NULL;  // suppress warnings about uninitialized variables
   Dtype* top_mask = NULL;
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
