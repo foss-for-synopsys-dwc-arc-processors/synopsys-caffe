@@ -556,9 +556,12 @@ BOOST_PYTHON_MODULE(_caffe) {
     .def("share_weights", &share_weights)
     .def("apply_update", &Solver<Dtype>::ApplyUpdate)
     .add_property("param", bp::make_function(&Solver<Dtype>::param,
+#ifndef _MSC_VER
               bp::return_internal_reference<>()));
   BP_REGISTER_SHARED_PTR_TO_PYTHON(Solver<Dtype>);
-
+#else
+                bp::return_value_policy<bp::copy_const_reference>()));
+#endif
   bp::class_<SGDSolver<Dtype>, bp::bases<Solver<Dtype> >,
     shared_ptr<SGDSolver<Dtype> >, boost::noncopyable>(
         "SGDSolver", bp::init<string>())
