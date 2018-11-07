@@ -44,7 +44,8 @@ class EltwiseLayer : public Layer<Dtype> {
   Blob<int> max_idx_;
 
   bool stable_prod_grad_;
-  Dtype output_scale_;
+  Dtype output_scale_;  //CUSTOMIZATION
+  bool signed_saturate_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

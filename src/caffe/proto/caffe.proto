@@ -1603,6 +1603,7 @@ message EltwiseParameter {
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION, only valid for SUM
+  optional bool signed_saturate = 5 [default = false]; //CUSTOMIZATION, only valid for SUM
 }
 
 // Message that stores parameters used by ELULayer
