@@ -32,7 +32,7 @@ output_scale in EltwiseParameter
 input_scale in SoftmaxParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ReLUParameter and PoolingParameter  
-signed_saturate in  ConvolutionParameter  
+signed_saturate in ConvolutionParameter and EltwiseParameter  
   
 YOLO related  
 --------------  
