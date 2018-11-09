@@ -37,6 +37,7 @@ signed_saturate in ConvolutionParameter and EltwiseParameter
 YOLO related  
 --------------  
 reorg_layer  
+upsample_darknet_layer  
 yolo_v2_loss_layer  
 yolo_v3_loss_layer  
 add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter  

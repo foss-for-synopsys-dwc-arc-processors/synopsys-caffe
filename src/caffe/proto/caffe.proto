@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 208 (last added: depth_to_space_param)
+// LayerParameter next available layer-specific ID: 209 (last added: upsample_darknet_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -606,6 +606,7 @@ message LayerParameter {
   optional ReorgParameter reorg_param = 197;
   optional YoloV2LossParameter yolo_v2_loss_param = 198;
   optional YoloV3LossParameter yolo_v3_loss_param = 199;
+  optional UpsampleDarknetParameter upsample_darknet_param = 209; // Darknet layer used in yolov3
   //TensorFlow related
   optional DepthToSpaceParameter depth_to_space_param = 208;
 }
@@ -2419,6 +2420,10 @@ message UniqueLabelParameter {
   required int32 max_labels = 1;
   repeated int32 ignore_label = 2;
   repeated float force_label = 3;
+}
+
+message UpsampleDarknetParameter {
+  optional int32 stride = 1 [default = 1];	// darknet calls it "stride".
 }
 
 message UpsampleParameter {
