@@ -2280,6 +2280,7 @@ message SoftmaxParameter {
   // Any other axes will be evaluated as independent softmaxes.
   optional int32 axis = 2 [default = 1];
   optional double input_scale = 3 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
 }
 
 // ***************** MulticoreWare_Modified - Feature: Pruning / Splicing ******************

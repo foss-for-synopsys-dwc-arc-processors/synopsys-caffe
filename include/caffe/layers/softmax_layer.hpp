@@ -44,6 +44,7 @@ class SoftmaxLayer : public Layer<Dtype> {
   /// scale is an intermediate Blob to hold temporary results.
   Blob<Dtype> scale_;
   Dtype input_scale_; //CUSTOMIZATION
+  Dtype output_scale_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

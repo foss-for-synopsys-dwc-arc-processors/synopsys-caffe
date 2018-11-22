@@ -22,6 +22,7 @@ void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   scale_dims[softmax_axis_] = 1;
   scale_.Reshape(scale_dims);
   input_scale_ = this->layer_param_.softmax_param().input_scale(); //CUSTOMIZATION
+  output_scale_ = this->layer_param_.softmax_param().output_scale(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
