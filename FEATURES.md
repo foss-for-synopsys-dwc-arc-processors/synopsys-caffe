@@ -45,6 +45,8 @@ caffe_yolo in TransformationParameter
 jitter in ResizeParameter  
 exposure_lower, exposure_upper in DistortionParameter  
 side and random in DataParameter  
+yolov2.py (customized Python layer, implementation of darknet_reorg)  
+darknet.py  
     
 ICNet (PSPNet) related  
 ---------------------  
