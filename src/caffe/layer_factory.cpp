@@ -124,9 +124,9 @@ shared_ptr<Layer<Dtype> > GetConvolutionLayer(
     }
   }
   bool asym_pad = false;
-  if (conv_param.pad_type() != 0 ||
-      conv_param.pad_l() != conv_param.pad_r() ||
-      conv_param.pad_t() != conv_param.pad_b())
+  if (conv_param.has_pad_type() ||
+      conv_param.has_pad_l() || conv_param.has_pad_r() ||
+      conv_param.has_pad_t() || conv_param.has_pad_b())
 	asym_pad = true;
 #endif
   if (engine == ConvolutionParameter_Engine_DEFAULT) {
@@ -136,7 +136,7 @@ shared_ptr<Layer<Dtype> > GetConvolutionLayer(
       engine = ConvolutionParameter_Engine_CUDNN;
     }
     if (asym_pad) {
-      LOG(INFO) << "CuDNN doesn't support the asymmetric padding at Layer "
+      LOG(INFO) << "CuDNN doesn't support the customized padding at Layer "
                 << param.name() << ", using Caffe's own convolution layer instead.";
       engine = ConvolutionParameter_Engine_CAFFE;
     }
@@ -200,7 +200,9 @@ shared_ptr<Layer<Dtype> > GetDeconvolutionLayer(const LayerParameter& param) {
     }
   }
   bool asym_pad = false;
-  if (conv_param.pad_l() != conv_param.pad_r() || conv_param.pad_t() != conv_param.pad_b())
+  if (conv_param.has_pad_type() ||
+	  conv_param.has_pad_l() || conv_param.has_pad_r() ||
+	  conv_param.has_pad_t() || conv_param.has_pad_b())
     asym_pad = true;
 #endif
   if (engine == ConvolutionParameter_Engine_DEFAULT) {
@@ -210,7 +212,7 @@ shared_ptr<Layer<Dtype> > GetDeconvolutionLayer(const LayerParameter& param) {
       engine = ConvolutionParameter_Engine_CUDNN;
     }
     if (asym_pad) {
-      LOG(INFO) << "CuDNN doesn't support the asymmetric padding at Layer "
+      LOG(INFO) << "CuDNN doesn't support the customized padding at Layer "
           << param.name() << ", using Caffe's own deconvolution layer instead.";
      engine = ConvolutionParameter_Engine_CAFFE;
     }
@@ -242,14 +244,14 @@ shared_ptr<Layer<Dtype> > GetPoolingLayer(const LayerParameter& param) {
     engine = PoolingParameter_Engine_CAFFE;
 #ifdef USE_CUDNN
     bool asym_pad = false;
-    if (param.pooling_param().pad_type() != 0 ||
-        param.pooling_param().pad_l() != param.pooling_param().pad_r() ||
-        param.pooling_param().pad_t() != param.pooling_param().pad_b())
+    if (param.pooling_param().has_pad_type() || param.pooling_param().has_ceil_mode() ||
+        param.pooling_param().has_pad_l() || param.pooling_param().has_pad_r() ||
+        param.pooling_param().has_pad_t() || param.pooling_param().has_pad_b())
       asym_pad = true;
     if (!asym_pad)
       engine = PoolingParameter_Engine_CUDNN;
     else {
-      LOG(INFO) << "cuDNN does not support the asymmetric padding at Layer "
+      LOG(INFO) << "cuDNN does not support the customized padding at Layer "
                 << param.name() << " ,using Caffe's own pooling layer instead.";
       engine = PoolingParameter_Engine_CAFFE;
     }
