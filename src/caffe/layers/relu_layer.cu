@@ -17,6 +17,7 @@ __global__ void ReLUForward(const int n, const Dtype* in, Dtype* out,
       out[index] = out[index] > 6 ? 6: out[index]; //CUSTOMIZATON
     //<--CUSTOMIZATION
     if(saturate){
+      out[index] = rint(out[index]);
       if(out[index] > SATURATE_MAX)
         out[index] = SATURATE_MAX;
       if(out[index] < SATURATE_MIN)
