@@ -3,8 +3,9 @@
 
 #include "caffe/layers/relu_layer.hpp"
 
-#define SATURATE_MAX 4095
-#define SATURATE_MIN -4096
+#define SIGNED_SATURATE_MAX 2047
+#define SIGNED_SATURATE_MIN -2048
+#define UNSIGNED_SATURATE_MAX 4095
 
 namespace caffe {
 
@@ -16,12 +17,17 @@ __global__ void ReLUForward(const int n, const Dtype* in, Dtype* out,
     if(relu6) //CUSTOMIZATON
       out[index] = out[index] > 6 ? 6: out[index]; //CUSTOMIZATON
     //<--CUSTOMIZATION
-    if(saturate){
-      out[index] = rint(out[index]);
-      if(out[index] > SATURATE_MAX)
-        out[index] = SATURATE_MAX;
-      if(out[index] < SATURATE_MIN)
-        out[index] = SATURATE_MIN;
+    if(saturate ==  ReLUParameter_SaturateMethod_Signed){
+      if(out[index] < 0) //only need to do the round when multiplied with negative_slope
+        out[index] = rint(out[index]);
+      if(out[index] > SIGNED_SATURATE_MAX)
+        out[index] = SIGNED_SATURATE_MAX;
+      if(out[index] < SIGNED_SATURATE_MIN)
+        out[index] = SIGNED_SATURATE_MIN;
+    }
+    if(saturate ==  ReLUParameter_SaturateMethod_Unsigned){
+      if(out[index] > UNSIGNED_SATURATE_MAX)
+        out[index] = UNSIGNED_SATURATE_MAX;
     }
     //CUSTOMIZATION-->
   }
