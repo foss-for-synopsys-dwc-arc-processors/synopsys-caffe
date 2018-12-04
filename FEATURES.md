@@ -12,7 +12,7 @@ pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
-pad.py (customized Python layer, implementation of tf.pad)  
+pad.py and pads.py (customized Python layer, implementation of tf.pad)  
 stridedslice.py (deprecated, customized Python layer)  
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 shape.py (customized Python layer, implementation of tf.shape)  
