@@ -22,10 +22,18 @@ class Eltwise(caffe.Layer):
         # check input dimensions
         if bottom[0].count == 0 or bottom[1].count == 0:
             raise Exception("Input must not be empty!")
-        if bottom[0].data.ndim > bottom[1].data.ndim:
-            top[0].reshape(*bottom[0].shape)
+        b0 = bottom[0].data
+        b1 = bottom[1].data
+        if b0.ndim > b1.ndim:
+            shape = b0.shape
+        elif b0.ndim < b1.ndim:
+            shape = b1.shape
         else:
-            top[0].reshape(*bottom[1].shape)
+            if b0.shape >= b1.shape:
+                shape = b0.shape
+            else:
+                shape = b1.shape
+        top[0].reshape(*shape)
 
     def forward(self, bottom, top):
         if self.operation == 0:
