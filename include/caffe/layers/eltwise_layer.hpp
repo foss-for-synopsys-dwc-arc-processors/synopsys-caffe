@@ -45,7 +45,7 @@ class EltwiseLayer : public Layer<Dtype> {
 
   bool stable_prod_grad_;
   Dtype output_scale_;  //CUSTOMIZATION
-  bool signed_saturate_; //CUSTOMIZATION
+  Dtype saturate_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

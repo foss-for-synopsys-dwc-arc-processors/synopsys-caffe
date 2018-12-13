@@ -88,7 +88,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
 	output_scale_ = 1;
   }
 
-  signed_saturate_ = conv_param.signed_saturate();
+  saturate_ = conv_param.saturate();
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).

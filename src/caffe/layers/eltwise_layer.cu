@@ -4,9 +4,6 @@
 #include "caffe/layers/eltwise_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
-#define SIGNED_SATURATE_MAX 2047
-#define SIGNED_SATURATE_MIN -2048
-
 namespace caffe {
 
 template <typename Dtype>
@@ -57,9 +54,11 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     if (output_scale_ != Dtype(1)) {
       caffe_gpu_scal(count, output_scale_, top_data);
       caffe_gpu_round(count, top_data);
-    if (signed_saturate_)
-      caffe_gpu_saturate(count, top_data);
     }
+    if(saturate_ ==  ReLUParameter_SaturateMethod_Signed)
+      caffe_gpu_signed_saturate(count, top_data);
+    if(saturate_ ==  ReLUParameter_SaturateMethod_Unsigned)
+      caffe_gpu_unsigned_saturate(count, top_data);
     //CUSTOMIZATION-->
     break;
   case EltwiseParameter_EltwiseOp_MAX:
