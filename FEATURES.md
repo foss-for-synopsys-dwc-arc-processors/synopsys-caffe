@@ -18,6 +18,7 @@ slice.py (customized Python layer, implementation of tf.slice and tf.strided_sli
 shape.py (customized Python layer, implementation of tf.shape)  
 stack.py (customized Python layer, implementation of tf.stack)  
 eltwise.py (customized Python layer, functional expansion of ELtwise layer)  
+statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum)  
   
 evprune (Network Pruning Tool) related  
 --------------------------------------
