@@ -5,8 +5,9 @@
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
-#define SATURATE_MAX 4095
-#define SATURATE_MIN -4096
+#define SIGNED_SATURATE_MAX 2047
+#define SIGNED_SATURATE_MIN -2048
+#define UNSIGNED_SATURATE_MAX 4095
 
 namespace caffe {
 
@@ -57,7 +58,7 @@ __global__ void AvePoolForward(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMIZATION
-	Dtype* const top_data, const int output_shift_instead_division, const bool saturate) {
+	Dtype* const top_data, const int output_shift_instead_division, const Dtype saturate) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -89,22 +90,37 @@ __global__ void AvePoolForward(const int nthreads,
     if (output_shift_instead_division != Dtype(0)) {
       top_data[index] = aveval / output_shift_instead_division;
       top_data[index] = rint(top_data[index]);
-      if(saturate)
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned)
       {
-        if(top_data[index] > SATURATE_MAX)
-          top_data[index] = SATURATE_MAX;
-        if(top_data[index] < SATURATE_MIN)
-          top_data[index] = SATURATE_MIN;
+        if(top_data[index] > UNSIGNED_SATURATE_MAX)
+          top_data[index] = UNSIGNED_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
+      if(saturate ==  PoolingParameter_SaturateMethod_Signed)
+      {
+        if(top_data[index] > SIGNED_SATURATE_MAX)
+          top_data[index] = SIGNED_SATURATE_MAX;
+        if(top_data[index] < SIGNED_SATURATE_MIN)
+          top_data[index] = SIGNED_SATURATE_MIN;
       }
     }
     else{
-      if(saturate)
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned)
       {
-    	top_data[index] = aveval;
-        if(top_data[index] > SATURATE_MAX)
-          top_data[index] = SATURATE_MAX;
-        if(top_data[index] < SATURATE_MIN)
-          top_data[index] = SATURATE_MIN;
+        top_data[index] = aveval;
+        if(top_data[index] > UNSIGNED_SATURATE_MAX)
+          top_data[index] = UNSIGNED_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Signed)
+      {
+        top_data[index] = aveval;
+        if(top_data[index] > SIGNED_SATURATE_MAX)
+          top_data[index] = SIGNED_SATURATE_MAX;
+        if(top_data[index] < SIGNED_SATURATE_MIN)
+          top_data[index] = SIGNED_SATURATE_MIN;
       }
       else //original implementation
         top_data[index] = aveval / pool_size;
@@ -121,7 +137,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
     const int stride_h, const int stride_w,
 	//const int pad_h, const int pad_w,
 	const int pad_top, const int pad_left, const int pad_bottom, const int pad_right, //CUSTOMI
-    Dtype* const top_data, const int output_shift_instead_division, const bool saturate) {
+    Dtype* const top_data, const int output_shift_instead_division, const Dtype saturate) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
@@ -225,23 +241,38 @@ __global__ void AvePoolForward_TF(const int nthreads,
           top_data[index] = aveval / output_shift_instead_division * full_pool_size / pool_size;
       }
       top_data[index] = rint(top_data[index]);
-      if(saturate)
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned)
       {
-        if(top_data[index] > SATURATE_MAX)
-          top_data[index] = SATURATE_MAX;
-        if(top_data[index] < SATURATE_MIN)
-          top_data[index] = SATURATE_MIN;
+        if(top_data[index] > UNSIGNED_SATURATE_MAX)
+          top_data[index] = UNSIGNED_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
+      if(saturate ==  PoolingParameter_SaturateMethod_Signed)
+      {
+        if(top_data[index] > SIGNED_SATURATE_MAX)
+          top_data[index] = SIGNED_SATURATE_MAX;
+        if(top_data[index] < SIGNED_SATURATE_MIN)
+          top_data[index] = SIGNED_SATURATE_MIN;
       }
     }
 
     else{
-      if(saturate)
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned)
       {
       	top_data[index] = aveval;
-        if(top_data[index] > SATURATE_MAX)
-          top_data[index] = SATURATE_MAX;
-        if(top_data[index] < SATURATE_MIN)
-          top_data[index] = SATURATE_MIN;
+        if(top_data[index] > UNSIGNED_SATURATE_MAX)
+          top_data[index] = UNSIGNED_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Signed)
+      {
+        top_data[index] = aveval;
+        if(top_data[index] > SIGNED_SATURATE_MAX)
+          top_data[index] = SIGNED_SATURATE_MAX;
+        if(top_data[index] < SIGNED_SATURATE_MIN)
+          top_data[index] = SIGNED_SATURATE_MIN;
       }
       else //original implementation
         top_data[index] = aveval / pool_size;
