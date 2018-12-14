@@ -229,6 +229,8 @@ __global__ void unsigned_saturate_kernel(const int n, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
     if(y[index] > UNSIGNED_SATURATE_MAX)
       y[index] = SIGNED_SATURATE_MAX;
+    if(y[index] < 0)
+      y[index] = 0;
   }
 }
 
