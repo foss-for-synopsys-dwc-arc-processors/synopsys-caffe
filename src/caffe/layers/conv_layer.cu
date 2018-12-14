@@ -35,9 +35,9 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_scal(count_t, output_scale, top_data);
       caffe_gpu_round(count_t, top_data);
     }
-    if(saturate ==  ReLUParameter_SaturateMethod_Signed)
+    if(saturate ==  ConvolutionParameter_SaturateMethod_Signed)
       caffe_gpu_signed_saturate(count_t, top_data);
-    if(saturate ==  ReLUParameter_SaturateMethod_Unsigned)
+    if(saturate ==  ConvolutionParameter_SaturateMethod_Unsigned)
       caffe_gpu_unsigned_saturate(count_t, top_data);
     //CUSTOMIZATION-->
   }

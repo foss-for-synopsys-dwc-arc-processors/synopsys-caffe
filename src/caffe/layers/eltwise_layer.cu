@@ -55,9 +55,9 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_scal(count, output_scale_, top_data);
       caffe_gpu_round(count, top_data);
     }
-    if(saturate_ ==  ReLUParameter_SaturateMethod_Signed)
+    if(saturate_ ==  EltwiseParameter_SaturateMethod_Signed)
       caffe_gpu_signed_saturate(count, top_data);
-    if(saturate_ ==  ReLUParameter_SaturateMethod_Unsigned)
+    if(saturate_ ==  EltwiseParameter_SaturateMethod_Unsigned)
       caffe_gpu_unsigned_saturate(count, top_data);
     //CUSTOMIZATION-->
     break;
