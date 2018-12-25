@@ -117,3 +117,8 @@ MANIFEST-*
 jobs
 temp
 examples/*/*lmdb
+
+# GTAGS
+GPATH
+GTAGS
+GRTAGS
