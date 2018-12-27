@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This script was automatically generated using InstallAnywhere 2017 Premier, Build 5608
      STATUS: Fully Functional LICENSED Edition
-     DATE:   Mon Sep 17 07:19:31 PDT 2018 -->
-<InstallAnywhere_Deployment_Project increments="3986">
+     DATE:   Mon Dec 24 00:04:14 PST 2018 -->
+<InstallAnywhere_Deployment_Project increments="3852">
 	<!-- ** DO NOT EDIT ** Essential authorization and configuration data ** DO NOT EDIT ** -->
 	<essentialScriptInfo>
 		<versionID major="18" minor="0" revision="0"/>
@@ -10,9 +10,9 @@
 		<scriptID>12,42,11,85,78,76,73,67,69,78,83,69,68</scriptID>
 		<buildID>3,13,71,76,105,110,117,120,44,32,50,46,54,46,51,50,45,54,57,54,46,50,48,46,49,46,101,108,54,46,120,56,54,95,54,52,44,32,97,109,100,54,52,59,32,74,97,118,97,32,49,46,56,46,48,95,57,50,44,32,79,114,97,99,108,101,32,67,111,114,112,111,114,97,116,105,111,110,44,32,104,116,116,112,58,47,47,106,97,118,97,46,111,114,97,99,108,101,46,99,111,109,47,59,32,101,110,44,32,85,110,107,110,111,119,110,59,32,85,84,70,45,56</buildID>
 		<!-- The authorizationID may change between project saves and builds.  This does not effect the integrity of the project, nor do changes in this value represent changes in the actual InstallAnywhere project. -->
-		<authorizationID>1,0,0,96,-25,-19,-128,-112,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,6,13,38,39,5,1,0,0</authorizationID>
+		<authorizationID>1,0,0,96,-41,56,48,-112,80,127,118,101,93,105,116,96,121,48,48,49,56,52,67,98,113,112,112,37,82,101,96,63,55,-11,2,9,0,46,47,7,1,0,0</authorizationID>
 	</essentialScriptInfo>
-	<installationObjects uniqueObjects="188">
+	<installationObjects uniqueObjects="183">
 		<object class="com.zerog.ia.installer.Installer" objectID="5399733e9e4e">
 			<property name="belongsToUninstallPhase">
 				<boolean>false</boolean>
@@ -2232,7 +2232,7 @@ Please refer to release notes for additional details.]]></string>
 								<boolean>true</boolean>
 							</property>
 							<property name="credentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="fb67cc26a82a">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="f2bf6f9ba852">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2289,7 +2289,7 @@ Please refer to release notes for additional details.]]></string>
 								</object>
 							</property>
 							<property name="deploymentCredentialInformation">
-								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="fb67cc28a82a">
+								<object class="com.flexera.ia.vapp.datastructures.VMWareCredentialInformationImpl" objectID="f2bf6f9ca852">
 									<property name="hostName">
 										<string><![CDATA[]]></string>
 									</property>
@@ -2359,7 +2359,7 @@ Please refer to release notes for additional details.]]></string>
 				<object class="java.util.Properties">
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.project.save.last.date]]></string>
-						<string><![CDATA[September 17, 2018 7:19:30 AM PDT]]></string>
+						<string><![CDATA[December 24, 2018 12:04:13 AM PST]]></string>
 					</method>
 					<method name="put">
 						<string><![CDATA[com.zerog.ia.build.options.optimization.platform.merge]]></string>
@@ -4228,14 +4228,14 @@ This will remove features installed by InstallAnywhere.  It will not remove file
 				<int>0</int>
 			</property>
 			<property name="savedExpressions">
-				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="fb65d1cca7b0">
+				<object class="com.zerog.ia.designer.manageexpressions.ManageExpressions" objectID="f2bc6a84a7b9">
 					<property name="expressions">
 						<object class="java.util.Vector"/>
 					</property>
 				</object>
 			</property>
 			<property name="fileExtensions">
-				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="fb65d1dca7b0">
+				<object class="com.zerog.ia.designer.manageexpressions.fileextension.FileExtensions" objectID="f2bc6a8ea7b9">
 					<property name="fileExtensionEntries">
 						<object class="java.util.ArrayList" list="true"/>
 					</property>
@@ -5386,9 +5386,7 @@ gunzip caffe-linux.tgz]]></string>
 												<boolean>true</boolean>
 											</property>
 											<property name="script">
-												<string><![CDATA[del /F $USER_INSTALL_DIR$$/$caffe-win.zip
-del /F $USER_INSTALL_DIR$$/$msys.zip
-del /F $USER_INSTALL_DIR$$/$cmake.zip]]></string>
+												<string><![CDATA[del /F $USER_INSTALL_DIR$$/$caffe-win.zip]]></string>
 											</property>
 											<property name="showIndeterminateDialog">
 												<boolean>false</boolean>
@@ -5410,176 +5408,6 @@ del /F $USER_INSTALL_DIR$$/$cmake.zip]]></string>
 											</property>
 											<property name="substituteUnknownVariable">
 												<boolean>false</boolean>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.ExpandFile" objectID="e6895bbc929d">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="existingFilePath">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$msys.zip]]></string>
-											</property>
-											<property name="sourceFileType">
-												<int>1</int>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="sizeOfArchive">
-												<long>-1</long>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="e68670589288">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[msys.zip]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[msys.zip]]></string>
-											</property>
-											<property name="fileSize">
-												<long>-1</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.InstallZipfile" objectID="eacce694a81d">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="unixPermissions">
-												<string><![CDATA[664]]></string>
-											</property>
-											<property name="sourceName">
-												<string><![CDATA[cmake.zip]]></string>
-											</property>
-											<property name="overrideUnixPermissions">
-												<boolean>false</boolean>
-											</property>
-											<property name="sourcePath">
-												<string><![CDATA[$IA_PROJECT_DIR$/]]></string>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="destinationName">
-												<string><![CDATA[cmake.zip]]></string>
-											</property>
-											<property name="fileSize">
-												<long>-1</long>
-											</property>
-											<property name="macBinary">
-												<boolean>false</boolean>
-											</property>
-											<property name="targetCheckKind">
-												<int>0</int>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-										</object>
-										<object class="com.zerog.ia.installer.actions.ExpandFile" objectID="eacdd7d5a831">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="existingFilePath">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$cmake.zip]]></string>
-											</property>
-											<property name="sourceFileType">
-												<int>1</int>
-											</property>
-											<property name="shouldUninstall">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="sizeOfArchive">
-												<long>-1</long>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
 											</property>
 										</object>
 										<object class="com.zerog.ia.installer.actions.ActionGroup" objectID="eb28cdeea836">
@@ -5668,32 +5496,6 @@ del /F $USER_INSTALL_DIR$$/$cmake.zip]]></string>
 												<object refID="5abe512392be"/>
 											</visualChildren>
 										</object>
-										<object class="com.zerog.ia.installer.actions.EditEnvironment" objectID="eb9f32c1a841">
-											<property name="belongsToUninstallPhase">
-												<boolean>false</boolean>
-											</property>
-											<property name="rollbackEnabledCancel">
-												<boolean>true</boolean>
-											</property>
-											<property name="rollbackEnabledError">
-												<boolean>true</boolean>
-											</property>
-											<property name="ruleExpression">
-												<string><![CDATA[]]></string>
-											</property>
-											<property name="isUserMode">
-												<boolean>true</boolean>
-											</property>
-											<property name="value">
-												<string><![CDATA[$USER_INSTALL_DIR$$/$cmake$/$bin;$USER_INSTALL_DIR$$/$msys$/$bin;]]></string>
-											</property>
-											<property name="variable">
-												<string><![CDATA[PATH]]></string>
-											</property>
-											<property name="appendMode">
-												<int>2</int>
-											</property>
-										</object>
 										<object class="com.zerog.ia.installer.actions.ActionGroup" objectID="eb28d95ba85d">
 											<property name="belongsToUninstallPhase">
 												<boolean>false</boolean>
@@ -5775,13 +5577,8 @@ del /F $USER_INSTALL_DIR$$/$cmake.zip]]></string>
 											</rules>
 											<visualChildren>
 												<object refID="ed6ea63896a8"/>
-												<object refID="e68670589288"/>
-												<object refID="eacce694a81d"/>
 												<object refID="ed70fbf89767"/>
-												<object refID="e6895bbc929d"/>
-												<object refID="eacdd7d5a831"/>
 												<object refID="ed7201f597ac"/>
-												<object refID="eb9f32c1a841"/>
 											</visualChildren>
 										</object>
 									</installChildren>
