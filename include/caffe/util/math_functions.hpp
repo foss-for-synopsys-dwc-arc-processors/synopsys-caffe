@@ -203,7 +203,13 @@ template <typename Dtype>
 void caffe_gpu_signed_saturate(const int N, Dtype* y);
 
 template <typename Dtype>
+void caffe_gpu_signed_8bit_saturate(const int N, Dtype* y);
+
+template <typename Dtype>
 void caffe_gpu_unsigned_saturate(const int N, Dtype* y);
+
+template <typename Dtype>
+void caffe_gpu_unsigned_8bit_saturate(const int N, Dtype* y);
 
 template <typename Dtype>
 void caffe_gpu_add(const int N, const Dtype* a, const Dtype* b, Dtype* y);

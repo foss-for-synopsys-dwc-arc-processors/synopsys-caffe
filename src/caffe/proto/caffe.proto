@@ -1303,6 +1303,8 @@ message ConvolutionParameter {
     None = 0;
     Signed = 1;
     Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 32 [default = None]; //control the output in certain range
   //CUSTOMIZATION-->
@@ -1616,6 +1618,8 @@ message EltwiseParameter {
     None = 0;
     Signed = 1;
     Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 5 [default = None]; //only valid for SUM, control the output in certain range
   //CUSTOMIZATION-->
@@ -1984,6 +1988,8 @@ message PoolingParameter {
     None = 0;
     Signed = 1;
     Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 22 [default = None]; //control the output in certain range
   //CUSTOMIZATION-->
@@ -2123,6 +2129,8 @@ message ReLUParameter {
     None = 0;
     Signed = 1;
     Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 4 [default = None]; //control the output in certain range
   //CUSTOMIZATION-->
@@ -2348,6 +2356,8 @@ message SqueezeConvolutionParameter {
     None = 0;
     Signed = 1;
     Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 48 [default = None]; //act as dummy param in squeeze_conv layer now
   //CUSTOMIZATION-->

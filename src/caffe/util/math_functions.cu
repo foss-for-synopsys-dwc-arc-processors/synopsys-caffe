@@ -11,6 +11,9 @@
 #define SIGNED_SATURATE_MAX 2047
 #define SIGNED_SATURATE_MIN -2048
 #define UNSIGNED_SATURATE_MAX 4095
+#define SIGNED_8BIT_SATURATE_MAX 127
+#define SIGNED_8BIT_SATURATE_MIN -128
+#define UNSIGNED_8BIT_SATURATE_MAX 255
 
 namespace caffe {
 
@@ -225,6 +228,28 @@ void caffe_gpu_signed_saturate<double>(const int N, double* y) {
 }
 
 template <typename Dtype>
+__global__ void signed_8bit_saturate_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    if(y[index] > SIGNED_8BIT_SATURATE_MAX)
+      y[index] = SIGNED_8BIT_SATURATE_MAX;
+    if(y[index] < SIGNED_8BIT_SATURATE_MIN)
+      y[index] = SIGNED_8BIT_SATURATE_MIN;
+  }
+}
+
+template <>
+void caffe_gpu_signed_8bit_saturate<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  signed_8bit_saturate_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_signed_8bit_saturate<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  signed_8bit_saturate_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <typename Dtype>
 __global__ void unsigned_saturate_kernel(const int n, Dtype* y) {
   CUDA_KERNEL_LOOP(index, n) {
     if(y[index] > UNSIGNED_SATURATE_MAX)
@@ -244,6 +269,29 @@ template <>
 void caffe_gpu_unsigned_saturate<double>(const int N, double* y) {
   // NOLINT_NEXT_LINE(whitespace/operators)
   unsigned_saturate_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+
+template <typename Dtype>
+__global__ void unsigned_8bit_saturate_kernel(const int n, Dtype* y) {
+  CUDA_KERNEL_LOOP(index, n) {
+    if(y[index] > UNSIGNED_8BIT_SATURATE_MAX)
+      y[index] = UNSIGNED_8BIT_SATURATE_MAX;
+    if(y[index] < 0)
+      y[index] = 0;
+  }
+}
+
+template <>
+void caffe_gpu_unsigned_8bit_saturate<float>(const int N, float* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  unsigned_8bit_saturate_kernel<float><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
+}
+
+template <>
+void caffe_gpu_unsigned_8bit_saturate<double>(const int N, double* y) {
+  // NOLINT_NEXT_LINE(whitespace/operators)
+  unsigned_8bit_saturate_kernel<double><<<CAFFE_GET_BLOCKS(N), CAFFE_CUDA_NUM_THREADS>>>(N, y);
 }
 
 template <typename Dtype>

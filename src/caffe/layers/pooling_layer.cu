@@ -8,6 +8,9 @@
 #define SIGNED_SATURATE_MAX 2047
 #define SIGNED_SATURATE_MIN -2048
 #define UNSIGNED_SATURATE_MAX 4095
+#define SIGNED_8BIT_SATURATE_MAX 127
+#define SIGNED_8BIT_SATURATE_MIN -128
+#define UNSIGNED_8BIT_SATURATE_MAX 255
 
 namespace caffe {
 
@@ -97,12 +100,26 @@ __global__ void AvePoolForward(const int nthreads,
         if(top_data[index] < 0)
           top_data[index] = 0;
       }
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned_8bit)
+      {
+        if(top_data[index] > UNSIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = UNSIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
       if(saturate ==  PoolingParameter_SaturateMethod_Signed)
       {
         if(top_data[index] > SIGNED_SATURATE_MAX)
           top_data[index] = SIGNED_SATURATE_MAX;
         if(top_data[index] < SIGNED_SATURATE_MIN)
           top_data[index] = SIGNED_SATURATE_MIN;
+      }
+      if(saturate ==  PoolingParameter_SaturateMethod_Signed_8bit)
+      {
+        if(top_data[index] > SIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = SIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < SIGNED_8BIT_SATURATE_MIN)
+          top_data[index] = SIGNED_8BIT_SATURATE_MIN;
       }
     }
     else{
@@ -114,6 +131,14 @@ __global__ void AvePoolForward(const int nthreads,
         if(top_data[index] < 0)
           top_data[index] = 0;
       }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Unsigned_8bit)
+      {
+        top_data[index] = aveval;
+        if(top_data[index] > UNSIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = UNSIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
       else if(saturate ==  PoolingParameter_SaturateMethod_Signed)
       {
         top_data[index] = aveval;
@@ -121,6 +146,14 @@ __global__ void AvePoolForward(const int nthreads,
           top_data[index] = SIGNED_SATURATE_MAX;
         if(top_data[index] < SIGNED_SATURATE_MIN)
           top_data[index] = SIGNED_SATURATE_MIN;
+      }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Signed_8bit)
+      {
+        top_data[index] = aveval;
+        if(top_data[index] > SIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = SIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < SIGNED_8BIT_SATURATE_MIN)
+          top_data[index] = SIGNED_8BIT_SATURATE_MIN;
       }
       else //original implementation
         top_data[index] = aveval / pool_size;
@@ -248,12 +281,26 @@ __global__ void AvePoolForward_TF(const int nthreads,
         if(top_data[index] < 0)
           top_data[index] = 0;
       }
+      if(saturate ==  PoolingParameter_SaturateMethod_Unsigned_8bit)
+      {
+        if(top_data[index] > UNSIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = UNSIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
       if(saturate ==  PoolingParameter_SaturateMethod_Signed)
       {
         if(top_data[index] > SIGNED_SATURATE_MAX)
           top_data[index] = SIGNED_SATURATE_MAX;
         if(top_data[index] < SIGNED_SATURATE_MIN)
           top_data[index] = SIGNED_SATURATE_MIN;
+      }
+      if(saturate ==  PoolingParameter_SaturateMethod_Signed_8bit)
+      {
+        if(top_data[index] > SIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = SIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < SIGNED_8BIT_SATURATE_MIN)
+          top_data[index] = SIGNED_8BIT_SATURATE_MIN;
       }
     }
 
@@ -266,6 +313,14 @@ __global__ void AvePoolForward_TF(const int nthreads,
         if(top_data[index] < 0)
           top_data[index] = 0;
       }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Unsigned_8bit)
+      {
+      	top_data[index] = aveval;
+        if(top_data[index] > UNSIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = UNSIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < 0)
+          top_data[index] = 0;
+      }
       else if(saturate ==  PoolingParameter_SaturateMethod_Signed)
       {
         top_data[index] = aveval;
@@ -273,6 +328,14 @@ __global__ void AvePoolForward_TF(const int nthreads,
           top_data[index] = SIGNED_SATURATE_MAX;
         if(top_data[index] < SIGNED_SATURATE_MIN)
           top_data[index] = SIGNED_SATURATE_MIN;
+      }
+      else if(saturate ==  PoolingParameter_SaturateMethod_Signed_8bit)
+      {
+        top_data[index] = aveval;
+        if(top_data[index] > SIGNED_8BIT_SATURATE_MAX)
+          top_data[index] = SIGNED_8BIT_SATURATE_MAX;
+        if(top_data[index] < SIGNED_8BIT_SATURATE_MIN)
+          top_data[index] = SIGNED_8BIT_SATURATE_MIN;
       }
       else //original implementation
         top_data[index] = aveval / pool_size;

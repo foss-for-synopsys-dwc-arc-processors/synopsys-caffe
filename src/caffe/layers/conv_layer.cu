@@ -39,6 +39,10 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_signed_saturate(count_t, top_data);
     if(saturate ==  ConvolutionParameter_SaturateMethod_Unsigned)
       caffe_gpu_unsigned_saturate(count_t, top_data);
+    if(saturate ==  ConvolutionParameter_SaturateMethod_Signed_8bit)
+      caffe_gpu_signed_8bit_saturate(count_t, top_data);
+    if(saturate ==  ConvolutionParameter_SaturateMethod_Unsigned_8bit)
+      caffe_gpu_unsigned_8bit_saturate(count_t, top_data);
     //CUSTOMIZATION-->
   }
 }
