@@ -106,7 +106,7 @@ namespace caffe {
       ScheduleStep_* step_ptr = 0;
       
       /// Discard old schedule steps
-      while (schedule_.size() > 0 and
+      while (schedule_.size() > 0 &&
              current_iteration >= schedule_.front()->start_iter)
       {
         if (step_ptr) {
