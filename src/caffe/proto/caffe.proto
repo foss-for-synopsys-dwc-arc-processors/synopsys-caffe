@@ -2798,6 +2798,7 @@ message DepthToSpaceParameter {
 }
 
 message ResizeNearestNeighborParameter {
-  // implementation of tf.depth_to_space
-  required bool align_corners = 1;
+  required uint32 output_height = 1;
+  required uint32 output_width = 2;
+  optional bool align_corners = 3 [default = false];
 }

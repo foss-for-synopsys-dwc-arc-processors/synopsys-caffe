@@ -27,7 +27,7 @@ class ResizeNearestNeighborLayer : public Layer<Dtype> {
       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "ResizeNearestNeighbor"; }
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
@@ -44,8 +44,9 @@ class ResizeNearestNeighborLayer : public Layer<Dtype> {
   //    const vector<Blob<Dtype>*>& top) {}
   //virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
   //    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {}
+  int output_height;
+  int output_width;
   bool align_corners;
-
 };
 
 }  // namespace caffe
