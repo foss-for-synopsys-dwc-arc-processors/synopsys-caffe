@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 209 (last added: upsample_darknet_param)
+// LayerParameter next available layer-specific ID: 210 (last added: resize_nearest_neighbor_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -609,6 +609,7 @@ message LayerParameter {
   optional UpsampleDarknetParameter upsample_darknet_param = 209; // Darknet layer used in yolov3
   //TensorFlow related
   optional DepthToSpaceParameter depth_to_space_param = 208;
+  optional ResizeNearestNeighborParameter resize_nearest_neighbor_param = 210;
 }
 
 message AccumParameter {
@@ -2794,4 +2795,9 @@ message DepthToSpaceParameter {
   // implementation of tf.depth_to_space
   required int32 block_size = 1;
   optional string data_format = 2 [default = "NHWC"];
+}
+
+message ResizeNearestNeighborParameter {
+  // implementation of tf.depth_to_space
+  required bool align_corners = 1;
 }
