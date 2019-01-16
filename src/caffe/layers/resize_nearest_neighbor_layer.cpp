@@ -11,8 +11,6 @@ void ResizeNearestNeighborLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& b
     const vector<Blob<Dtype>*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
-  this->output_width = this->layer_param_.resize_nearest_neighbor_param().output_width();
-  this->output_height = this->layer_param_.resize_nearest_neighbor_param().output_height();
   this->align_corners = this->layer_param_.resize_nearest_neighbor_param().align_corners();
 }
 
@@ -22,10 +20,13 @@ void ResizeNearestNeighborLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bott
   vector<int> bottom_shape = bottom[0]->shape();
   const int batch_size = bottom_shape[0];
   const int channels = bottom_shape[3];
-  const int out_height = this->output_height;
-  const int out_width = this->output_width;
+
+  const Dtype* resize_shape = bottom[1]->cpu_data();
+  this->output_height = resize_shape[0];
+  this->output_width = resize_shape[1];
+
   // Assume the data in NHWC format
-  top[0]->Reshape(batch_size, out_height, out_width, channels);
+  top[0]->Reshape(batch_size, this->output_height, this->output_width, channels);
 }
 
 // CalculateResizeScale computes the float scaling factor for height and width.

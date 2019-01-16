@@ -2798,7 +2798,5 @@ message DepthToSpaceParameter {
 }
 
 message ResizeNearestNeighborParameter {
-  required uint32 output_height = 1;
-  required uint32 output_width = 2;
-  optional bool align_corners = 3 [default = false];
+  optional bool align_corners = 1 [default = false];
 }
