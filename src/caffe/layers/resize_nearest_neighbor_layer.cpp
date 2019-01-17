@@ -12,6 +12,8 @@ void ResizeNearestNeighborLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& b
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   this->align_corners = this->layer_param_.resize_nearest_neighbor_param().align_corners();
+  this->output_height = this->layer_param_.resize_nearest_neighbor_param().output_height();
+  this->output_width = this->layer_param_.resize_nearest_neighbor_param().output_width();
 }
 
 template <typename Dtype>
@@ -20,11 +22,6 @@ void ResizeNearestNeighborLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bott
   vector<int> bottom_shape = bottom[0]->shape();
   const int batch_size = bottom_shape[0];
   const int channels = bottom_shape[3];
-
-  const Dtype* resize_shape = bottom[1]->cpu_data();
-  this->output_height = resize_shape[0];
-  this->output_width = resize_shape[1];
-
   // Assume the data in NHWC format
   top[0]->Reshape(batch_size, this->output_height, this->output_width, channels);
 }
@@ -53,6 +50,12 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
 
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
+
+  const Dtype* resize_shape = bottom[1]->cpu_data();
+  const int out_height = resize_shape[0];
+  const int out_width = resize_shape[1];
+  CHECK_EQ(out_height, output_height) << "output_height must equal to the bottom 1's height value "<<out_height<<".\n";
+  CHECK_EQ(out_width, output_width) << "output_width must equal to the bottom 1's width value "<<out_width<<".\n";
 
   const float height_scale =
       CalculateResizeScale(output_height, input_height, align_corners);
