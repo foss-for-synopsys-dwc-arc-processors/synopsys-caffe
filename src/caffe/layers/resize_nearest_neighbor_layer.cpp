@@ -51,11 +51,11 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
 
-  const Dtype* resize_shape = bottom[1]->cpu_data();
-  const int out_height = resize_shape[0];
-  const int out_width = resize_shape[1];
-  CHECK_EQ(out_height, output_height) << "output_height must equal to the bottom 1's height value "<<out_height<<".\n";
-  CHECK_EQ(out_width, output_width) << "output_width must equal to the bottom 1's width value "<<out_width<<".\n";
+  //const Dtype* resize_shape = bottom[1]->cpu_data();
+  //const int out_height = resize_shape[0];
+  //const int out_width = resize_shape[1];
+  //CHECK_EQ(out_height, output_height) << "output_height must equal to the bottom 1's height value "<<out_height<<".\n";
+  //CHECK_EQ(out_width, output_width) << "output_width must equal to the bottom 1's width value "<<out_width<<".\n";
 
   const float height_scale =
       CalculateResizeScale(output_height, input_height, align_corners);
