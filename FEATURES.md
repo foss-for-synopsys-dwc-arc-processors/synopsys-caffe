@@ -8,6 +8,7 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 ----------------------------------------------------------
 depthtospace_layer  
 resize_nearest_neighbor_layer  
+DIV in EltwiseOp  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
