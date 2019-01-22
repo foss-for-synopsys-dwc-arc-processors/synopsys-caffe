@@ -54,6 +54,9 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   const int count = top[0]->count();
   Dtype* top_data = top[0]->mutable_cpu_data();
   switch (op_) {
+  case EltwiseParameter_EltwiseOp_DIV:
+    caffe_div(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+    break;
   case EltwiseParameter_EltwiseOp_PROD:
     caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     for (int i = 2; i < bottom.size(); ++i) {
@@ -112,6 +115,9 @@ void EltwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const Dtype* bottom_data = bottom[i]->cpu_data();
       Dtype* bottom_diff = bottom[i]->mutable_cpu_diff();
       switch (op_) {
+      case EltwiseParameter_EltwiseOp_DIV:
+        NOT_IMPLEMENTED;
+        break;
       case EltwiseParameter_EltwiseOp_PROD:
         if (stable_prod_grad_) {
           bool initialized = false;

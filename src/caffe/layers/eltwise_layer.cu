@@ -37,6 +37,9 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const int count = top[0]->count();
   Dtype* top_data = top[0]->mutable_gpu_data();
   switch (op_) {
+  case EltwiseParameter_EltwiseOp_DIV:
+	caffe_gpu_div(count, bottom[0]->gpu_data(), bottom[1]->gpu_data(), top_data);
+	break;
   case EltwiseParameter_EltwiseOp_PROD:
     caffe_gpu_mul(count, bottom[0]->gpu_data(), bottom[1]->gpu_data(),
         top_data);
@@ -105,6 +108,9 @@ void EltwiseLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
       const Dtype* bottom_data = bottom[i]->gpu_data();
       Dtype* bottom_diff = bottom[i]->mutable_gpu_diff();
       switch (op_) {
+      case EltwiseParameter_EltwiseOp_DIV:
+        NOT_IMPLEMENTED;
+        break;
       case EltwiseParameter_EltwiseOp_PROD:
         if (stable_prod_grad_) {
           bool initialized = false;
