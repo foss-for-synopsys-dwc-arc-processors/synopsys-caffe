@@ -27,16 +27,45 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   stable_prod_grad_ = this->layer_param_.eltwise_param().stable_prod_grad();
   output_scale_ = this->layer_param_.eltwise_param().output_scale();
   saturate_ = this->layer_param_.eltwise_param().saturate();
+
+  //<--CUSTOMIZATION, for broadcasting
+  const EltwiseParameter& param = this->layer_param_.eltwise_param();
+  axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
+  //CUSTOMIZATION-->
 }
 
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  for (int i = 1; i < bottom.size(); ++i) {
-    CHECK(bottom[0]->shape() == bottom[i]->shape())
-        << "bottom[0]: " << bottom[0]->shape_string()
-        << ", bottom[" << i << "]: " << bottom[i]->shape_string();
+  //for (int i = 1; i < bottom.size(); ++i) {
+  //  CHECK(bottom[0]->shape() == bottom[i]->shape())
+  //      << "bottom[0]: " << bottom[0]->shape_string()
+  //      << ", bottom[" << i << "]: " << bottom[i]->shape_string();
+  //}
+
+  //<--CUSTOMIZATION, add support for broadcasting
+  const EltwiseParameter& param = this->layer_param_.eltwise_param();
+  Blob<Dtype>* eltwise = bottom[1];
+  axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
+  CHECK_GE(bottom[0]->num_axes(), axis_ + eltwise->num_axes())
+      << "eltwise blob's shape extends past bottom[0]'s shape when applied "
+      << "starting with bottom[0] axis = " << axis_;
+  for (int i = 0; i < eltwise->num_axes(); ++i) {
+    CHECK_EQ(bottom[0]->shape(axis_ + i), eltwise->shape(i))
+        << "dimension mismatch between bottom[0]->shape(" << axis_ + i
+        << ") and eltwise->shape(" << i << ")";
   }
+  outer_dim_ = bottom[0]->count(0, axis_);
+  eltwise_dim_ = eltwise->count();
+  inner_dim_ = bottom[0]->count(axis_ + eltwise->num_axes());
+
+  const int eltwise_mult_size = std::max(outer_dim_, inner_dim_);
+  eltwise_multiplier_.Reshape(vector<int>(1, eltwise_mult_size));
+  if (eltwise_multiplier_.cpu_data()[eltwise_mult_size - 1] != Dtype(1)) {
+     caffe_set(eltwise_mult_size, Dtype(1), eltwise_multiplier_.mutable_cpu_data());
+  }
+
+  //CUSTOMIZATION-->
   top[0]->ReshapeLike(*bottom[0]);
   // If max operation, we will initialize the vector index part.
   if (this->layer_param_.eltwise_param().operation() ==
@@ -48,6 +77,8 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+  const Dtype* bottom_data = bottom[0]->cpu_data();
+  const Dtype* eltwise_data = bottom[1]->cpu_data(); //CUSTOMIZATION
   int* mask = NULL;
   const Dtype* bottom_data_a = NULL;
   const Dtype* bottom_data_b = NULL;
@@ -58,7 +89,17 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     caffe_div(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     break;
   case EltwiseParameter_EltwiseOp_PROD:
-    caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+	//<--CUSTOMIZATION
+	for (int n = 0; n < outer_dim_; ++n) {
+	  for (int d = 0; d < eltwise_dim_; ++d) {
+	    const Dtype factor = eltwise_data[d];
+	      caffe_cpu_scale(inner_dim_, factor, bottom_data, top_data);
+	      bottom_data += inner_dim_;
+	      top_data += inner_dim_;
+	  }
+	}
+	//CUSTOMIZATION-->
+    //caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     for (int i = 2; i < bottom.size(); ++i) {
       caffe_mul(count, top_data, bottom[i]->cpu_data(), top_data);
     }

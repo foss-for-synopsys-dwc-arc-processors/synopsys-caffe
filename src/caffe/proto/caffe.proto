@@ -1625,6 +1625,8 @@ message EltwiseParameter {
   }
   optional SaturateMethod saturate = 5 [default = None]; //only valid for SUM, control the output in certain range
   //CUSTOMIZATION-->
+
+  optional int32 axis = 6 [default = 0]; //CUSTOMIZATION for broadcasting
 }
 
 // Message that stores parameters used by ELULayer

@@ -46,6 +46,9 @@ class EltwiseLayer : public Layer<Dtype> {
   bool stable_prod_grad_;
   Dtype output_scale_;  //CUSTOMIZATION
   Dtype saturate_; //CUSTOMIZATION
+  int outer_dim_, inner_dim_, eltwise_dim_; //CUSTOMIZATION
+  int axis_; //CUSTOMIZATION
+  Blob<Dtype> eltwise_multiplier_;
 };
 
 }  // namespace caffe
