@@ -58,14 +58,13 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   outer_dim_ = bottom[0]->count(0, axis_);
   eltwise_dim_ = eltwise->count();
   inner_dim_ = bottom[0]->count(axis_ + eltwise->num_axes());
-
-  const int eltwise_mult_size = std::max(outer_dim_, inner_dim_);
-  eltwise_multiplier_.Reshape(vector<int>(1, eltwise_mult_size));
-  if (eltwise_multiplier_.cpu_data()[eltwise_mult_size - 1] != Dtype(1)) {
-     caffe_set(eltwise_mult_size, Dtype(1), eltwise_multiplier_.mutable_cpu_data());
+  dim_ = eltwise_dim_ * inner_dim_;
+  eltwise_multiplier_.Reshape(vector<int>(1, inner_dim_));
+  if (eltwise_multiplier_.cpu_data()[inner_dim_ - 1] != Dtype(1)) {
+    caffe_set(inner_dim_, Dtype(1), eltwise_multiplier_.mutable_cpu_data());
   }
-
   //CUSTOMIZATION-->
+
   top[0]->ReshapeLike(*bottom[0]);
   // If max operation, we will initialize the vector index part.
   if (this->layer_param_.eltwise_param().operation() ==
@@ -90,24 +89,41 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     break;
   case EltwiseParameter_EltwiseOp_PROD:
 	//<--CUSTOMIZATION
-	for (int n = 0; n < outer_dim_; ++n) {
-	  for (int d = 0; d < eltwise_dim_; ++d) {
-	    const Dtype factor = eltwise_data[d];
+	if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+	  for (int n = 0; n < outer_dim_; ++n) {
+	    for (int d = 0; d < eltwise_dim_; ++d) {
+	      const Dtype factor = eltwise_data[d];
 	      caffe_cpu_scale(inner_dim_, factor, bottom_data, top_data);
 	      bottom_data += inner_dim_;
 	      top_data += inner_dim_;
+	    }
 	  }
 	}
+	else{
+	  caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+	}
 	//CUSTOMIZATION-->
-    //caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     for (int i = 2; i < bottom.size(); ++i) {
       caffe_mul(count, top_data, bottom[i]->cpu_data(), top_data);
     }
     break;
   case EltwiseParameter_EltwiseOp_SUM:
     caffe_set(count, Dtype(0), top_data);
+	//<--CUSTOMIZATION
+	caffe_axpy(count, coeffs_[0],  bottom_data, top_data);
+	if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+	  for (int n = 0; n < outer_dim_; ++n) {
+	    caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, eltwise_dim_,
+	        inner_dim_, 1, coeffs_[1], eltwise_data,
+	        eltwise_multiplier_.cpu_data(), Dtype(1), top_data);
+	    top_data += dim_;
+	  }
+	}
+	else
+	  caffe_axpy(count, coeffs_[1],  eltwise_data, top_data);
+	//CUSTOMIZATION-->
     // TODO(shelhamer) does BLAS optimize to sum for coeff = 1?
-    for (int i = 0; i < bottom.size(); ++i) {
+    for (int i = 2; i < bottom.size(); ++i) {
       caffe_axpy(count, coeffs_[i], bottom[i]->cpu_data(), top_data);
     }
     break;
