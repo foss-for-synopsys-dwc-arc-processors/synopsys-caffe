@@ -1,7 +1,7 @@
 A Short Summary of New Features in Synopsys Caffe
 =================================================
 
-Synopsys Caffe Version: 2018.09  
+Synopsys Caffe Version: 2019.03  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -19,7 +19,7 @@ stridedslice.py (deprecated, customized Python layer)
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 shape.py (customized Python layer, implementation of tf.shape)  
 stack.py (customized Python layer, implementation of tf.stack)  
-eltwise.py (customized Python layer, functional expansion of ELtwise layer)  
+eltwise.py (customized Python layer, broadcasting support for ELtwise layer, only support 2 inputs)  
 statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum)  
   
 evprune (Network Pruning Tool) related  
