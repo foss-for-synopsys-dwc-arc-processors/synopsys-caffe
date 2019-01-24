@@ -137,13 +137,32 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     // bottom 0 & 1
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();
-    for (int idx = 0; idx < count; ++idx) {
-      if (bottom_data_a[idx] > bottom_data_b[idx]) {
-        top_data[idx] = bottom_data_a[idx];  // maxval
-        mask[idx] = 0;  // maxid
-      } else {
-        top_data[idx] = bottom_data_b[idx];  // maxval
-        mask[idx] = 1;  // maxid
+    //<--CUSTOMIZATION
+    if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+      for (int n = 0; n < outer_dim_; ++n) {
+        for (int d = 0; d < eltwise_dim_; ++d) {
+    	  for (int t = 0; t < inner_dim_; ++t) {
+    	    int idx = n * eltwise_dim_ * inner_dim_ + d * inner_dim_ + t;
+    	    if (bottom_data_a[idx] > bottom_data_b[d]) {
+    	      top_data[idx] = bottom_data_a[idx];  // maxval
+    	      mask[idx] = 0;  // maxid
+    	    } else {
+    	      top_data[idx] = bottom_data_b[d];  // maxval
+    	      mask[idx] = 1;  // maxid
+    	    }
+    	  }
+    	}
+      }
+    }
+    else{
+      for (int idx = 0; idx < count; ++idx) {
+        if (bottom_data_a[idx] > bottom_data_b[idx]) {
+          top_data[idx] = bottom_data_a[idx];  // maxval
+          mask[idx] = 0;  // maxid
+        } else {
+          top_data[idx] = bottom_data_b[idx];  // maxval
+          mask[idx] = 1;  // maxid
+        }
       }
     }
     // bottom 2++
