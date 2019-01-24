@@ -100,9 +100,10 @@ void EltwiseLayer<Dtype>::Forward_cpu(
 	  }
 	}
 	else{
-	  caffe_mul(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+	  caffe_mul(count, bottom_data, eltwise_data, top_data);
 	}
 	//CUSTOMIZATION-->
+	top_data = top[0]->mutable_cpu_data();
     for (int i = 2; i < bottom.size(); ++i) {
       caffe_mul(count, top_data, bottom[i]->cpu_data(), top_data);
     }
@@ -121,8 +122,9 @@ void EltwiseLayer<Dtype>::Forward_cpu(
 	}
 	else
 	  caffe_axpy(count, coeffs_[1],  eltwise_data, top_data);
-	//CUSTOMIZATION-->
     // TODO(shelhamer) does BLAS optimize to sum for coeff = 1?
+	top_data = top[0]->mutable_cpu_data();
+	//CUSTOMIZATION-->
     for (int i = 2; i < bottom.size(); ++i) {
       caffe_axpy(count, coeffs_[i], bottom[i]->cpu_data(), top_data);
     }
