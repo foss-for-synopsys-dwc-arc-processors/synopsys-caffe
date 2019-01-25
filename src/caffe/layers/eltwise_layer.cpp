@@ -74,6 +74,12 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       EltwiseParameter_EltwiseOp_MAX && top.size() == 1) {
     max_idx_.Reshape(bottom[0]->shape());
   }
+  //<--CUSTOMIZATION
+  if (this->layer_param_.eltwise_param().operation() ==
+      EltwiseParameter_EltwiseOp_MIN && top.size() == 1) {
+    min_idx_.Reshape(bottom[0]->shape());
+  }
+  //CUSTOMIZATION-->
 }
 
 template <typename Dtype>
@@ -191,6 +197,54 @@ void EltwiseLayer<Dtype>::Forward_cpu(
       }
     }
     break;
+  //<--CUSTOMIZATION
+  case EltwiseParameter_EltwiseOp_MIN:
+    // Initialize
+    mask = min_idx_.mutable_cpu_data();
+    caffe_set(count, -1, mask);
+    caffe_set(count, Dtype(FLT_MAX), top_data);
+    // bottom 0 & 1
+    bottom_data_a = bottom[0]->cpu_data();
+    bottom_data_b = bottom[1]->cpu_data();
+    if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+      for (int n = 0; n < outer_dim_; ++n) {
+        for (int d = 0; d < eltwise_dim_; ++d) {
+    	  for (int t = 0; t < inner_dim_; ++t) {
+    	    int idx = n * eltwise_dim_ * inner_dim_ + d * inner_dim_ + t;
+    	    if (bottom_data_a[idx] < bottom_data_b[d]) {
+    	      top_data[idx] = bottom_data_a[idx];  // minval
+    	      mask[idx] = 0;  // minid
+    	    } else {
+    	      top_data[idx] = bottom_data_b[d];  // minval
+    	      mask[idx] = 1;  // minid
+    	    }
+    	  }
+    	}
+      }
+    }
+    else{
+      for (int idx = 0; idx < count; ++idx) {
+        if (bottom_data_a[idx] < bottom_data_b[idx]) {
+          top_data[idx] = bottom_data_a[idx];  // minval
+          mask[idx] = 0;  // minid
+        } else {
+          top_data[idx] = bottom_data_b[idx];  // minval
+          mask[idx] = 1;  // minid
+        }
+      }
+    }
+    // bottom 2++
+    for (int blob_idx = 2; blob_idx < bottom.size(); ++blob_idx) {
+      bottom_data_b = bottom[blob_idx]->cpu_data();
+      for (int idx = 0; idx < count; ++idx) {
+        if (bottom_data_b[idx] < top_data[idx]) {
+          top_data[idx] = bottom_data_b[idx];  // minval
+          mask[idx] = blob_idx;  // minid
+        }
+      }
+    }
+    break;
+    //CUSTOMIZATION-->
   default:
     LOG(FATAL) << "Unknown elementwise operation.";
   }
@@ -238,6 +292,16 @@ void EltwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         break;
       case EltwiseParameter_EltwiseOp_MAX:
         mask = max_idx_.cpu_data();
+        for (int index = 0; index < count; ++index) {
+          Dtype gradient = 0;
+          if (mask[index] == i) {
+            gradient += top_diff[index];
+          }
+          bottom_diff[index] = gradient;
+        }
+        break;
+      case EltwiseParameter_EltwiseOp_MIN:
+        mask = min_idx_.cpu_data();
         for (int index = 0; index < count; ++index) {
           Dtype gradient = 0;
           if (mask[index] == i) {
