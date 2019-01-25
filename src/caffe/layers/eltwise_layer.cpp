@@ -16,6 +16,9 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       == EltwiseParameter_EltwiseOp_PROD
       && this->layer_param().eltwise_param().coeff_size())) <<
       "Eltwise layer only takes coefficients for summation.";
+  CHECK(!(this->layer_param().eltwise_param().operation() ==
+	  EltwiseParameter_EltwiseOp_DIV && bottom.size() != 2)) <<
+      "Eltwise layer only accepts 2 inputs for division.";
   op_ = this->layer_param_.eltwise_param().operation();
   // Blob-wise coefficients for the elementwise operation.
   coeffs_ = vector<Dtype>(bottom.size(), 1);
@@ -84,8 +87,19 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   const int count = top[0]->count();
   Dtype* top_data = top[0]->mutable_cpu_data();
   switch (op_) {
-  case EltwiseParameter_EltwiseOp_DIV:
-    caffe_div(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
+  case EltwiseParameter_EltwiseOp_DIV: //CUSTOMIZATION, assume only 2 inputs exist
+	if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+	  for (int n = 0; n < outer_dim_; ++n) {
+	    for (int d = 0; d < eltwise_dim_; ++d) {
+	  	  const Dtype factor = Dtype(1)/eltwise_data[d]; //turn the division into scaling
+	  	  caffe_cpu_scale(inner_dim_, factor, bottom_data, top_data);
+	  	  bottom_data += inner_dim_;
+	  	  top_data += inner_dim_;
+	  	}
+	  }
+	}
+	else
+      caffe_div(count, bottom[0]->cpu_data(), bottom[1]->cpu_data(), top_data);
     break;
   case EltwiseParameter_EltwiseOp_PROD:
 	//<--CUSTOMIZATION
@@ -155,6 +169,7 @@ void EltwiseLayer<Dtype>::Forward_cpu(
       }
     }
     else{
+    //CUSTOMIZATION-->
       for (int idx = 0; idx < count; ++idx) {
         if (bottom_data_a[idx] > bottom_data_b[idx]) {
           top_data[idx] = bottom_data_a[idx];  // maxval
