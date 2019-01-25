@@ -9,6 +9,7 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 depthtospace_layer  
 resize_nearest_neighbor_layer  
 DIV in EltwiseOp  
+axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
@@ -19,7 +20,7 @@ stridedslice.py (deprecated, customized Python layer)
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 shape.py (customized Python layer, implementation of tf.shape)  
 stack.py (customized Python layer, implementation of tf.stack)  
-eltwise.py (customized Python layer, broadcasting support for ELtwise layer, only support 2 inputs)  
+eltwise.py (customized Python layer, broadcasting support for Eltwise layer, only support 2 inputs)  
 statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum)  
   
 evprune (Network Pruning Tool) related  
