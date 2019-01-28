@@ -15,13 +15,14 @@ pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
+eltwise.py (deprecated, customized Python layer)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
-stridedslice.py (deprecated, customized Python layer)  
-slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
+reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
 shape.py (customized Python layer, implementation of tf.shape)  
+slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 stack.py (customized Python layer, implementation of tf.stack)  
-eltwise.py (customized Python layer, broadcasting support for Eltwise layer, only support 2 inputs)  
 statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum)  
+stridedslice.py (deprecated, customized Python layer)  
   
 evprune (Network Pruning Tool) related  
 --------------------------------------
