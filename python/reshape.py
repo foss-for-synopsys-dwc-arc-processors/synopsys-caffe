@@ -20,10 +20,19 @@ class Reshape(caffe.Layer):
         if bottom[0].count == 0:
             raise Exception("Input must not be empty!")
         shape = [int(i) for i in bottom[1].data]
+        if -1 in shape:
+            total = np.prod(bottom[0].data.shape)
+            for i in shape:
+                if -1 != i:
+                    total = total/i
+                else:
+                    d = i
+            shape[d] = total 
+        self.shape = shape
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
-        top[0].data[...] = bottom[0].data
+        top[0].data[...] = bottom[0].data.reshape(self.shape)
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
