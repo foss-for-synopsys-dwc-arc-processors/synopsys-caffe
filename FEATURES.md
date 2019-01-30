@@ -16,6 +16,7 @@ AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias 
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
 eltwise.py (deprecated, customized Python layer)  
+matrix_inverse.py  (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
 reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
 shape.py (customized Python layer, implementation of tf.shape)  
