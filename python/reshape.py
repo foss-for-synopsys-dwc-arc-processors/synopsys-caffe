@@ -28,11 +28,10 @@ class Reshape(caffe.Layer):
                 else:
                     d = i
             shape[d] = total 
-        self.shape = shape
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
-        top[0].data[...] = bottom[0].data.reshape(self.shape)
+        top[0].data[...] = bottom[0].data.ravel()
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
