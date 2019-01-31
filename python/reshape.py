@@ -5,6 +5,10 @@ import numpy as np
 class Reshape(caffe.Layer):
     """
     implementation of the tf.reshape() with two inputs.
+    ["Dynamic" limitation due to the difference between Caffe & TensorFlow]
+    Use attention: Since this layer use the values of the second bottom to figure out the top shape, 
+    this layer can only work as the last layer in prototxt. 
+    (otherwise will cause "Check failed: data_" error for the following layers during runtime.)
     """
     def setup(self, bottom, top):
         # check number of inputs and outputs
