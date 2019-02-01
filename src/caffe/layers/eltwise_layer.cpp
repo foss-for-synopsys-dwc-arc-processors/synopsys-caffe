@@ -109,6 +109,10 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     break;
   case EltwiseParameter_EltwiseOp_PROD:
 	//<--CUSTOMIZATION
+	if(bottom.size() == 1){
+	  caffe_copy(count, bottom_data, top_data);
+      break;
+	}
 	if(bottom.size() >1 && bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
 	  for (int n = 0; n < outer_dim_; ++n) {
 	    for (int d = 0; d < eltwise_dim_; ++d) {
@@ -132,6 +136,8 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     caffe_set(count, Dtype(0), top_data);
 	//<--CUSTOMIZATION
 	caffe_axpy(count, coeffs_[0],  bottom_data, top_data);
+	if(bottom.size() == 1)
+      break;
 	if(bottom.size() >1 && bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
 	  for (int n = 0; n < outer_dim_; ++n) {
 	    caffe_cpu_gemm(CblasNoTrans, CblasNoTrans, eltwise_dim_,
@@ -158,6 +164,10 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();
     //<--CUSTOMIZATION
+	if(bottom.size() == 1){
+	  caffe_copy(count, bottom_data, top_data);
+      break;
+	}
     if(bottom.size() >1 && bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
       for (int n = 0; n < outer_dim_; ++n) {
         for (int d = 0; d < eltwise_dim_; ++d) {
@@ -206,7 +216,11 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     // bottom 0 & 1
     bottom_data_a = bottom[0]->cpu_data();
     bottom_data_b = bottom[1]->cpu_data();
-    if(bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
+	if(bottom.size() == 1){
+	  caffe_copy(count, bottom_data, top_data);
+      break;
+	}
+    if(bottom.size() >1 && bottom[0]->shape() != bottom[1]->shape()){ //need broadcasting
       for (int n = 0; n < outer_dim_; ++n) {
         for (int d = 0; d < eltwise_dim_; ++d) {
     	  for (int t = 0; t < inner_dim_; ++t) {
