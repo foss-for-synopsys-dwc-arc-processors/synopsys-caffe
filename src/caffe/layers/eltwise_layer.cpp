@@ -47,37 +47,39 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   //}
 
   //<--CUSTOMIZATION, add support for broadcasting
-  const EltwiseParameter& param = this->layer_param_.eltwise_param();
-  Blob<Dtype>* eltwise = bottom[1];
-  axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
-  CHECK_GE(bottom[0]->num_axes(), axis_ + eltwise->num_axes())
-      << "eltwise blob's shape extends past bottom[0]'s shape when applied "
-      << "starting with bottom[0] axis = " << axis_;
-  for (int i = 0; i < eltwise->num_axes(); ++i) {
-    CHECK_EQ(bottom[0]->shape(axis_ + i), eltwise->shape(i))
-        << "dimension mismatch between bottom[0]->shape(" << axis_ + i
-        << ") and eltwise->shape(" << i << ")";
-  }
-  outer_dim_ = bottom[0]->count(0, axis_);
-  eltwise_dim_ = eltwise->count();
-  inner_dim_ = bottom[0]->count(axis_ + eltwise->num_axes());
-  dim_ = eltwise_dim_ * inner_dim_;
-  eltwise_multiplier_.Reshape(vector<int>(1, inner_dim_));
-  if (eltwise_multiplier_.cpu_data()[inner_dim_ - 1] != Dtype(1)) {
-    caffe_set(inner_dim_, Dtype(1), eltwise_multiplier_.mutable_cpu_data());
+  //const EltwiseParameter& param = this->layer_param_.eltwise_param();
+  //axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
+  if(bottom.size() > 1){
+	Blob<Dtype>* eltwise = bottom[1];
+	CHECK_GE(bottom[0]->num_axes(), axis_ + eltwise->num_axes())
+	<< "eltwise blob's shape extends past bottom[0]'s shape when applied "
+	<< "starting with bottom[0] axis = " << axis_;
+	for (int i = 0; i < eltwise->num_axes(); ++i) {
+	  CHECK_EQ(bottom[0]->shape(axis_ + i), eltwise->shape(i))
+					<< "dimension mismatch between bottom[0]->shape(" << axis_ + i
+					<< ") and eltwise->shape(" << i << ")";
+	}
+	outer_dim_ = bottom[0]->count(0, axis_);
+	eltwise_dim_ = eltwise->count();
+	inner_dim_ = bottom[0]->count(axis_ + eltwise->num_axes());
+	dim_ = eltwise_dim_ * inner_dim_;
+	eltwise_multiplier_.Reshape(vector<int>(1, inner_dim_));
+	if (eltwise_multiplier_.cpu_data()[inner_dim_ - 1] != Dtype(1)) {
+	  caffe_set(inner_dim_, Dtype(1), eltwise_multiplier_.mutable_cpu_data());
+	}
   }
   //CUSTOMIZATION-->
 
   top[0]->ReshapeLike(*bottom[0]);
   // If max operation, we will initialize the vector index part.
   if (this->layer_param_.eltwise_param().operation() ==
-      EltwiseParameter_EltwiseOp_MAX && top.size() == 1) {
-    max_idx_.Reshape(bottom[0]->shape());
+	  EltwiseParameter_EltwiseOp_MAX && top.size() == 1) {
+	max_idx_.Reshape(bottom[0]->shape());
   }
   //<--CUSTOMIZATION
   if (this->layer_param_.eltwise_param().operation() ==
-      EltwiseParameter_EltwiseOp_MIN && top.size() == 1) {
-    min_idx_.Reshape(bottom[0]->shape());
+	  EltwiseParameter_EltwiseOp_MIN && top.size() == 1) {
+	min_idx_.Reshape(bottom[0]->shape());
   }
   //CUSTOMIZATION-->
 }
