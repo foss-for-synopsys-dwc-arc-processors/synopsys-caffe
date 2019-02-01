@@ -13,7 +13,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       || this->layer_param().eltwise_param().coeff_size() == bottom.size()) <<
       "Eltwise Layer takes one coefficient per bottom blob.";
   CHECK(!(this->layer_param().eltwise_param().operation()
-      == EltwiseParameter_EltwiseOp_PROD
+      != EltwiseParameter_EltwiseOp_SUM
       && this->layer_param().eltwise_param().coeff_size())) <<
       "Eltwise layer only takes coefficients for summation.";
   CHECK(!(this->layer_param().eltwise_param().operation() ==
