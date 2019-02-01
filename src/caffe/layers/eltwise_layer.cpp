@@ -88,7 +88,9 @@ template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
-  const Dtype* eltwise_data = bottom[1]->cpu_data(); //CUSTOMIZATION
+  const Dtype* eltwise_data = NULL; //CUSTOMIZATION
+  if(bottom.size() > 1)
+    eltwise_data = bottom[1]->cpu_data(); //CUSTOMIZATION
   int* mask = NULL;
   const Dtype* bottom_data_a = NULL;
   const Dtype* bottom_data_b = NULL;
