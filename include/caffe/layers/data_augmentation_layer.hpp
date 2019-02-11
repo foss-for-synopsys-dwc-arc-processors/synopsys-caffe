@@ -27,6 +27,26 @@ public:
                          const vector<Blob<Dtype>*>& top);
     virtual inline const char* type() const { return "DataAugmentation"; }
     virtual void adjust_blobs(vector<Blob<Dtype>*> blobs);
+    virtual void ComputeChromaticEigenspace_cpu(const int nthreads, const int num,
+                                                const int channels, const int height, const int width,
+                                                const Dtype* data,
+                                                typename AugmentationLayerBase<Dtype>::tChromaticEigenSpace* chromatic_eigenspace);
+    virtual void SpatialAugmentation_cpu(const int nthreads, const int num, const int channels, const int height, const int width,
+            const Dtype* src_data, const int src_count, const int dest_height, const int dest_width, Dtype* dest_data,
+            const typename AugmentationLayerBase<Dtype>::tTransMat *transMats);
+    virtual void ChromaticEigenAugmentation_cpu(const int nthreads, const int num, const int channels, const int height, const int width,
+            Dtype* src_data, Dtype* dest_data,
+            const typename AugmentationLayerBase<Dtype>::tChromaticEigenCoeffs* chromatic,
+            typename AugmentationLayerBase<Dtype>::tChromaticEigenSpace* eigen,
+            const float max_multiplier);
+    virtual void ColorContrastAugmentation_cpu(const int nthreads, const int num, const int channels, const int height, const int width,
+            Dtype* src_data, Dtype* dest_data,
+            const typename AugmentationLayerBase<Dtype>::tChromaticCoeffs* chromatic,
+            const float max_multiplier);
+    virtual void ApplyEffects_cpu(const int nthreads, const int num,
+            const int count, const int channels, const int height, const int width, Dtype* data,
+            const typename AugmentationLayerBase<Dtype>::tEffectCoeffs *effects,
+            const float max_multiplier);
     virtual inline bool AllowBackward() const { LOG(WARNING) << "DataAugmentationLayer does not do backward."; return false; }
 
 protected:
