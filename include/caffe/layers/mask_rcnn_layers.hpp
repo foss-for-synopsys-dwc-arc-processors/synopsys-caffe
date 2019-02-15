@@ -41,7 +41,7 @@ public:
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "RoIAlign"; }
+  virtual inline const char *type() const { return "ROIAlign"; }
 
   virtual inline int MinBottomBlobs() const { return 2; }
   virtual inline int MaxBottomBlobs() const { return 2; }
