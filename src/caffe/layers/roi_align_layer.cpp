@@ -29,7 +29,7 @@ void ROIAlignLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
     pooled_height_ = roi_align_param.pooled_h();
     pooled_width_ = roi_align_param.pooled_w();
     spatial_scale_ = roi_align_param.spatial_scale();
-    LOG(INFO) << "Spatial scale: " << spatial_scale_;
+    //LOG(INFO) << "Spatial scale: " << spatial_scale_;
 }
 
 template <typename Dtype>
@@ -52,7 +52,7 @@ template <typename Dtype>
 void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                        const vector<Blob<Dtype> *> &top)
 {
-    LOG(INFO) << "DOING CPU FORWARD NOW ";
+    //LOG(INFO) << "DOING CPU FORWARD NOW ";
     const Dtype *bottom_data = bottom[0]->cpu_data();
     const Dtype *bottom_rois = bottom[1]->cpu_data();
     // Number of ROIs
@@ -69,7 +69,6 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
     // For each ROI R = [batch_index x1 y1 x2 y2]:
     for (int n = 0; n < num_rois; ++n)
     {
-
         int roi_batch_ind = bottom_rois[0];
         Dtype roi_start_w = bottom_rois[1] * spatial_scale_;
         Dtype roi_start_h = bottom_rois[2] * spatial_scale_;
@@ -77,10 +76,12 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
         Dtype roi_end_h = bottom_rois[4] * spatial_scale_;
         CHECK_GE(roi_batch_ind, 0);
         CHECK_LT(roi_batch_ind, batch_size);
-        if (n != roi_batch_ind)
-        {
-            continue;
-        }
+        //if (n != roi_batch_ind)
+        //{
+        	// Increment ROI data pointer
+            //bottom_rois += bottom[1]->offset(1);
+            //continue;
+        //}
         //Util Values
         Dtype one = 1.0;
         Dtype zero = 0.0;
@@ -100,7 +101,6 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
             {
                 for (int pw = 0; pw < pooled_width_; ++pw)
                 {
-
                     Dtype hstart = static_cast<Dtype>(ph) * bin_size_h;
                     Dtype wstart = static_cast<Dtype>(pw) * bin_size_w;
                     Dtype hend = static_cast<Dtype>(ph + 1) * bin_size_h;
@@ -138,7 +138,6 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                     {
                         x_smp_n = samples_n[smp];
                         y_smp_n = samples_n[smp + 1];
-
                         bisampled[smp / 2] = 0.0;
                         int b_index[4] = {-1, -1, -1, -1};      //, -1,-1,-1,-1};
                         int b_index_curr[4] = {-1, -1, -1, -1}; //, -1,-1,-1,-1};
@@ -146,9 +145,9 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                         //Dtype(-FLT_MAX), Dtype(-FLT_MAX), Dtype(-FLT_MAX), Dtype(-FLT_MAX)};
 
                         counter = 0;
-                        for (int h_idx = floor(hstart); h_idx <= ceil(hend) && h_idx < height_; ++h_idx)
+                        for (int h_idx = ceil(hstart); h_idx <= floor(hend) && h_idx <= height_ && h_idx >=0; ++h_idx)
                         {
-                            for (int w_idx = floor(wstart); w_idx <= ceil(wend) && w_idx < width_; ++w_idx)
+                            for (int w_idx = ceil(wstart); w_idx <= floor(wend) && w_idx <= width_ && w_idx >=0; ++w_idx)
                             {
                                 if (counter < 4)
                                 {
@@ -162,6 +161,7 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                     multiplier[counter] = max(zero, static_cast<Dtype>(1 - fabs(x_smp_n - w_idx_n))) * max(zero, static_cast<Dtype>(1 - fabs(y_smp_n - h_idx_n)));
 
                                     bisampled[smp / 2] += batch_data[b_index_curr[counter]] * multiplier[counter];
+                                    //bisampled[smp / 2] += bottom_data[b_index[counter]] * multiplier[counter];
                                     ++counter;
                                 }
                                 else
@@ -195,8 +195,8 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
             top_data += top[0]->offset(0, 1);
             if ((c + 1) < channels_)
             {
-                argmax_idx += max_pts_.offset(offset_argmax);
-                argmax_mult += max_mult_.offset(offset_argmax);
+              argmax_idx += max_pts_.offset(offset_argmax);
+              argmax_mult += max_mult_.offset(offset_argmax);
             }
         } // channels
         // Increment ROI data pointer

@@ -43,10 +43,10 @@ public:
 
   virtual inline const char *type() const { return "ROIAlign"; }
 
-  virtual inline int MinBottomBlobs() const { return 2; }
-  virtual inline int MaxBottomBlobs() const { return 2; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 1; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  //virtual inline int MaxBottomBlobs() const { return 2; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
+  //virtual inline int MaxTopBlobs() const { return 1; }
 
 protected:
   virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,

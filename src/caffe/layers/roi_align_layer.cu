@@ -163,13 +163,13 @@ void ROIAlignLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype> *> &bottom,
   int *argmax_idx = max_pts_.mutable_gpu_data();
   Dtype *argmax_mult = max_mult_.mutable_gpu_data();
   int count = top[0]->count();
-  LOG(INFO) << "Doing forward now";
+  //LOG(INFO) << "Doing forward now";
   // NOLINT_NEXT_LINE(whitespace/operators)
   //Change CAFFE_CUDA_NUM_THREADS to 64
   ROIAlignForward<Dtype><<<CAFFE_GET_BLOCKS(count), 32>>>(
       count, bottom_data, spatial_scale_, channels_, height_, width_,
       pooled_height_, pooled_width_, bottom_rois, top_data, argmax_idx, argmax_mult);
-  LOG(INFO) << "Done forward ";
+  //LOG(INFO) << "Done forward ";
   CUDA_POST_KERNEL_CHECK;
 }
 
@@ -262,11 +262,11 @@ void ROIAlignLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype> *> &top,
   const Dtype *argmax_mult = max_mult_.gpu_data();
   // NOLINT_NEXT_LINE(whitespace/operators)
   // CAFFE_CUDA_NUM_THREADS replaced with 64
-  LOG(INFO) << "Doing backward ";
+  //LOG(INFO) << "Doing backward ";
   ROIAlignBackward<Dtype><<<CAFFE_GET_BLOCKS(count), 16>>>(
       count, top_diff, argmax_idx, argmax_mult, top[0]->num(), spatial_scale_, channels_,
       height_, width_, pooled_height_, pooled_width_, bottom_diff, bottom_rois);
-  LOG(INFO) << "Done backward";
+  //LOG(INFO) << "Done backward";
   CUDA_POST_KERNEL_CHECK;
 }
 
