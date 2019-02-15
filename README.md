@@ -54,6 +54,7 @@ Other detailed installation instructions can be found [here](https://github.com/
 Synopsys Caffe support the features introduced in following customized branches. Here are some links to the original demos, tutorials and models usage:
 - [SegNet](https://github.com/alexgkendall/caffe-segnet)
 - [Faster RCNN](https://github.com/rbgirshick/py-faster-rcnn)
+- [Mask RCNN](https://github.com/mmclkv/caffe-mask-rcnn)
 - [SSD](https://github.com/weiliu89/caffe/tree/ssd)
 - [FlowNet2](https://github.com/lmb-freiburg/flownet2)
 - [SRGAN](https://github.com/ShenghaiRong/caffe_srgan)

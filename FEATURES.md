@@ -37,6 +37,10 @@ input_scale and output_scale in ConvolutionParameter, InnerProductParameter, Sof
 output_scale in EltwiseParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingParameter   
+      
+Mask RCNN related  
+-------------------  
+roi_align_layer  
   
 YOLO related  
 --------------  
