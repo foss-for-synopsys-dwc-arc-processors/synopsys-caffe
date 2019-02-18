@@ -154,10 +154,17 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                     b_index[counter] = ((((n * channels_ + c) * height_) + h_idx) * width_) + w_idx;
                                     b_index_curr[counter] = (h_idx * width_) + w_idx;
                                     //Normalize h_idx and w_idx
-                                    h_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
-                                    w_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
+                                    if((roi_end_h - roi_start_h)==0)
+                                     	h_idx_n = Dtype(0);
+                                    else
+                                     	h_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
+                                    if((roi_end_w - roi_start_w)==0)
+                                    	w_idx_n = Dtype(0);
+                                    else
+                                    	w_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
                                     h_idx_n = min(max(h_idx_n, static_cast<Dtype>(-1.0)), one);
                                     w_idx_n = min(max(w_idx_n, static_cast<Dtype>(-1.0)), one);
+
                                     multiplier[counter] = max(zero, static_cast<Dtype>(1 - fabs(x_smp_n - w_idx_n))) * max(zero, static_cast<Dtype>(1 - fabs(y_smp_n - h_idx_n)));
 
                                     bisampled[smp / 2] += batch_data[b_index_curr[counter]] * multiplier[counter];

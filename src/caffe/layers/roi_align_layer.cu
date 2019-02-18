@@ -116,11 +116,18 @@ __global__ void ROIAlignForward(const int nthreads, const Dtype *bottom_data,
             b_index[counter] = ((((roi_batch_ind * channels) + c) * height) + h_idx) * width + w_idx;
             //    b_index_curr[counter]= h_idx*width + w_idx;
             //Normalize width and height to lie between -1 and 1
-            h_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
-            w_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
+            if((roi_end_h - roi_start_h)==0)
+             	h_idx_n = Dtype(0);
+            else
+            	h_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
+            if((roi_end_w - roi_start_w)==0)
+            	w_idx_n = Dtype(0);
+            else
+            	w_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
             h_idx_n = min(max(h_idx_n, static_cast<Dtype>(-1.0)), one);
             w_idx_n = min(max(w_idx_n, static_cast<Dtype>(-1.0)), one);
             multiplier[counter] = max(zero, static_cast<Dtype>(1 - fabs(x_smp_n - w_idx_n))) * max(zero, static_cast<Dtype>(1 - fabs(y_smp_n - h_idx_n)));
+
             //bisampled[smp/2] += multiplier[counter];
             bisampled[smp / 2] += bottom_data[b_index[counter]] * multiplier[counter];
             ++counter;
@@ -163,6 +170,9 @@ void ROIAlignLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype> *> &bottom,
   int *argmax_idx = max_pts_.mutable_gpu_data();
   Dtype *argmax_mult = max_mult_.mutable_gpu_data();
   int count = top[0]->count();
+  caffe_gpu_set(count, Dtype(-FLT_MAX), top_data);
+  caffe_gpu_set(count * 4, -1, argmax_idx);
+  caffe_gpu_set(count * 4, Dtype(-FLT_MAX), argmax_mult);
   //LOG(INFO) << "Doing forward now";
   // NOLINT_NEXT_LINE(whitespace/operators)
   //Change CAFFE_CUDA_NUM_THREADS to 64
