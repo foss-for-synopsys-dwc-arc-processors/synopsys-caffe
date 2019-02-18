@@ -86,13 +86,13 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
         Dtype one = 1.0;
         Dtype zero = 0.0;
 
-        Dtype roi_height = max(roi_end_h - roi_start_h, one);
-        Dtype roi_width = max(roi_end_w - roi_start_w, one);
+        Dtype roi_height = max(roi_end_h - roi_start_h + one, one);
+        Dtype roi_width = max(roi_end_w - roi_start_w + one, one);
         const Dtype bin_size_h = roi_height / static_cast<Dtype>(pooled_height_);
         const Dtype bin_size_w = roi_width / static_cast<Dtype>(pooled_width_);
 
         const Dtype *batch_data = bottom_data + bottom[0]->offset(roi_batch_ind);
-        int argmax_offset_init[] = {0, 1, 0, 0, 0};
+        int argmax_offset_init[] = {0, 1, 0, 0};
         const vector<int> offset_argmax(argmax_offset_init,
                                         argmax_offset_init + sizeof(argmax_offset_init) / sizeof(int));
         for (int c = 0; c < channels_; ++c)
@@ -154,8 +154,8 @@ void ROIAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                     b_index[counter] = ((((n * channels_ + c) * height_) + h_idx) * width_) + w_idx;
                                     b_index_curr[counter] = (h_idx * width_) + w_idx;
                                     //Normalize h_idx and w_idx
-                                    h_idx_n = static_cast<Dtype>((2 * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
-                                    w_idx_n = static_cast<Dtype>((2 * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
+                                    h_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(h_idx) - roi_start_h) / (roi_end_h - roi_start_h)) - 1);
+                                    w_idx_n = static_cast<Dtype>((static_cast<Dtype>(2) * (static_cast<Dtype>(w_idx) - roi_start_w) / (roi_end_w - roi_start_w)) - 1);
                                     h_idx_n = min(max(h_idx_n, static_cast<Dtype>(-1.0)), one);
                                     w_idx_n = min(max(w_idx_n, static_cast<Dtype>(-1.0)), one);
                                     multiplier[counter] = max(zero, static_cast<Dtype>(1 - fabs(x_smp_n - w_idx_n))) * max(zero, static_cast<Dtype>(1 - fabs(y_smp_n - h_idx_n)));

@@ -44,8 +44,8 @@ __global__ void ROIAlignForward(const int nthreads, const Dtype *bottom_data,
     Dtype zero = 0.0, one = 1.0;
 
     // Force malformed ROIs to be 1x1
-    Dtype roi_width = max(roi_end_w - roi_start_w + 1.0, one);
-    Dtype roi_height = max(roi_end_h - roi_start_h + 1.0, one);
+    Dtype roi_width = max(roi_end_w - roi_start_w + one, one);
+    Dtype roi_height = max(roi_end_h - roi_start_h + one, one);
     Dtype bin_size_h = roi_height / static_cast<Dtype>(pooled_height);
     Dtype bin_size_w = roi_width / static_cast<Dtype>(pooled_width);
 
@@ -166,7 +166,7 @@ void ROIAlignLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype> *> &bottom,
   //LOG(INFO) << "Doing forward now";
   // NOLINT_NEXT_LINE(whitespace/operators)
   //Change CAFFE_CUDA_NUM_THREADS to 64
-  ROIAlignForward<Dtype><<<CAFFE_GET_BLOCKS(count), 32>>>(
+  ROIAlignForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
       count, bottom_data, spatial_scale_, channels_, height_, width_,
       pooled_height_, pooled_width_, bottom_rois, top_data, argmax_idx, argmax_mult);
   //LOG(INFO) << "Done forward ";
@@ -263,7 +263,7 @@ void ROIAlignLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype> *> &top,
   // NOLINT_NEXT_LINE(whitespace/operators)
   // CAFFE_CUDA_NUM_THREADS replaced with 64
   //LOG(INFO) << "Doing backward ";
-  ROIAlignBackward<Dtype><<<CAFFE_GET_BLOCKS(count), 16>>>(
+  ROIAlignBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
       count, top_diff, argmax_idx, argmax_mult, top[0]->num(), spatial_scale_, channels_,
       height_, width_, pooled_height_, pooled_width_, bottom_diff, bottom_rois);
   //LOG(INFO) << "Done backward";
