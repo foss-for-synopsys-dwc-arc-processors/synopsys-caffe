@@ -182,7 +182,7 @@ void DataAugmentationLayer<Dtype>::adjust_blobs(vector<Blob<Dtype>* > blobs)
       {
              // If using RGB mean, copy only RGB values (blob 2)
              Blob<Dtype> tmp; tmp.CopyFrom(*blobs[2], false,true);
-             caffe_copy(this->blobs_[2]->count()*sizeof(float), tmp.mutable_cpu_data(), this->blobs_[2]->mutable_cpu_data());
+             caffe_copy(this->blobs_[2]->count(), tmp.mutable_cpu_data(), this->blobs_[2]->mutable_cpu_data());
              Dtype* data_mean_per_channel_cpu = this->blobs_[2]->mutable_cpu_data();
              for(int i=0; i<this->blobs_[2]->count(); i++)
                  LOG(INFO) << "recovered mean value " << data_mean_per_channel_cpu[i];
@@ -211,13 +211,13 @@ void DataAugmentationLayer<Dtype>::adjust_blobs(vector<Blob<Dtype>* > blobs)
 }
 
 template <typename Dtype>
-void DataAugmentationLayer<Dtype>::ComputeChromaticEigenspace_cpu( const int nthreads, const int num,
+void DataAugmentationLayer<Dtype>::ComputeChromaticEigenspace_cpu(const int num,
                                             const int channels, const int height, const int width,
                                             const Dtype* data,
                                             typename AugmentationLayerBase<Dtype>::tChromaticEigenSpace* chromatic_eigenspace)
 {
 	   for (int n = 0; n < num; ++n) {
-	     for (int y = 0; y < height; ++y){
+	     for (int y = 0; y < height; ++y) {
 		   for (int x = 0; x < width; ++x) {
 
 	        //int x  = index % width;
@@ -258,15 +258,14 @@ void DataAugmentationLayer<Dtype>::ComputeChromaticEigenspace_cpu( const int nth
 }
 
 template <typename Dtype>
-void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(   const int nthreads, const int num, const int channels, const int height, const int width,
+void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(const int num, const int channels, const int height, const int width,
                             const Dtype* src_data, const int src_count, const int dest_height, const int dest_width, Dtype* dest_data,
                             const typename AugmentationLayerBase<Dtype>::tTransMat *transMats)
 {
 	   for (int n = 0; n < num; ++n) {
-		 for (int c = 0; c < channels; ++c){
-	       for (int y = 0; y < dest_height; ++y){
+		 for (int c = 0; c < channels; ++c) {
+	       for (int y = 0; y < dest_height; ++y) {
 		     for (int x = 0; x < dest_width; ++x) {
-
 		    	 int cn = c*n;
         //int x  = index % dest_width; //w-pos
         //int y  = (index / dest_width) % dest_height; //h-pos
@@ -307,7 +306,7 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(   const int nthreads
                 + (  xdist)*(1-ydist)*sampleTR;
 
         // write sample to destination
-        int index = ((n*channels + c)*width + x)*height + y;
+        int index = ((n*channels + c)*height+ y)*width + x;
         dest_data[index] = sample;
     }
    }
@@ -316,21 +315,21 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(   const int nthreads
 }
 
 template <typename Dtype>
-void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int nthreads, const int num, const int channels, const int height, const int width,
+void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int num, const int channels, const int height, const int width,
                             Dtype* src_data, Dtype* dest_data,
                             const typename AugmentationLayerBase<Dtype>::tChromaticEigenCoeffs* chromatic,
                             typename AugmentationLayerBase<Dtype>::tChromaticEigenSpace* eigen,
                             const float max_multiplier)
 {
 	   for (int n = 0; n < num; ++n) {
-	     for (int y = 0; y < height; ++y){
+	     for (int y = 0; y < height; ++y) {
 		   for (int x = 0; x < width; ++x) {
 
         //int x  = index % width;
         //int y  = (index / width) % height;
         //int n  = (index / width / height);
 
-        Dtype s, s1, l, l1;
+        Dtype s, s1, l=0, l1=0;
 
         // subtracting the mean
         Dtype rgb [3];
@@ -422,13 +421,13 @@ void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int nthr
 }
 
 template <typename Dtype>
-void DataAugmentationLayer<Dtype>::ColorContrastAugmentation_cpu(const int nthreads, const int num, const int channels, const int height, const int width,
+void DataAugmentationLayer<Dtype>::ColorContrastAugmentation_cpu(const int num, const int channels, const int height, const int width,
                             Dtype* src_data, Dtype* dest_data,
                             const typename AugmentationLayerBase<Dtype>::tChromaticCoeffs* chromatic,
                             const float max_multiplier)
 {
 	   for (int n = 0; n < num; ++n) {
-	     for (int y = 0; y < height; ++y){
+	     for (int y = 0; y < height; ++y) {
 		   for (int x = 0; x < width; ++x) {
 
         //float x = (float)(index % width); //w-pos
@@ -473,14 +472,14 @@ void DataAugmentationLayer<Dtype>::ColorContrastAugmentation_cpu(const int nthre
 }
 
 template <typename Dtype>
-void DataAugmentationLayer<Dtype>::ApplyEffects_cpu( const int nthreads, const int num,
+void DataAugmentationLayer<Dtype>::ApplyEffects_cpu(const int num,
                               const int count, const int channels, const int height, const int width, Dtype* data,
                               const typename AugmentationLayerBase<Dtype>::tEffectCoeffs *effects,
                               const float max_multiplier)
 {
 	   for (int n = 0; n < num; ++n) {
-		 for (int c = 0; c < channels; ++c){
-	       for (int y = 0; y < height; ++y){
+		 for (int c = 0; c < channels; ++c) {
+	       for (int y = 0; y < height; ++y) {
 		     for (int x = 0; x < width; ++x) {
 
         //int x  = index % width; //w-pos
@@ -488,7 +487,7 @@ void DataAugmentationLayer<Dtype>::ApplyEffects_cpu( const int nthreads, const i
         //int cn = index / width / height; // channel*num
         //int n = cn / channels; //num
         //int c  = cn % channels; // channel
-		int index = ((n*channels + c)*width + x)*height + y;
+		int index = ((n*channels + c)*height+ y)*width + x;
         float sample=data[index];
 
         if((x-width/2)*effects[n].shadow_nx+(y-height/2)*effects[n].shadow_ny-effects[n].shadow_distance>0)
@@ -514,12 +513,13 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
     int topcount = top[0]->count();
 
     const Dtype* bottom_data = bottom[0]->cpu_data(); // source
-    int bottomchannels = (bottom)[0]->channels();
-    int bottomwidth = (bottom)[0]->width();
-    int bottomheight = (bottom)[0]->height();
-    int bottomcount = (bottom)[0]->count();
+    int bottomchannels = bottom[0]->channels();
+    int bottomwidth = bottom[0]->width();
+    int bottomheight = bottom[0]->height();
+    int bottomcount = bottom[0]->count();
 
-    int num = (bottom)[0]->num(); CHECK_EQ((bottom)[0]->num(), top[0]->num());
+    int num = bottom[0]->num();
+    CHECK_EQ(bottom[0]->num(), top[0]->num());
 
     // Debug: check for NaNs and lare values:
     const Dtype* bottom_cpu_data = bottom[0]->cpu_data();
@@ -549,9 +549,9 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
     AugmentationParameter aug = aug_;
 
     if (do_cropping_) { // Only augment when cropping
+
         Dtype* my_params = all_coeffs_.mutable_cpu_data();
         int num_params = num_params_;
-
         Dtype discount_coeff = discount_coeff_schedule_.initial_coeff() +
                 ( discount_coeff_schedule_.final_coeff() - discount_coeff_schedule_.initial_coeff()) *
                 (Dtype(2) / (Dtype(1) + exp((Dtype)-1.0986 * num_iter / discount_coeff_schedule_.half_life())) - Dtype(1));
@@ -693,7 +693,7 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
         {
             CHECK_EQ(bottomchannels, 3) << "Chromatic-Eigen augmentations only work with 3-channel input";
             ComputeChromaticEigenspace_cpu(
-                  bottomcount/bottomchannels, num,
+                  num,
                   bottomchannels, bottomheight, bottomwidth,
                   bottom_data, cpu_chromatic_eigen_space);
 
@@ -729,7 +729,7 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
         }
 
         SpatialAugmentation_cpu(
-              topcount, num,
+              num,
               bottomchannels, bottomheight, bottomwidth, bottom_data, bottomcount,
               topheight, topwidth, top_data, cpu_matrices);
 
@@ -737,21 +737,21 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
         {
             CHECK_EQ(bottomchannels, 3) << "Chromatic-Eigen augmentations only work with 3-channel input";
             ChromaticEigenAugmentation_cpu(
-               topcount/topchannels, num,
+               num,
                topchannels, topheight, topwidth, top_data, top_data, cpu_chromatics_eigen, cpu_chromatic_eigen_space, aug_.max_multiplier());
         }
 
         if (has_chromatic_augmentation) {
             CHECK_EQ(bottomchannels, 3) << "Chromatic augmentations only work with 3-channel input";
             ColorContrastAugmentation_cpu(
-               topcount/topchannels, num,
+               num,
                topchannels, topheight, topwidth, top_data, top_data, cpu_chromatics, aug_.max_multiplier());
         }
 
         if (has_effect_augmentation)         {
             CHECK_EQ(bottomchannels, 3) << "Effect augmentations only work with 3-channel input";
             ApplyEffects_cpu(
-                  topcount, num,
+                  num,
                   topcount, bottomchannels, topheight, topwidth, top_data,
                   cpu_effects, aug_.max_multiplier()
             );
@@ -766,7 +766,7 @@ void DataAugmentationLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& botto
             }
         }
     } else {
-      caffe_copy(bottom[0]->count() * sizeof(Dtype), bottom_data, top_data);
+      caffe_copy(bottom[0]->count(), bottom_data, top_data);
     }
 
     // Mean subtraction stuff
