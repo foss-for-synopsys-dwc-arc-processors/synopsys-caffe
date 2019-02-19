@@ -264,11 +264,10 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(const int num, const 
                             const Dtype* src_data, const int src_count, const int dest_height, const int dest_width, Dtype* dest_data,
                             const typename AugmentationLayerBase<Dtype>::tTransMat *transMats)
 {
-	   for (int n = 0; n < num; ++n) {
-		 for (int c = 0; c < channels; ++c) {
-		   int cn = c*n;
-	       for (int y = 0; y < dest_height; ++y) {
-		     for (int x = 0; x < dest_width; ++x) {
+	for (int cn = 0; cn < num*channels; ++cn) {
+	  int n = cn / channels;
+	  for (int y = 0; y < dest_height; ++y) {
+		for (int x = 0; x < dest_width; ++x) {
 
         //int x  = index % dest_width; //w-pos
         //int y  = (index / dest_width) % dest_height; //h-pos
@@ -309,12 +308,11 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(const int num, const 
                 + (  xdist)*(1-ydist)*sampleTR;
 
         // write sample to destination
-        int index = ((n*channels + c)*dest_height+ y)*dest_width + x;
+        int index = (cn*dest_height+ y)*dest_width + x;
         dest_data[index] = sample;
     }
    }
   }
- }
 }
 
 template <typename Dtype>
