@@ -478,17 +478,18 @@ void DataAugmentationLayer<Dtype>::ApplyEffects_cpu(const int num,
                               const typename AugmentationLayerBase<Dtype>::tEffectCoeffs *effects,
                               const float max_multiplier)
 {
-	   for (int n = 0; n < num; ++n) {
-		 for (int c = 0; c < channels; ++c) {
-	       for (int y = 0; y < height; ++y) {
-		     for (int x = 0; x < width; ++x) {
+	   for (int cn = 0; cn < num*channels; ++cn) {
+		 int n = cn / channels;
+	     for (int y = 0; y < height; ++y) {
+		   for (int x = 0; x < width; ++x) {
 
         //int x  = index % width; //w-pos
         //int y  = (index / width) % height; //h-pos
         //int cn = index / width / height; // channel*num
         //int n = cn / channels; //num
+
         //int c  = cn % channels; // channel
-		int index = ((n*channels + c)*height+ y)*width + x;
+		int index = (cn*height+ y)*width + x;
         float sample=data[index];
 
         if((x-width/2)*effects[n].shadow_nx+(y-height/2)*effects[n].shadow_ny-effects[n].shadow_distance>0)
@@ -498,7 +499,6 @@ void DataAugmentationLayer<Dtype>::ApplyEffects_cpu(const int num,
 
         data[index] = clamp(sample, 0.f, max_multiplier);
     }
-   }
    }
   }
 }
