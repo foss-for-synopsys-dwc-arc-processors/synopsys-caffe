@@ -266,9 +266,10 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(const int num, const 
 {
 	   for (int n = 0; n < num; ++n) {
 		 for (int c = 0; c < channels; ++c) {
+		   int cn = c*n;
 	       for (int y = 0; y < dest_height; ++y) {
 		     for (int x = 0; x < dest_width; ++x) {
-		    	 int cn = c*n;
+
         //int x  = index % dest_width; //w-pos
         //int y  = (index / dest_width) % dest_height; //h-pos
         //int cn = index / dest_width / dest_height; // channel*num
@@ -308,7 +309,7 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(const int num, const 
                 + (  xdist)*(1-ydist)*sampleTR;
 
         // write sample to destination
-        int index = ((n*channels + c)*height+ y)*width + x;
+        int index = ((n*channels + c)*dest_height+ y)*dest_width + x;
         dest_data[index] = sample;
     }
    }
