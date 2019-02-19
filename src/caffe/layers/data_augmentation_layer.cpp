@@ -182,11 +182,7 @@ void DataAugmentationLayer<Dtype>::adjust_blobs(vector<Blob<Dtype>* > blobs)
       {
              // If using RGB mean, copy only RGB values (blob 2)
              Blob<Dtype> tmp; tmp.CopyFrom(*blobs[2], false,true);
-#ifndef CPU_ONLY
-             caffe_gpu_memcpy(this->blobs_[2]->count()*sizeof(float), tmp.mutable_gpu_data(), this->blobs_[2]->mutable_gpu_data());
-#else
              caffe_copy(this->blobs_[2]->count()*sizeof(float), tmp.mutable_cpu_data(), this->blobs_[2]->mutable_cpu_data());
-#endif
              Dtype* data_mean_per_channel_cpu = this->blobs_[2]->mutable_cpu_data();
              for(int i=0; i<this->blobs_[2]->count(); i++)
                  LOG(INFO) << "recovered mean value " << data_mean_per_channel_cpu[i];
@@ -214,55 +210,6 @@ void DataAugmentationLayer<Dtype>::adjust_blobs(vector<Blob<Dtype>* > blobs)
       LOG(INFO) << "Data augmentation layer: no blobs to copy";
 }
 
-inline double atomicAdd(double *address, double val) {
-  unsigned long long int* address_as_ull = (unsigned long long int*)address;
-  unsigned long long int old = *address_as_ull, assumed;
-  if (val==0.0)
-    //TODO
-	return double(old);
-	//return __longlong_as_double(old);
-  do {
-    assumed = old;
-    //TODO
-    old = val + assumed;
-    //old = atomicCAS(address_as_ull, assumed, __double_as_longlong(val +__longlong_as_double(assumed)));
-  } while (assumed != old);
-  //TODO
-  return double(old);
-  //return __longlong_as_double(old);
-}
-
-inline float fatomicMin(float *addr, float value)
-{
-    float old = *addr, assumed;
-
-    if(old <= value) return old;
-
-    do {
-        assumed = old;
-        //TODO
-        old = std::min(assumed, value);
-        //old = atomicCAS((unsigned int*)addr, __float_as_int(assumed), __float_as_int(value));
-    } while(old!=assumed);
-
-    return float(old);
-}
-
-inline float fatomicMax(float *addr, float value)
-{
-    float old = *addr, assumed;
-
-    if(old >= value) return old;
-
-    do {
-        assumed = old;
-        //TODO
-        old = std::max(assumed, value);
-        //old = atomicCAS((unsigned int*)addr, __float_as_int(assumed), __float_as_int(value));
-    } while(old!=assumed);
-
-    return float(old);
-}
 template <typename Dtype>
 void DataAugmentationLayer<Dtype>::ComputeChromaticEigenspace_cpu( const int nthreads, const int num,
                                             const int channels, const int height, const int width,
@@ -300,12 +247,10 @@ void DataAugmentationLayer<Dtype>::ComputeChromaticEigenspace_cpu( const int nth
 	            mean_rgb[c] = mean_rgb[c] + rgb[c]/width/height;
 	        }
 
-	        //TODO
-	        //for (int c=0; c<channels; c++) atomicAdd(&chromatic_eigenspace->mean_rgb[c],mean_rgb[c]);
-	        for (int c=0; c<channels; c++) fatomicMax(&chromatic_eigenspace->max_abs_eig[c],max_abs_eig[c]);
-	        for (int c=0; c<channels; c++) fatomicMax(&chromatic_eigenspace->max_rgb[c],max_rgb[c]);
-	        for (int c=0; c<channels; c++) fatomicMin(&chromatic_eigenspace->min_rgb[c],min_rgb[c]);
-
+	        for (int c=0; c<channels; c++) chromatic_eigenspace->mean_rgb[c] += mean_rgb[c];
+	        for (int c=0; c<channels; c++) chromatic_eigenspace->max_abs_eig[c] = std::max(chromatic_eigenspace->max_abs_eig[c], max_abs_eig[c]);
+	        for (int c=0; c<channels; c++) chromatic_eigenspace->max_rgb[c] = std::max(chromatic_eigenspace->max_rgb[c], max_rgb[c]);
+	        for (int c=0; c<channels; c++) chromatic_eigenspace->min_rgb[c] = std::min(chromatic_eigenspace->min_rgb[c], min_rgb[c]);
 
    	    }
    	  }
@@ -330,10 +275,11 @@ void DataAugmentationLayer<Dtype>::SpatialAugmentation_cpu(   const int nthreads
 
 //         int c = cn % channels; // channel
 
-        // === Warping:
+        /* === Warping:
         //transMat:
-        // / 0 2 4 \
-        // \ 1 3 5 /
+        //   / 0 2 4 \
+        //   \ 1 3 5 /
+		*/
 
         float xpos = x * transMats[n].t0 + y * transMats[n].t2 + transMats[n].t4;
         float ypos = x * transMats[n].t1 + y * transMats[n].t3 + transMats[n].t5;
@@ -428,8 +374,7 @@ void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int nthr
         s1 = s;
         if (s > 1e-2f) {
                 s1 = pow(s1, (Dtype)chromatic[n].pow_withmean1);
-                //TODO
-                //s1 = max(s1 + chromatic[n].add_withmean1, 0.f);
+                s1 = std::max(s1 + chromatic[n].add_withmean1, Dtype(0));
                 s1 = s1 * chromatic[n].mult_withmean1;
         }
         if(chromatic[n].col_angle!=0)
@@ -454,9 +399,8 @@ void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int nthr
         }
         if (eigen->max_l > 1e-2f) {
             l = sqrt(eig[0]*eig[0] + eig[1]*eig[1] + eig[2]*eig[2]);
-            l1 = pow(l1, (Dtype)chromatic[n].lmult_pow);
-            //TODO
-            //l1 = _max(l1 + chromatic[n].lmult_add, 0.f);
+            l1 = pow(l1, Dtype(chromatic[n].lmult_pow));
+            l1 = std::max(l1 + chromatic[n].lmult_add, Dtype(0));
             l1 = l1 * chromatic[n].lmult_mult;
             l1 = l1 * eigen->max_l;
             if (l > 1e-2f)
@@ -468,9 +412,8 @@ void DataAugmentationLayer<Dtype>::ChromaticEigenAugmentation_cpu(const int nthr
         }
         for (int c=0; c<channels; c++) {
             rgb[c] = eigen->eigvec[c] * eig[0] + eigen->eigvec[3+c] * eig[1] + eigen->eigvec[6+c] * eig[2];
-            //TODO
-            //rgb[c] = _min(rgb[c],max_multiplier);
-            //rgb[c] = _max(rgb[c],0);
+            rgb[c] = std::min(rgb[c],Dtype(max_multiplier));
+            rgb[c] = std::max(rgb[c],Dtype(0));
             dest_data[((n*channels + c)*width + x)*height + y] = rgb[c];
         }
       }
