@@ -6,6 +6,7 @@ New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
 ----------------------------------------------------------
+atan_layer  
 depthtospace_layer  
 resize_nearest_neighbor_layer  
 DIV and MIN in EltwiseOp  
