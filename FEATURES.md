@@ -8,6 +8,7 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 ----------------------------------------------------------
 atan_layer  
 depthtospace_layer  
+gather_layer  
 resize_nearest_neighbor_layer  
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)  
