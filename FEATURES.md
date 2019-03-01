@@ -24,7 +24,7 @@ reshape.py (customized Python layer, implementation of tf.reshape with two input
 shape.py (customized Python layer, implementation of tf.shape)  
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 stack.py (customized Python layer, implementation of tf.stack)  
-statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum)  
+statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum, tf.reduce_max)  
 stridedslice.py (deprecated, customized Python layer)  
   
 evprune (Network Pruning Tool) related  
