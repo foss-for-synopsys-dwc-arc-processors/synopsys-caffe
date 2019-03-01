@@ -17,7 +17,7 @@ pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6 in ReLUParameter  
-eltwise.py (deprecated, customized Python layer)  
+eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py  (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
 reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
