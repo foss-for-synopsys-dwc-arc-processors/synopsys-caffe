@@ -45,6 +45,12 @@ class Eltwise(caffe.Layer):
         elif self.operation == 2:
             top[0].data[...] = np.maximum(np.array(bottom[0].data),
                                           np.array(bottom[1].data))
+        elif self.operation == 3:
+            top[0].data[...] = np.divide(np.array(bottom[0].data),
+                                      np.array(bottom[1].data))
+        elif self.operation == 4:
+            top[0].data[...] = np.minimum(np.array(bottom[0].data),
+                                          np.array(bottom[1].data))
 
     def backward(self, top, propagate_down, bottom):
         pass
