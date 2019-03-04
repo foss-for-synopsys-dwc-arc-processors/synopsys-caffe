@@ -2820,7 +2820,7 @@ message ResizeNearestNeighborParameter {
 }
 
 message GatherParameter{
-	repeated uint32 indices = 1;
-	repeated uint32 shape = 2;
-	optional int32 axis = 3[default = 0];
+  repeated uint32 indices = 1;
+  repeated uint32 shape = 2;
+  optional int32 axis = 3[default = 0];
 }

@@ -8,8 +8,6 @@
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
-
-
 namespace caffe {
 /*
 * @brief Resize images to size using nearest neighbor interpolation. ////
