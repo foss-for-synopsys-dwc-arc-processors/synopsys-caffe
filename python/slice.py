@@ -95,7 +95,7 @@ class StridedSlice(caffe.Layer):
         if bottom[0].count == 0:
             raise Exception("Input must not be empty!")
         ndim = bottom[0].data.ndim
-        num = [0]*ndim
+        num = list(np.zeros(ndim, dtype=int))
         for i in range(ndim):
             if self.strides[i] == 0:
                 raise Exception("Strides should never be equal to 0!")
@@ -108,11 +108,12 @@ class StridedSlice(caffe.Layer):
     def forward(self, bottom, top):
         idx = tuple(slice(s[0], s[1], s[2])
                     for s in zip(self.begin, self.end, self.strides))
-        # if self.shrink_axis_mask:
-        #     top[0].data[...] = np.squeeze(
-        #         bottom[0].data[idx], axis=tuple(self.shrink_axis))
-        # else:
-        top[0].data[...] = bottom[0].data[idx]
+        if self.shrink_axis_mask:
+            top[0].data[...] = np.squeeze(
+                bottom[0].data[idx], axis=tuple(self.shrink_axis))
+        else:
+            top[0].data[...] = bottom[0].data[idx]
+
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
