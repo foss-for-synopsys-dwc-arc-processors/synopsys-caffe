@@ -52,6 +52,11 @@ void InterpLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     width_out_ = (width_in_eff_ - 1) / shrink_factor + 1;
     height_out_ = height_out_ + (height_out_ - 1) * (zoom_factor - 1);
     width_out_ = width_out_ + (width_out_ - 1) * (zoom_factor - 1);
+  } else if (interp_param.has_full_zoom_factor()) { //CUSTOMIZATION
+	const int full_zoom_factor = interp_param.full_zoom_factor();
+	CHECK_GE(full_zoom_factor, 1) << "Full zoom factor must be positive";
+	height_out_ = height_in_eff_ * full_zoom_factor;
+	width_out_ = width_in_eff_ * full_zoom_factor;
   } else {
     LOG(FATAL);
   }

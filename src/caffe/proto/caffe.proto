@@ -1801,6 +1801,7 @@ message InterpParameter {
   optional int32 shrink_factor = 4 [default = 1]; // shrink factor
   optional int32 pad_beg = 5 [default = 0]; // padding at begin of input
   optional int32 pad_end = 6 [default = 0]; // padding at end of input
+  optional int32 full_zoom_factor = 7 [default = 1]; // CUSTOMIZATION, zoom factor
 }
 
 // Message that stores parameters used by LogLayer
