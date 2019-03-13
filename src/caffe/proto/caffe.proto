@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 212 (last added: gather_param)
+// LayerParameter next available layer-specific ID: 213 (last added: proposal_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -561,6 +561,7 @@ message LayerParameter {
   optional PowerParameter power_param = 122;
   optional PReLUParameter prelu_param = 131;
   optional PriorBoxParameter prior_box_param = 203;
+  optional ProposalParameter proposal_param = 212;
   optional PythonParameter python_param = 130;
   optional RecurrentParameter recurrent_param = 146;
   optional ReductionParameter reduction_param = 136;
@@ -2061,6 +2062,14 @@ message PriorBoxParameter {
 
   // Offset to the top left corner of each cell.
   optional float offset = 13 [default = 0.5];
+}
+
+message ProposalParameter {
+  optional int32 feat_stride = 1 [default = 16];
+  optional int32 anchor_base_size = 2 [default = 16];
+  optional int32 anchor_scale = 3 [default = 3];
+  optional int32 anchor_ratio = 4 [default = 3];
+  optional int32 max_rois = 5 [default = 300];
 }
 
 message PythonParameter {
