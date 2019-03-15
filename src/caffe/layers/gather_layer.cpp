@@ -71,7 +71,7 @@ template <typename Dtype>
 void GatherLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	const vector<Blob<Dtype>*>& top) {
   vector<int> bottom_shape = bottom[0]->shape();
-  const Dtype* params = bottom[0]->cpu_data();
+  //const Dtype* params = bottom[0]->cpu_data();
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int bottom_gather_axis = bottom[0]->shape(gather_axis_);

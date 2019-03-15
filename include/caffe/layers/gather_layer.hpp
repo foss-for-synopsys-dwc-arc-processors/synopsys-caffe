@@ -42,7 +42,7 @@ public:
  //virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
  //    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {}
 
-  int count_;
+  //int count_;
   int num_gather_;      
   int gather_size_;     
   int gather_axis_;     
