@@ -75,41 +75,37 @@ void TopkGatherLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   indices_.clear();
   const Dtype* bottom_data;
-  int dim, axis_dist, num;
-  if (bottom.size() > 1){  //bottom[1] provides the topk indices
-	bottom_data = bottom[1]->cpu_data();
-	if (has_axis_) {
-	  dim = bottom[1]->shape(axis_);
-	  axis_dist = bottom[1]->count(axis_) / dim;
-	} else {
-	  dim = bottom[1]->shape(0);
-	  axis_dist = 1;
-	}
-	num = bottom[1]->count() / dim;
+
+  if (bottom.size() > 1){  //bottom[1] provides the topk indices, can directly take and use
+	  bottom_data = bottom[1]->cpu_data();
+	  for (int j = 0; j < top_k_; ++j) {
+		  indices_.push_back(int(bottom_data[j]));
+	  }
   }
-  else{ //bottom[0] provides the topk indices
-	bottom_data = bottom[0]->cpu_data();
-	if (has_axis_) {
-	  dim = bottom[0]->shape(axis_);
-	  axis_dist = bottom[0]->count(axis_) / dim;
-	} else {
-	  dim = bottom[0]->shape(0);
-	  axis_dist = 1;
-	}
-	num = bottom[0]->count() / dim;
-  }
-  std::vector<std::pair<Dtype, int> > bottom_data_vector(dim);
-  for (int i = 0; i < num; ++i) {
-    for (int j = 0; j < dim; ++j) {
-      bottom_data_vector[j] = std::make_pair(
-        bottom_data[(i / axis_dist * dim + j) * axis_dist + i % axis_dist], j);
-    }
-    std::partial_sort(
-        bottom_data_vector.begin(), bottom_data_vector.begin() + top_k_,
-        bottom_data_vector.end(), std::greater<std::pair<Dtype, int> >());
-    for (int j = 0; j < top_k_; ++j) {
-    	indices_.push_back(bottom_data_vector[j].second);
-    }
+  else { //bottom[0] provides the topk indices, need sort and select
+	  int dim, axis_dist, num;
+	  bottom_data = bottom[0]->cpu_data();
+	  if (has_axis_) {
+		  dim = bottom[0]->shape(axis_);
+		  axis_dist = bottom[0]->count(axis_) / dim;
+	  } else {
+		  dim = bottom[0]->shape(0);
+		  axis_dist = 1;
+	  }
+	  num = bottom[0]->count() / dim;
+	  std::vector<std::pair<Dtype, int> > bottom_data_vector(dim);
+	  for (int i = 0; i < num; ++i) {
+		  for (int j = 0; j < dim; ++j) {
+			  bottom_data_vector[j] = std::make_pair(
+					  bottom_data[(i / axis_dist * dim + j) * axis_dist + i % axis_dist], j);
+		  }
+		  std::partial_sort(
+				  bottom_data_vector.begin(), bottom_data_vector.begin() + top_k_,
+				  bottom_data_vector.end(), std::greater<std::pair<Dtype, int> >());
+		  for (int j = 0; j < top_k_; ++j) {
+			  indices_.push_back(bottom_data_vector[j].second);
+		  }
+	  }
   }
 
   vector<int> bottom_shape = bottom[0]->shape();
