@@ -21,7 +21,9 @@ class TopkGatherLayer : public Layer<Dtype> {
       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "TopkGather"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline int MinBottomBlobs() const { return 1; }
+  virtual inline int MaxBottomBlobs() const { return 2; }
+  //virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
@@ -38,7 +40,7 @@ class TopkGatherLayer : public Layer<Dtype> {
   bool has_axis_;
   int axis_;
 
-  Blob<Dtype> topk_indices_;
+  vector<int> indices_;
 
   int num_gather_;
   int gather_size_;

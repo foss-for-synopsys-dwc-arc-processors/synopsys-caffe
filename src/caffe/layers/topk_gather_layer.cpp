@@ -31,25 +31,12 @@ void TopkGatherLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void TopkGatherLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  int num_top_axes = bottom[0]->num_axes();
-  if ( num_top_axes < 3 ) num_top_axes = 3;
-  std::vector<int> shape(num_top_axes, 1);
-  if (has_axis_) {
-    // Produces max_ind or max_val per axis
-    shape = bottom[0]->shape();
-    shape[axis_] = top_k_;
-  } else {
-    shape[0] = bottom[0]->shape(0);
-    // Produces max_ind
-    shape[2] = top_k_;
-  }
-  topk_indices_.Reshape(shape);
-
   const int num_axes = bottom[0]->num_axes();
   CHECK_GE(num_axes, 1) << "the dimension of input should be larger than or equal to 1";
   const TopkGatherParameter& topk_gather_param = this->layer_param_.topk_gather_param();
   gather_axis_ = bottom[0]->CanonicalAxisIndex(topk_gather_param.axis());
-  indices_shape_ = topk_indices_.shape();
+  indices_shape_.clear();
+  indices_shape_.push_back(top_k_); //only 1 dimension for topk selection
 
   if (indices_shape_.size() == 1 && indices_shape_[0] == 0) {
  	indices_dim_ = 0;
@@ -61,6 +48,7 @@ void TopkGatherLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 	  count *= indices_shape_[i];
 	}
   }
+
   // Initialize with the first blob
   // The result shape is params.shape[-1:axis] + indices.shape +
   // params.shape[axis + 0:].
@@ -85,18 +73,31 @@ void TopkGatherLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void TopkGatherLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  const Dtype* bottom_data = bottom[0]->cpu_data();
-  Dtype* topk_indices_data = topk_indices_.mutable_cpu_data();
-  int dim, axis_dist;
-  if (has_axis_) {
-    dim = bottom[0]->shape(axis_);
-    // Distance between values of axis in blob
-    axis_dist = bottom[0]->count(axis_) / dim;
-  } else {
-    dim = bottom[0]->count(1);
-    axis_dist = 1;
+  indices_.clear();
+  const Dtype* bottom_data;
+  int dim, axis_dist, num;
+  if (bottom.size() > 1){  //bottom[1] provides the topk indices
+	bottom_data = bottom[1]->cpu_data();
+	if (has_axis_) {
+	  dim = bottom[1]->shape(axis_);
+	  axis_dist = bottom[1]->count(axis_) / dim;
+	} else {
+	  dim = bottom[1]->shape(0);
+	  axis_dist = 1;
+	}
+	num = bottom[1]->count() / dim;
   }
-  int num = bottom[0]->count() / dim;
+  else{ //bottom[0] provides the topk indices
+	bottom_data = bottom[0]->cpu_data();
+	if (has_axis_) {
+	  dim = bottom[0]->shape(axis_);
+	  axis_dist = bottom[0]->count(axis_) / dim;
+	} else {
+	  dim = bottom[0]->shape(0);
+	  axis_dist = 1;
+	}
+	num = bottom[0]->count() / dim;
+  }
   std::vector<std::pair<Dtype, int> > bottom_data_vector(dim);
   for (int i = 0; i < num; ++i) {
     for (int j = 0; j < dim; ++j) {
@@ -107,23 +108,20 @@ void TopkGatherLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         bottom_data_vector.begin(), bottom_data_vector.begin() + top_k_,
         bottom_data_vector.end(), std::greater<std::pair<Dtype, int> >());
     for (int j = 0; j < top_k_; ++j) {
-        // Produces max_ind per axis
-    	topk_indices_data[(i / axis_dist * top_k_ + j) * axis_dist + i % axis_dist]
-          = bottom_data_vector[j].second;
+    	indices_.push_back(bottom_data_vector[j].second);
     }
   }
 
   vector<int> bottom_shape = bottom[0]->shape();
   const Dtype* bottom_data_c = bottom[0]->cpu_data(); //reset pointer
   Dtype* top_data = top[0]->mutable_cpu_data();
-  topk_indices_data = topk_indices_.mutable_cpu_data();
   const int bottom_gather_axis = bottom[0]->shape(gather_axis_);
   int num_c = 0;
   for (int m = 0; m < num_gather_; ++m) {
 	for (int n = 0; n < top_k_; ++n) {
 	  const int top_offset = num_c * gather_size_;
       const int bottom_offset =
-		  (m * bottom_gather_axis + topk_indices_data[n]) * gather_size_;
+		  (m * bottom_gather_axis + indices_[n]) * gather_size_;
       caffe_copy(gather_size_,
 		  bottom_data_c + bottom_offset, top_data + top_offset);
       num_c += 1;
