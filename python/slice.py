@@ -103,6 +103,7 @@ class StridedSlice(caffe.Layer):
                 num[i] = abs(self.end[i]-self.begin[i])/abs(self.strides[i])
         for i in reversed(self.shrink_axis):
             num.pop(i)
+        num = [int(i) for i in num]
         top[0].reshape(*num)
 
     def forward(self, bottom, top):
@@ -113,7 +114,6 @@ class StridedSlice(caffe.Layer):
                 bottom[0].data[idx], axis=tuple(self.shrink_axis))
         else:
             top[0].data[...] = bottom[0].data[idx]
-
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):

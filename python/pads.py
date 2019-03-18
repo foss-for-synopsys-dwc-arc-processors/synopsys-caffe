@@ -20,6 +20,7 @@ class Pad(caffe.Layer):
             raise Exception("Input must not be empty!")
         shape = bottom[0].data.shape
         shape += np.sum(self.paddings, axis=1)
+        shape = [int(i) for i in shape]
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
@@ -53,6 +54,7 @@ class PadV2(caffe.Layer):
             raise Exception("Input must not be empty!")
         shape = bottom[0].data.shape
         shape += np.sum(self.paddings, axis=1)
+        shape = [int(i) for i in shape]
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
@@ -90,6 +92,7 @@ class MirrorPad(caffe.Layer):
             raise Exception("Input must not be empty!")
         shape = bottom[0].data.shape
         shape += np.sum(self.paddings, axis=1)
+        shape = [int(i) for i in shape]
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
