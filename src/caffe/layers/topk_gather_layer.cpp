@@ -77,9 +77,13 @@ void TopkGatherLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* bottom_data;
 
   if (bottom.size() > 1){  //bottom[1] provides the topk indices, can directly take and use
+	  CHECK_EQ(1, bottom[1]->num_axes()) <<
+	      "Bottom[1] dimension must be equal to 1.";
+	  CHECK_LE(top_k_, bottom[1]->shape(axis_)) <<
+	      "top_k must be less than or equal to the dimension of the axis.";
 	  bottom_data = bottom[1]->cpu_data();
 	  for (int j = 0; j < top_k_; ++j) {
-		  indices_.push_back(int(bottom_data[j]));
+		  indices_.push_back(static_cast<int>(bottom_data[j]));
 	  }
   }
   else { //bottom[0] provides the topk indices, need sort and select
