@@ -16,7 +16,8 @@ class Eltwise(caffe.Layer):
             raise Exception("Only output one Tensor at a time!")
         d = eval(self.param_str)
         self.operation = d["operation"]
-        self.coeff = d["coeff"]
+        if self.operation == 1: # only SUM supports coeff
+            self.coeff = d["coeff"]
 
     def reshape(self, bottom, top):
         # check input dimensions
