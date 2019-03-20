@@ -10,13 +10,14 @@ atan_layer
 depthtospace_layer  
 gather_layer  
 resize_nearest_neighbor_layer  
+topk_gather_layer  
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
-relu6 in ReLUParameter  
+relu6 and maximum in ReLUParameter  
 eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py  (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
@@ -121,6 +122,7 @@ video_data_layer
   
 Faster RCNN related
 -------------------
+proposal_layer  
 roi_pooling_layer  
 smooth_L1_loss_layer (sigma and abssum in SmoothL1LossParameter)  
 scale_train in DropoutParameter  

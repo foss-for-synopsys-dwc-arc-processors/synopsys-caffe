@@ -7,8 +7,6 @@
 #include "caffe/layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
-#include "caffe/layers/neuron_layer.hpp"
-
 namespace caffe {
 
 /**
@@ -16,7 +14,7 @@ namespace caffe {
  *        The simple max is fast to compute, and the function does not saturate.
  */
 template <typename Dtype>
-class ReLULayer : public NeuronLayer<Dtype> {
+class ReLULayer : public Layer<Dtype> {
  public:
   /**
    * @param param provides ReLUParameter relu_param,
@@ -25,9 +23,15 @@ class ReLULayer : public NeuronLayer<Dtype> {
    *     the value @f$ \nu @f$ by which negative values are multiplied.
    */
   explicit ReLULayer(const LayerParameter& param)
-      : NeuronLayer<Dtype>(param) {}
+      : Layer<Dtype>(param) {}
 
   virtual inline const char* type() const { return "ReLU"; }
+  virtual inline int MinBottomBlobs() const { return 1; }
+  virtual inline int MaxBottomBlobs() const { return 2; } //CUSTOMIZATION
+  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
 
  protected:
   /**
