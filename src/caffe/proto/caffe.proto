@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 215 (last added: nms_gather_param)
+// LayerParameter next available layer-specific ID: 216 (last added: nms_gather_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -615,7 +615,8 @@ message LayerParameter {
   optional ResizeNearestNeighborParameter resize_nearest_neighbor_param = 210;
   optional GatherParameter gather_param = 211;
   optional TopkGatherParameter topk_gather_param = 213;
-  optional NMSGatherParameter nms_gather_param = 214;
+  optional NMSParameter nms_param = 214;
+  optional NMSGatherParameter nms_gather_param = 215;
 }
 
 message AccumParameter {
@@ -2842,6 +2843,12 @@ message GatherParameter{
 message TopkGatherParameter {
   optional uint32 top_k = 1 [default = 1];
   optional int32 axis = 2 [default = 0];
+}
+
+message NMSParameter {
+  optional uint32 top_k = 1 [default = 1];
+  optional int32 axis = 2 [default = 0];
+  optional float iou_threshold = 3 [default = 0.7];
 }
 
 message NMSGatherParameter {

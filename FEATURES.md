@@ -9,6 +9,8 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 atan_layer  
 depthtospace_layer  
 gather_layer  
+nms_gather_layer  
+nms_layer  
 resize_nearest_neighbor_layer  
 topk_gather_layer  
 DIV and MIN in EltwiseOp  
