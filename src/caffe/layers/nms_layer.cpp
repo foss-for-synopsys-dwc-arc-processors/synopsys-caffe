@@ -38,25 +38,39 @@ void NMSLayer<Dtype>::apply_nms(vector<vector<Dtype> > &pred_boxes, vector<int> 
 {
 	for (int i = 0; i < indices.size()-1; i++)
 	{
-		float s1 = (pred_boxes[i][2] - pred_boxes[i][0] + 1) *(pred_boxes[i][3] - pred_boxes[i][1] + 1);
+		Dtype ymin_i = std::min<Dtype>(pred_boxes[i][0], pred_boxes[i][2]);
+		Dtype xmin_i = std::min<Dtype>(pred_boxes[i][1], pred_boxes[i][3]);
+		Dtype ymax_i = std::max<Dtype>(pred_boxes[i][0], pred_boxes[i][2]);
+		Dtype xmax_i = std::max<Dtype>(pred_boxes[i][1], pred_boxes[i][3]);
+		Dtype area_i = (ymax_i - ymin_i) * (xmax_i - xmin_i);
+
 		for (int j = i + 1; j < indices.size(); j++)
 		{
-			float s2 = (pred_boxes[j][2] - pred_boxes[j][0] + 1) *(pred_boxes[j][3] - pred_boxes[j][1] + 1);
-			// Bounding boxes are supplied as [y1, x1, y2, x2] in TensorFlow
-			float y1 = std::max(pred_boxes[i][0], pred_boxes[j][0]);
-			float x1 = std::max(pred_boxes[i][1], pred_boxes[j][1]);
-			float y2 = std::min(pred_boxes[i][2], pred_boxes[j][2]);
-			float x2 = std::min(pred_boxes[i][3], pred_boxes[j][3]);
+			Dtype ymin_j = std::min<Dtype>(pred_boxes[j][0], pred_boxes[j][2]);
+			Dtype xmin_j = std::min<Dtype>(pred_boxes[j][1], pred_boxes[j][3]);
+			Dtype ymax_j = std::max<Dtype>(pred_boxes[j][0], pred_boxes[j][2]);
+			Dtype xmax_j = std::max<Dtype>(pred_boxes[j][1], pred_boxes[j][3]);
+			Dtype area_j = (ymax_j - ymin_j) * (xmax_j - xmin_j);
 
-			float width = x2 - x1;
-			float height = y2 - y1;
-			if (width > 0 && height > 0)
+			Dtype intersection_ymin = std::max<Dtype>(ymin_i, ymin_j);
+			Dtype intersection_xmin = std::max<Dtype>(xmin_i, xmin_j);
+			Dtype intersection_ymax = std::min<Dtype>(ymax_i, ymax_j);
+			Dtype intersection_xmax = std::min<Dtype>(xmax_i, xmax_j);
+
+			Dtype intersection_area =
+			      std::max<Dtype>(intersection_ymax - intersection_ymin, Dtype(0)) *
+			      std::max<Dtype>(intersection_xmax - intersection_xmin, Dtype(0));
+
+			//LOG(INFO)<<"i:"<<i<<" j:"<<j<<" area1:"<<area_i<<" area2:"<<area_j<<" intersection_area:"<<intersection_area;
+			if (area_i > Dtype(0) && area_j > Dtype(0))
 			{
 				// intersection-over-union (IOU) overlap
-				float IOU = width * height / (s1 + s2 - width * height);
+				Dtype IOU = intersection_area / (area_i + area_j - intersection_area);
+				//LOG(INFO)<<" iou:"<<IOU;
 				if (IOU > iou_threshold)
 				{
 					indices.erase(indices.begin() + j);
+					pred_boxes.erase(pred_boxes.begin() + j); //must be consistent with indices
 					j--; //erase make the indices count decrease
 				}
 			}
@@ -68,11 +82,7 @@ void NMSLayer<Dtype>::apply_nms(vector<vector<Dtype> > &pred_boxes, vector<int> 
 template <typename Dtype>
 void NMSLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  indices_.clear();
   const Dtype* bottom_data = bottom[0]->cpu_data();
-  for (int j = 0; j < bottom[0]->shape(axis_); ++j) {
-	  indices_.push_back(j); //initialize indices_
-  }
   vector<vector<Dtype> > pred_boxes; //reorder bottom[0] to [num, 4] format
   if (axis_ == 0) {
 	for (int i = 0; i < bottom[0]->shape(0); ++i) {
@@ -91,6 +101,10 @@ void NMSLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       pred_boxes.push_back(tmp_bbox);
 	}
   }
+  vector<int> indices_(bottom[0]->shape(axis_));
+  for(int i = 0; i < bottom[0]->shape(axis_); i++)
+	  indices_[i] = i;
+
   apply_nms(pred_boxes, indices_, iou_threshold_);
 
   Dtype* top_data = top[0]->mutable_cpu_data();

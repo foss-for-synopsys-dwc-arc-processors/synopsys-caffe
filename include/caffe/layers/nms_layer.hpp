@@ -42,8 +42,6 @@ class NMSLayer : public Layer<Dtype> {
   bool has_axis_;
   int axis_;
   float iou_threshold_;
-
-  vector<int> indices_;
 };
 
 }  // namespace caffe
