@@ -13,23 +13,15 @@ void NMSGatherLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const NMSGatherParameter& nms_gather_param = this->layer_param_.nms_gather_param();
   top_k_ = nms_gather_param.top_k();
   iou_threshold_ =  nms_gather_param.iou_threshold();
-  has_axis_ = nms_gather_param.has_axis();
-  axis_ = nms_gather_param.axis();
+  axis_ = bottom[0]->CanonicalAxisIndex(nms_gather_param.axis());
   CHECK_EQ(bottom[0]->num_axes(), 2) << "bottom[0] must have 2 axes.";
   CHECK_EQ(bottom[0]->shape(1-axis_), 4) << "Coordinates axis must have shape 4.";
   CHECK_GE(top_k_, 1) << "top k must not be less than 1.";
-  if (has_axis_) {
-    axis_ = bottom[0]->CanonicalAxisIndex(nms_gather_param.axis());
-    CHECK_GE(axis_, 0) << "axis must not be less than 0.";
-    CHECK_LE(axis_, bottom[0]->num_axes()) <<
-      "axis must be less than or equal to the number of axis.";
-    CHECK_LE(top_k_, bottom[0]->shape(axis_))
-      << "top_k must be less than or equal to the dimension of the axis.";
-  } else {
-    CHECK_LE(top_k_, bottom[0]->count(1))
-      << "top_k must be less than or equal to"
-        " the dimension of the flattened bottom blob per instance.";
-  }
+  CHECK_GE(axis_, 0) << "axis must not be less than 0.";
+  CHECK_LE(axis_, bottom[0]->num_axes()) <<
+    "axis must be less than or equal to the number of axis.";
+  CHECK_LE(top_k_, bottom[0]->shape(axis_))
+    << "top_k must be less than or equal to the dimension of the axis.";
 }
 
 template <typename Dtype>
@@ -78,10 +70,10 @@ void NMSGatherLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void NMSGatherLayer<Dtype>::apply_nms(vector<vector<Dtype> > &pred_boxes, vector<int> &indices, float iou_threshold)
 {
-	for (int i = 0; i < pred_boxes.size()-1; i++)
+	for (int i = 0; i < indices.size()-1; i++)
 	{
 		float s1 = (pred_boxes[i][2] - pred_boxes[i][0] + 1) *(pred_boxes[i][3] - pred_boxes[i][1] + 1);
-		for (int j = i + 1; j < pred_boxes.size(); j++)
+		for (int j = i + 1; j < indices.size(); j++)
 		{
 			float s2 = (pred_boxes[j][2] - pred_boxes[j][0] + 1) *(pred_boxes[j][3] - pred_boxes[j][1] + 1);
 			// Bounding boxes are supplied as [y1, x1, y2, x2] in TensorFlow
@@ -99,7 +91,7 @@ void NMSGatherLayer<Dtype>::apply_nms(vector<vector<Dtype> > &pred_boxes, vector
 				if (IOU > iou_threshold)
 				{
 					indices.erase(indices.begin() + j);
-					j++;
+					j--; //erase make the indices count decrease
 				}
 			}
 		}
