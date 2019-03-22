@@ -39,7 +39,6 @@ class NMSGatherLayer : public Layer<Dtype> {
   }
 
   size_t top_k_;
-  bool has_axis_;
   int axis_;
   float iou_threshold_;
 

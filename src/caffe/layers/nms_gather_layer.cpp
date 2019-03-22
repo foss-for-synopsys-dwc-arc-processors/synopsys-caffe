@@ -95,12 +95,10 @@ void NMSGatherLayer<Dtype>::apply_nms(vector<vector<Dtype> > &pred_boxes, vector
 			      std::max<Dtype>(intersection_ymax - intersection_ymin, Dtype(0)) *
 			      std::max<Dtype>(intersection_xmax - intersection_xmin, Dtype(0));
 
-			//LOG(INFO)<<"i:"<<i<<" j:"<<j<<" area1:"<<area_i<<" area2:"<<area_j<<" intersection_area:"<<intersection_area;
 			if (area_i > Dtype(0) && area_j > Dtype(0))
 			{
 				// intersection-over-union (IOU) overlap
 				Dtype IOU = intersection_area / (area_i + area_j - intersection_area);
-				//LOG(INFO)<<" iou:"<<IOU;
 				if (IOU > iou_threshold)
 				{
 					indices.erase(indices.begin() + j);

@@ -103,7 +103,7 @@ void NMSLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   vector<int> indices_(bottom[0]->shape(axis_));
   for(int i = 0; i < bottom[0]->shape(axis_); i++)
-	  indices_[i] = i;
+	  indices_[i] = i; //initialize indices using ordered index num
 
   apply_nms(pred_boxes, indices_, iou_threshold_);
 
