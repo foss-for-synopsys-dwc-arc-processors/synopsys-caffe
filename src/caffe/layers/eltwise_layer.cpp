@@ -33,7 +33,10 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   //<--CUSTOMIZATION, for broadcasting
   const EltwiseParameter& param = this->layer_param_.eltwise_param();
-  axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
+  if(bottom.size() > 1)
+    axis_ = bottom[0]->CanonicalAxisIndex(param.axis());
+  else axis_ = 0;
+
   //CUSTOMIZATION-->
 }
 
