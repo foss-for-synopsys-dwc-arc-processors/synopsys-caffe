@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 217 (last added: gather_nd_param)
+// LayerParameter next available layer-specific ID: 218 (last added: lstm_unit_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -564,6 +564,7 @@ message LayerParameter {
   optional ProposalParameter proposal_param = 212;
   optional PythonParameter python_param = 130;
   optional RecurrentParameter recurrent_param = 146;
+  optional LSTMUnitParameter lstm_unit_param = 217;
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
   optional ReshapeParameter reshape_param = 133;
@@ -617,7 +618,7 @@ message LayerParameter {
   optional TopkGatherParameter topk_gather_param = 213;
   optional NMSParameter nms_param = 214;
   optional NMSGatherParameter nms_gather_param = 215;
-		optional GatherNdParameter gather_nd_param = 216;
+  optional GatherNdParameter gather_nd_param = 216;
 }
 
 message AccumParameter {
@@ -2106,6 +2107,21 @@ message RecurrentParameter {
   // blobs.  The number of additional bottom/top blobs required depends on the
   // recurrent architecture -- e.g., 1 for RNNs, 2 for LSTMs.
   optional bool expose_hidden = 5 [default = false];
+
+  // The bias added to forget gates, adapt from TensorFlow,
+  // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
+  // in TensorFlow, the default value is 1.0, 
+  // but in Caffe, we need to make it 0 to be backward compatible
+  optional float forget_bias = 6 [default = 0];
+}
+
+// Message that stores parameters used by LSTMUnitLayer
+message LSTMUnitParameter {
+  // The bias added to forget gates, adapt from TensorFlow,
+  // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
+  // in TensorFlow, the default value is 1.0, 
+  // but in Caffe, we need to make it 0 to be backward compatible
+  optional float forget_bias = 1 [default = 0];
 }
 
 // Message that stores parameters used by ReductionLayer
@@ -2860,5 +2876,5 @@ message NMSGatherParameter {
 
 message GatherNdParameter {
   repeated uint32 indices = 1;
-		repeated uint32 shape = 2;
+  repeated uint32 shape = 2;
 }

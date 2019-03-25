@@ -28,6 +28,9 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // If expose_hidden is set, we take as input and produce as output
   // the hidden state blobs at the first and last timesteps.
   expose_hidden_ = this->layer_param_.recurrent_param().expose_hidden();
+  
+  // Get bias value added to forget gates
+  forget_bias_ = this->layer_param_.recurrent_param().forget_bias();
 
   // Get (recurrent) input/output names.
   vector<string> output_names;

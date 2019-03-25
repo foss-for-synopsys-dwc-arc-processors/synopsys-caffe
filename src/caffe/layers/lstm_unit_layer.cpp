@@ -18,6 +18,14 @@ inline Dtype tanh(Dtype x) {
 }
 
 template <typename Dtype>
+void LSTMUnitLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
+  
+  // Get bias value added to forget gates
+  forget_bias_ = this->layer_param_.lstm_unit_param().forget_bias();
+}
+
+template <typename Dtype>
 void LSTMUnitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const int num_instances = bottom[0]->shape(1);
@@ -51,7 +59,7 @@ void LSTMUnitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     for (int d = 0; d < hidden_dim_; ++d) {
       const Dtype i = sigmoid(X[d]);
       const Dtype f = (*cont == 0) ? 0 :
-          (*cont * sigmoid(X[1 * hidden_dim_ + d]));
+          (*cont * sigmoid(X[1 * hidden_dim_ + d] + forget_bias_));
       const Dtype o = sigmoid(X[2 * hidden_dim_ + d]);
       const Dtype g = tanh(X[3 * hidden_dim_ + d]);
       const Dtype c_prev = C_prev[d];

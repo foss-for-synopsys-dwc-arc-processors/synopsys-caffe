@@ -173,6 +173,11 @@ class RecurrentLayer : public Layer<Dtype> {
    *        are layer inputs and outputs, respectively.
    */
   bool expose_hidden_;
+  
+  /**
+   * @brief The The bias added to forget gates
+   */
+  float forget_bias_;
 
   vector<Blob<Dtype>* > recur_input_blobs_;
   vector<Blob<Dtype>* > recur_output_blobs_;
