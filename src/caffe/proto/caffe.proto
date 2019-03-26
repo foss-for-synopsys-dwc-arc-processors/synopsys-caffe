@@ -2851,6 +2851,7 @@ message ResizeNearestNeighborParameter {
   optional bool align_corners = 1 [default = false];
   required int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
   required int32 output_width = 3;
+  optional string data_format = 4 [default = "NHWC"];
 }
 
 message GatherParameter{
