@@ -82,8 +82,8 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
                                      : static_cast<int>(floorf(w * width_scale)),
                                      input_width - 1);
           for(int c = 0; c < channels; c++) {
-            const int input_index = b*input_height*input_width*channels + in_h*input_width*channels + in_w*channels + c;
-            const int output_index = b*output_height*output_width*channels + h*output_width*channels + w*channels + c;
+            const int input_index = ((b*input_height + in_h)*input_width + in_w)*channels + c;
+            const int output_index = ((b*output_height + h)*output_width + w)*channels + c;
             top_data[output_index] = bottom_data[input_index];
             //LOG(INFO)<<output_index<<" "<<input_index<<"; "<<top_data[output_index]<<" "<<bottom_data[input_index]<<"; "<<b<<"; "<<h<<" "<<in_h<<"; "<<w<<" "<<in_w<<"; "<<c<<" "<<"\n";
           }
@@ -122,8 +122,8 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
                                        ? static_cast<int>(roundf(w * width_scale))
                                        : static_cast<int>(floorf(w * width_scale)),
                                        input_width - 1);
-            const int input_index = b*channels*input_height*input_width + c*input_height*input_width + in_h*input_width + in_w;
-            const int output_index = b*channels*output_height*output_width + c*output_height*output_width + h*output_width + w;
+            const int input_index = ((b*channels + c)*input_height + in_h)*input_width + in_w;
+            const int output_index = ((b*channels + c)*output_height + h)*output_width + w;
             top_data[output_index] = bottom_data[input_index];
           }
         }
