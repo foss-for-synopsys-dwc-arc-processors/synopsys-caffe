@@ -28,7 +28,7 @@ void GatherNdLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 	   const vector<Blob<Dtype>*>& top) {
  	const int num_axes = bottom[0]->num_axes();
  	CHECK_GE(num_axes, 1) << "the dimension of input should be larger than or equal to 1";
-	 const GatherNdParameter& gather_nd_param = this->layer_param_.gather_nd_param();
+	//const GatherNdParameter& gather_nd_param = this->layer_param_.gather_nd_param();
  	indices_dim_ = indices_shape_.size();                          
  	CHECK_GE(indices_dim_, 1) << "the dimension of indices should be larger than or equal to 1";
  	int count = 1;
