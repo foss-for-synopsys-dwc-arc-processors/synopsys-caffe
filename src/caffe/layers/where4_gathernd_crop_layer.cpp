@@ -159,6 +159,7 @@ void Where4GatherndCropLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, c
            }
        }
     }
+    return;
 }
 
 template <typename Dtype>
@@ -242,36 +243,30 @@ void Where4GatherndCropLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bot
 
   num_boxes_= group1.size();
   const Dtype *bottom_data1 = bottom[3]->cpu_data();
-  const Dtype *bottom_rois1 = gather_output_.cpu_data() + group.size() * 4;
-  Dtype *top_data1 = top[0]->mutable_cpu_data() +
-		  group.size() * bottom[2]->shape(1) * bottom[2]->shape(2) * channels_;
+  bottom_rois += group.size() * 4;
+  top_data += group.size() * crop_height_ * crop_width_ * channels_;
   // Assume the data is in NHWC format
   image_height_= bottom[3]->shape(1);
   image_width_= bottom[3]->shape(2);
-  Crop_And_Resize(bottom_data1, bottom_rois1, top_data1, num_boxes_, image_height_, image_width_);
+  Crop_And_Resize(bottom_data1, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
 
   num_boxes_= group2.size();
   const Dtype *bottom_data2 = bottom[4]->cpu_data();
-  const Dtype *bottom_rois2 = gather_output_.cpu_data() + (group.size() + group1.size()) * 4;
-  Dtype *top_data2 = top[0]->mutable_cpu_data() +
-		  group.size() * bottom[2]->shape(1) * bottom[2]->shape(2) * channels_ +
-		  group1.size() * bottom[3]->shape(1) * bottom[3]->shape(2) * channels_;
+  bottom_rois += group1.size() * 4;
+  top_data += group1.size() * crop_height_ * crop_width_ * channels_;
   // Assume the data is in NHWC format
   image_height_= bottom[4]->shape(1);
   image_width_= bottom[4]->shape(2);
-  Crop_And_Resize(bottom_data2, bottom_rois2, top_data2, num_boxes_, image_height_, image_width_);
+  Crop_And_Resize(bottom_data2, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
 
   num_boxes_= group3.size();
   const Dtype *bottom_data3 = bottom[5]->cpu_data();
-  const Dtype *bottom_rois3 = gather_output_.cpu_data() + (group.size() + group1.size() + group2.size()) * 4;
-  Dtype *top_data3 = top[0]->mutable_cpu_data() +
-		  group.size() * bottom[2]->shape(1) * bottom[2]->shape(2) * channels_ +
-		  group1.size() * bottom[3]->shape(1) * bottom[3]->shape(2) * channels_ +
-		  group2.size() * bottom[4]->shape(1) * bottom[4]->shape(2) * channels_;
+  bottom_rois += group2.size() * 4;
+  top_data += group2.size() * crop_height_ * crop_width_ * channels_;
   // Assume the data is in NHWC format
   image_height_= bottom[5]->shape(1);
   image_width_= bottom[5]->shape(2);
-  Crop_And_Resize(bottom_data3, bottom_rois3, top_data3, num_boxes_, image_height_, image_width_);
+  Crop_And_Resize(bottom_data3, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
 }
 
 INSTANTIATE_CLASS(Where4GatherndCropLayer);
