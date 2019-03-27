@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "caffe/layers/crop_and_resize.hpp"
+#include "caffe/layers/crop_and_resize_layer.hpp"
 
 namespace caffe
 {
