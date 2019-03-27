@@ -7,6 +7,7 @@ New added features are compared with the original BVLC Caffe 1.0.0
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
 ----------------------------------------------------------
 atan_layer  
+crop_and_resize  
 depthtospace_layer  
 gather_layer  
 gather_nd_layer  

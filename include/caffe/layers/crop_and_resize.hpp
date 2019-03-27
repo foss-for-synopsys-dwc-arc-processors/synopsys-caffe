@@ -22,7 +22,7 @@ public:
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "CropAndResizeLayer"; }
+  virtual inline const char *type() const { return "CropAndResize"; }
 
   virtual inline int ExactNumBottomBlobs() const { return 3; }
   //virtual inline int MaxBottomBlobs() const { return 2; }
