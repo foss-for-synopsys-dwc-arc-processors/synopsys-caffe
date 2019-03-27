@@ -128,7 +128,6 @@ void CropAndResizeLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
            }
        }
     }
-
 }
 
 
