@@ -30,16 +30,16 @@ void CropAndResizeLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
 	CHECK_EQ(bottom[2]->shape(1), 4) << "Box coordinates axis must have shape 4.";
 	// bottom[1] should be box index with shape [num_boxes]
 	CHECK_EQ(bottom[1]->num_axes(), 1) << "bottom[1] must have 1 axis.";
-	CHECK_EQ(bottom[1]->shape(0), bottom[1]->shape(0))
+	CHECK_EQ(bottom[1]->shape(0), bottom[2]->shape(0))
 		<< "box index and box coordinates should have equal count.";
-    batch_size_ = bottom[0]->num();
+    batch_size_ = bottom[0]->shape(0);
     // TODO: only implement NHWC data format here
 	channels_ = bottom[0]->shape(3);
     image_height_ = bottom[0]->shape(1);
     image_width_ = bottom[0]->shape(2);
     CHECK_GT(image_height_, 0)<< "image height must be > 0";
     CHECK_GT(image_width_, 0)<< "image width must be > 0";
-    num_boxes_ = bottom[2]->num();
+    num_boxes_ = bottom[2]->shape(0);
     // TODO: only implement NHWC data format here
     top[0]->Reshape(num_boxes_, crop_height_, crop_width_, channels_);
 }
@@ -54,10 +54,10 @@ void CropAndResizeLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
     Dtype *top_data = top[0]->mutable_cpu_data();
     for (int b = 0; b < num_boxes_; ++b)
     {
-      const float y1 = bottom_rois[b*num_boxes_+0];
-      const float x1 = bottom_rois[b*num_boxes_+1];
-      const float y2 = bottom_rois[b*num_boxes_+2];
-      const float x2 = bottom_rois[b*num_boxes_+3];
+      const float y1 = bottom_rois[b*4];
+      const float x1 = bottom_rois[b*4+1];
+      const float y2 = bottom_rois[b*4+2];
+      const float x2 = bottom_rois[b*4+3];
 
       // FastBoundsCheck, box_index's values should be in range [0, batch_size)
       const int b_in = bottom_index[b];
