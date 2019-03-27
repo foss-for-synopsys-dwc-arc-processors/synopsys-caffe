@@ -15,7 +15,6 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   update_weight_ = !this->layer_param_.inner_product_param().weight_fixed();
   N_ = num_output;
   gan_mode_ = 1;
-  input_scale_ = this->layer_param_.inner_product_param().input_scale();  //CUSTOMIZATION
   output_scale_ = this->layer_param_.inner_product_param().output_scale();  //CUSTOMIZATION
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());

@@ -1792,7 +1792,6 @@ message InnerProductParameter {
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
 
-  optional double input_scale = 10 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 11 [default = 1]; //CUSTOMIZATION
 }
 
