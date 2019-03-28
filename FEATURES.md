@@ -22,6 +22,7 @@ where4_layer
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)  
 forget_bias in RecurrentParameter and LSTMUnitParameter  
+min_first in ArgMaxParameter  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  

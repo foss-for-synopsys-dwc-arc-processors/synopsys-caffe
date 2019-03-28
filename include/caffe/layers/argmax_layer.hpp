@@ -70,6 +70,7 @@ class ArgMaxLayer : public Layer<Dtype> {
   size_t top_k_;
   bool has_axis_;
   int axis_;
+  bool min_first_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
