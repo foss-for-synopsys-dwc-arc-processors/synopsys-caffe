@@ -16,6 +16,7 @@ nms_layer
 resize_nearest_neighbor_layer  
 round_layer  
 topk_gather_layer  
+where4_gathernd_crop_layer  
 where4_gathernd_layer  
 where4_layer  
 DIV and MIN in EltwiseOp  
@@ -44,8 +45,8 @@ squeeze_deconv_layer
   
 evquantize related (only valid for CUDA forwards implementation)  
 ----------------------------------------------------------------------------------  
-input_scale and output_scale in ConvolutionParameter, InnerProductParameter, SoftmaxParameter and LRNParameter  
-output_scale in EltwiseParameter  
+input_scale and output_scale in ConvolutionParameter, SoftmaxParameter and LRNParameter  
+output_scale in EltwiseParameter and InnerProductParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingParameter   
       

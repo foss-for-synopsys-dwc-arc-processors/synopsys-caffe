@@ -93,7 +93,7 @@ void Where4GatherndCropLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, c
       const float y2 = bottom_rois[b*4+2];
       const float x2 = bottom_rois[b*4+3];
 
-      const int b_in = 0;
+      const int b_in = 0; // Assume batch_size is always 1
 
       const float height_scale =
           (crop_height_ > 1) ? (y2 - y1) * (image_height_ - 1) / (crop_height_ - 1) : 0;
@@ -155,11 +155,11 @@ void Where4GatherndCropLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, c
 
                top_data[((b*crop_height_+y)*crop_width_+x)*channels_+d] = top + (bottom - top) * y_lerp;
                //crops(b, y, x, d) = top + (bottom - top) * y_lerp;
+
              }
            }
        }
     }
-    return;
 }
 
 template <typename Dtype>
