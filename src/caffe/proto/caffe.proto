@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 222 (last added: where4_gathernd_crop_param)
+// LayerParameter next available layer-specific ID: 223 (last added: pyramid_roi_align_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -623,6 +623,7 @@ message LayerParameter {
   optional Where4GatherndParameter where4_gathernd_param = 219;
   optional CropAndResizeParameter crop_and_resize_param = 220;
   optional Where4GatherndCropParameter where4_gathernd_crop_param = 221;
+  optional PyramidRoiAlignParameter pyramid_roi_align_param = 222;
 }
 
 message AccumParameter {
@@ -2901,6 +2902,14 @@ message CropAndResizeParameter {
 }
 
 message Where4GatherndCropParameter {
+  optional uint32 num_output = 1; // The number of outputs for the layer
+  optional int32 axis = 2 [default = 1]; // to be judged axis
+  optional uint32 crop_h = 3 [default = 0]; // The output height
+  optional uint32 crop_w = 4 [default = 0]; // The output width
+  optional float extrapolation_value = 5 [default = 0];
+}
+
+message PyramidRoiAlignParameter {
   optional uint32 num_output = 1; // The number of outputs for the layer
   optional int32 axis = 2 [default = 1]; // to be judged axis
   optional uint32 crop_h = 3 [default = 0]; // The output height
