@@ -32,6 +32,7 @@ relu6 and maximum in ReLUParameter
 eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py  (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
+range.py (customized Python layer, implementation of tf.range)   
 reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
 shape.py (customized Python layer, implementation of tf.shape)  
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
