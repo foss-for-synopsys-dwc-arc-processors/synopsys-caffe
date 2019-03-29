@@ -17,7 +17,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED BUILD_MATLAB set BUILD_MATLAB=0
     if NOT DEFINED PYTHON_EXE set PYTHON_EXE=python
     if NOT DEFINED RUN_TESTS set RUN_TESTS=1
-    if NOT DEFINED RUN_LINT set RUN_LINT=1
+    if NOT DEFINED RUN_LINT set RUN_LINT=0
     if NOT DEFINED RUN_INSTALL set RUN_INSTALL=1
 
     :: Set python 2.7 with conda as the default python
