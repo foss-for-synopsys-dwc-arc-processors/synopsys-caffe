@@ -57,18 +57,23 @@ class StridedSlice(caffe.Layer):
         if len(begin) != len(end) or len(end) != len(strides):
             raise ValueError(
                 "begin, end and strides should be the same length")
-        length_diff = ndim - len(begin)
-        if length_diff > 0:
-            begin.extend(length_diff*[0])
-            end.extend(shape[-length_diff:])
-            strides.extend([1]*length_diff)
-        elif length_diff < 0:
-            raise Exception("The length of begin exceeds ndim")
         self.begin_mask = params.get("begin_mask", 0)
         self.end_mask = params.get("end_mask", 0)
         self.ellipsis_mask = params.get("ellipsis_mask", 0)
         self.new_axis_mask = params.get("new_axis_mask", 0)
         self.shrink_axis_mask = params.get("shrink_axis_mask", 0)
+        length_diff = ndim - len(begin)
+        if length_diff > 0:
+            if length_diff ==1 and self.ellipsis_mask != 0:
+                begin.insert(self.ellipsis_mask, 0)
+                end.insert(self.ellipsis_mask, shape[self.ellipsis_mask])
+                strides.insert(self.ellipsis_mask, 1)
+            else:
+                begin.extend(length_diff*[0])
+                end.extend(shape[-length_diff:])
+                strides.extend([1]*length_diff)
+        elif length_diff < 0:
+            raise Exception("The length of begin exceeds ndim")
 
         if self.new_axis_mask:
             raise NotImplementedError("new_axis_mask is not implemented")
