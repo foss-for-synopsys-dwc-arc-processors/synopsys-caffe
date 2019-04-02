@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 223 (last added: pyramid_roi_align_param)
+// LayerParameter next available layer-specific ID: 223 (last added: space_to_depth_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -624,6 +624,7 @@ message LayerParameter {
   optional CropAndResizeParameter crop_and_resize_param = 220;
   optional Where4GatherndCropParameter where4_gathernd_crop_param = 221;
   optional PyramidRoiAlignParameter pyramid_roi_align_param = 222;
+  optional SpaceToDepthParameter space_to_depth_param = 223;
 }
 
 message AccumParameter {
@@ -2846,6 +2847,12 @@ message ReorgParameter {
 
 message DepthToSpaceParameter {
   // implementation of tf.depth_to_space
+  required int32 block_size = 1;
+  optional string data_format = 2 [default = "NHWC"];
+}
+
+message SpaceToDepthParameter {
+  // implementation of tf.space_to_depth
   required int32 block_size = 1;
   optional string data_format = 2 [default = "NHWC"];
 }
