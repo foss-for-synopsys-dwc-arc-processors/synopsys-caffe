@@ -16,6 +16,7 @@ nms_layer
 pyramid_roi_align_layer  
 resize_nearest_neighbor_layer  
 round_layer  
+spacetodepth_layer  
 topk_gather_layer  
 where4_gathernd_crop_layer  
 where4_gathernd_layer  
