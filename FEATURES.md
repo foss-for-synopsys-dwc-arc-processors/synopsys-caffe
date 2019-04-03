@@ -16,6 +16,7 @@ nms_layer
 pyramid_roi_align_layer  
 resize_nearest_neighbor_layer  
 round_layer  
+shape_layer  
 spacetodepth_layer  
 topk_gather_layer  
 where4_gathernd_crop_layer  
@@ -36,7 +37,7 @@ matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
 range.py (customized Python layer, implementation of tf.range)   
 reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
-shape.py (customized Python layer, implementation of tf.shape)  
+shape.py (deprecated, customized Python layer, implementation of tf.shape)  
 slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
 stack.py (customized Python layer, implementation of tf.stack)  
 statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum, tf.reduce_max, tf.reduce_min)  
