@@ -13,6 +13,7 @@ gather_layer
 gather_nd_layer  
 nms_gather_layer  
 nms_layer  
+pad_layer  
 pyramid_roi_align_layer  
 resize_nearest_neighbor_layer  
 round_layer  
