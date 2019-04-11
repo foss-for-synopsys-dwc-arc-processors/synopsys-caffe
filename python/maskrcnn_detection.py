@@ -13,6 +13,22 @@ class MaskRCNN_Detection(caffe.Layer):
             raise Exception("Only input one Tensor at a time!")
         if len(top) != 1:
             raise Exception("Only output one Tensor at a time!")
+        try:
+            params = eval(self.param_str)
+            if params["height"] != None:
+                self.HEIGHT = int(params["height"])
+            else:
+                self.HEIGHT = 1024  # 1920
+            if params["width"] != None:
+                self.WIDTH = int(params["width"])
+            else:
+                self.WIDTH = 1024  # 1920
+        except Exception as ex:
+            print "No params set, use default input dim instead:"
+            self.HEIGHT = 1024  # 1920
+            self.WIDTH = 1024  # 1920
+            print "Height: ", self.HEIGHT, "Width: ", self.WIDTH
+
         self.BATCH_SIZE = 1
         self.DETECTION_MAX_INSTANCES = 100
         self.DETECTION_MIN_CONFIDENCE = 0.7
@@ -151,8 +167,8 @@ class MaskRCNN_Detection(caffe.Layer):
             rois, deltas_specific * self.BBOX_STD_DEV)
         # Convert coordiates to image domain
         # TODO: better to keep them normalized until later
-        height = 1920
-        width = 1920
+        height = self.HEIGHT
+        width = self.WIDTH
         refined_rois *= np.array([height, width, height, width])
         # Clip boxes to image window
         refined_rois = self.clip_to_window(window, refined_rois)
