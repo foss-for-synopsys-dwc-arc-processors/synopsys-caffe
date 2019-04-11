@@ -27,7 +27,7 @@ class MaskRCNN_Detection(caffe.Layer):
             print "No params set, use default input dim instead:"
             self.HEIGHT = 1024  # 1920
             self.WIDTH = 1024  # 1920
-            print "Height: ", self.HEIGHT, "Width: ", self.WIDTH
+            print "Height:", self.HEIGHT, " Width:", self.WIDTH
 
         self.BATCH_SIZE = 1
         self.DETECTION_MAX_INSTANCES = 100
