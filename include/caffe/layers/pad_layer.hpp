@@ -26,6 +26,8 @@ class PadLayer : public Layer<Dtype> {
 
  protected:
 
+  virtual void Pad(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+  		int level, int bottom_index, int top_index, vector<int> paddings);
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   /// @brief Not implemented (non-differentiable function)
