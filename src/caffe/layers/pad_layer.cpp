@@ -42,21 +42,26 @@ void PadLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype* top_data = top[0]->mutable_cpu_data();
   caffe_set(top[0]->count(), Dtype(constant_values_), top_data);
   const int num_top_axes = bottom[0]->num_axes();
+  vector<int> BS = bottom[0]->shape();
+  vector<int> TS = top[0]->shape();
+
   if (num_top_axes == 4)
   {
-    for (int i=0; i<bottom[0]->shape(0); i++)
+    int P0 = paddings_[0];
+    int P2 = paddings_[2];
+    int P4 = paddings_[4];
+    int P6 = paddings_[6];
+
+    for (int i=0; i<BS[0]; i++)
     {
-      for (int j=0; j<bottom[0]->shape(1); j++)
+      for (int j=0; j<BS[1]; j++)
       {
-    	for (int k=0; k<bottom[0]->shape(2); k++)
+    	for (int k=0; k<BS[2]; k++)
     	{
-    	  for (int l=0; l<bottom[0]->shape(3); l++)
+    	  for (int l=0; l<BS[3]; l++)
     	  {
-    		int bottom_index = ((i * bottom[0]->shape(1) + j) * bottom[0]->shape(2) + k) * bottom[0]->shape(3) + l;
-    		int top_index = (((i + paddings_[0]) * (paddings_[2] + paddings_[3] + bottom[0]->shape(1)) +
-							   j + paddings_[2]) * (paddings_[4] + paddings_[5] + bottom[0]->shape(2)) +
-							   k + paddings_[4]) * (paddings_[6] + paddings_[7] + bottom[0]->shape(3)) +
-    						   l + paddings_[6];
+    		int bottom_index = ((i * BS[1] + j) * BS[2] + k) * BS[3] + l;
+    		int top_index = (((i + P0) * TS[1] + j + P2) * TS[2] + k + P4) * TS[3] + l + P6;
     		top_data[top_index] = bottom_data[bottom_index];
     	  }
     	}
@@ -65,16 +70,17 @@ void PadLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   if (num_top_axes == 3)
   {
-    for (int i=0; i<bottom[0]->shape(0); i++)
+    int P0 = paddings_[0];
+    int P2 = paddings_[2];
+    int P4 = paddings_[4];
+    for (int i=0; i<BS[0]; i++)
     {
-      for (int j=0; j<bottom[0]->shape(1); j++)
+      for (int j=0; j<BS[1]; j++)
       {
-    	for (int k=0; k<bottom[0]->shape(2); k++)
+    	for (int k=0; k<BS[2]; k++)
     	{
-    	  int bottom_index = (i * bottom[0]->shape(1) + j) * bottom[0]->shape(2) + k;
-    	  int top_index = ((i + paddings_[0]) * (paddings_[2] + paddings_[3] +  bottom[0]->shape(1)) +
-    						j + paddings_[2]) * (paddings_[4] + paddings_[5] + bottom[0]->shape(2)) +
-    						k + paddings_[4];
+    	  int bottom_index = (i * BS[1] + j) * BS[2] + k;
+    	  int top_index = ((i + P0) * TS[1] + j + P2) * TS[2] + k + P4;
     	  top_data[top_index] = bottom_data[bottom_index];
     	}
       }
@@ -82,23 +88,25 @@ void PadLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   if (num_top_axes == 2)
   {
-    for (int i=0; i<bottom[0]->shape(0); i++)
+    int P0 = paddings_[0];
+    int P2 = paddings_[2];
+    for (int i=0; i<BS[0]; i++)
     {
-      for (int j=0; j<bottom[0]->shape(1); j++)
+      for (int j=0; j<BS[1]; j++)
       {
-    	int bottom_index = i * bottom[0]->shape(1) + j;
-    	int top_index = (i + paddings_[0]) * (paddings_[2] + paddings_[3] + bottom[0]->shape(1)) +
-    					 j + paddings_[2];
+    	int bottom_index = i * BS[1] + j;
+    	int top_index = (i + P0) * TS[1] + j + P2;
     	top_data[top_index] = bottom_data[bottom_index];
       }
     }
   }
   if (num_top_axes == 1)
   {
+	int P0 = paddings_[0];
     for (int i=0; i<bottom[0]->shape(0); i++)
     {
     	int bottom_index = i;
-    	int top_index = i + paddings_[0];
+    	int top_index = i + P0;
     	top_data[top_index] = bottom_data[bottom_index];
     }
   }
