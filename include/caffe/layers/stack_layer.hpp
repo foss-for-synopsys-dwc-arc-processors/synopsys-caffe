@@ -38,7 +38,7 @@ class StackLayer : public Layer<Dtype> {
 	}
 
 
-	int stack_axis_;
+  int stack_axis_;
   int num_stack_;
   int stack_size_;
   

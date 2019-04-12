@@ -79,10 +79,6 @@ void StackLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(StackLayer);
-#endif
-
 INSTANTIATE_CLASS(StackLayer);
 REGISTER_LAYER_CLASS(Stack);
 
