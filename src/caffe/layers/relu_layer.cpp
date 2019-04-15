@@ -24,6 +24,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
   Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
   Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
+  Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
   if (bottom.size() > 1)  //bottom[1] provides the maximum case
   	maximum = bottom[1]->cpu_data()[0];
   for (int i = 0; i < count; ++i) {
@@ -33,6 +34,8 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       top_data[i] = std::min(top_data[i], Dtype(6)); //CUSTOMIZATION
     if(maximum > 0)
       top_data[i] = std::min(top_data[i], maximum); //CUSTOMIZATION
+    if(minimum != 0)
+      top_data[i] = std::max(top_data[i], minimum); //CUSTOMIZATION
   }
 }
 
@@ -48,6 +51,7 @@ void ReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
     Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
     Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
+    Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
     if (bottom.size() > 1)  //bottom[1] provides the maximum case
       maximum = bottom[1]->cpu_data()[0];
     for (int i = 0; i < count; ++i) {
@@ -57,6 +61,8 @@ void ReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         bottom_diff[i] *= (bottom_data[i] < Dtype(6));
       if(maximum > 0) //CUSTOMIZATION
         bottom_diff[i] *= (bottom_data[i] < maximum);
+      if(minimum != 0) //CUSTOMIZATION
+        bottom_diff[i] *= (bottom_data[i] > minimum);
     }
   }
 }

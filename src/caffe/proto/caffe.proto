@@ -2170,7 +2170,8 @@ message ReLUParameter {
   // for Audio, Speech, and Language Processing.
   optional float negative_slope = 1 [default = 0];
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
-  optional float maximum = 6 [default = -1]; //CUSTOMIZATION, act as saturation 
+  optional float maximum = 6 [default = -1]; //CUSTOMIZATION, act as MAX range setting 
+  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting 
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
