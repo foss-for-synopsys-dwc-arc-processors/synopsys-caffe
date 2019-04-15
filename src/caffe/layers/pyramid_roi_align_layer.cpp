@@ -231,7 +231,7 @@ void PyramidRoiAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
 				group3.push_back(j);
 				break;
 			  default:
-				LOG(FATAL) << "The value "<<value<<" can't be sorted in any condition.";
+				LOG(FATAL) << "The value "<<value<<" is out of condition range [2, 3, 4, 5]!";
 				break;
 			}
 		}

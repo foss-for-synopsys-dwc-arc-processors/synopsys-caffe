@@ -30,11 +30,13 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   for (int i = 0; i < count; ++i) {
     top_data[i] = std::max(bottom_data[i], Dtype(0))
         + negative_slope * std::min(bottom_data[i], Dtype(0));
+    if(isnan(top_data[i])) //CUSTOMIZATION
+      top_data[i] = 0;
     if(relu6) //CUSTOMIZATION
       top_data[i] = std::min(top_data[i], Dtype(6)); //CUSTOMIZATION
-    if(maximum > 0)
+    if(maximum > Dtype(0))
       top_data[i] = std::min(top_data[i], maximum); //CUSTOMIZATION
-    if(minimum != 0)
+    if(minimum != Dtype(0))
       top_data[i] = std::max(top_data[i], minimum); //CUSTOMIZATION
   }
 }
@@ -59,9 +61,9 @@ void ReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
           + negative_slope * (bottom_data[i] <= 0));
       if(relu6) //CUSTOMIZATION
         bottom_diff[i] *= (bottom_data[i] < Dtype(6));
-      if(maximum > 0) //CUSTOMIZATION
+      if(maximum > Dtype(0)) //CUSTOMIZATION
         bottom_diff[i] *= (bottom_data[i] < maximum);
-      if(minimum != 0) //CUSTOMIZATION
+      if(minimum != Dtype(0)) //CUSTOMIZATION
         bottom_diff[i] *= (bottom_data[i] > minimum);
     }
   }

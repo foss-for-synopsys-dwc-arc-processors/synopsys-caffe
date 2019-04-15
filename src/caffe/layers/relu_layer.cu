@@ -19,9 +19,9 @@ __global__ void ReLUForward(const int n, const Dtype* in, Dtype* out,
     out[index] = in[index] > 0 ? in[index] : in[index] * negative_slope;
     if(relu6) //CUSTOMIZATON
       out[index] = out[index] > 6 ? 6: out[index]; //CUSTOMIZATON
-    if(maximum > 0) //CUSTOMIZATON
+    if(maximum > Dtype(0)) //CUSTOMIZATON
       out[index] = out[index] > maximum ? maximum: out[index]; //CUSTOMIZATON
-    if(minimum != 0) //CUSTOMIZATON
+    if(minimum != Dtype(0)) //CUSTOMIZATON
       out[index] = out[index] < minimum ? minimum: out[index]; //CUSTOMIZATON
 
     //<--CUSTOMIZATION
@@ -86,9 +86,9 @@ __global__ void ReLUBackward(const int n, const Dtype* in_diff,
         + (in_data[index] <= 0) * negative_slope);
     if(relu6) //CUSTOMIZATION
       out_diff[index] *= (in_data[index] < Dtype(6));
-    if(maximum > 0) //CUSTOMIZATION
+    if(maximum > Dtype(0)) //CUSTOMIZATION
       out_diff[index] *= (in_data[index] < maximum);
-    if(minimum != 0) //CUSTOMIZATION
+    if(minimum != Dtype(0)) //CUSTOMIZATION
       out_diff[index] *= (in_data[index] > minimum);
   }
 }
