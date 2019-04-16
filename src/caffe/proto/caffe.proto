@@ -2076,6 +2076,8 @@ message PriorBoxParameter {
 
   // Offset to the top left corner of each cell.
   optional float offset = 13 [default = 0.5];
+  
+  optional bool faceboxes = 14 [default = false]; //CUSTOMIZATION, for FaceBoxes
 }
 
 message ProposalParameter {

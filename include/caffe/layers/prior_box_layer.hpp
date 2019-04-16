@@ -77,6 +77,8 @@ class PriorBoxLayer : public Layer<Dtype> {
   float step_h_;
 
   float offset_;
+
+  bool faceboxes_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
