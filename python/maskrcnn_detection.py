@@ -10,7 +10,7 @@ class MaskRCNN_Detection(caffe.Layer):
     def setup(self, bottom, top):
         # check number of inputs and outputs
         if len(bottom) != 4:
-            raise Exception("Only input one Tensor at a time!")
+            raise Exception("Only input 4 Tensors at a time!")
         if len(top) != 1:
             raise Exception("Only output one Tensor at a time!")
         try:
