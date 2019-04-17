@@ -33,9 +33,7 @@ pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
 relu6, maximum and minimum in ReLUParameter  
-apply_box_deltas.py (customized Python layer)  
 eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
-maskrcnn_detection.py (customized Python layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (customized Python layer, implementation of tf.pad)  
 range.py (customized Python layer, implementation of tf.range)   
@@ -62,6 +60,9 @@ saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingPar
 Mask RCNN related  
 -------------------  
 roi_align_layer  
+apply_box_deltas.py (customized Python layer)  
+maskrcnn_detection.py (customized Python layer)  
+pre_roi_align.py (customized Python layer)  
   
 YOLO related  
 --------------  
