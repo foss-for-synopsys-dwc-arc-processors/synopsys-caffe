@@ -31,9 +31,10 @@ class Pre_Roi_Align(caffe.Layer):
         y1, x1, y2, x2 = np.split(boxes, 4, axis=2)
         h = y2 - y1
         w = x2 - x1
-
         image_area = self.height * self.width
-        roi_level = np.log2(np.sqrt(h * w) / (224.0 / np.sqrt(image_area)))
+        normalized = np.sqrt(h * w) / (224.0 / np.sqrt(image_area))
+        normalized = np.maximum(normalized, 0.0001) # random minimum data > 0, to avoid log2(0) warning
+        roi_level = np.log2(normalized)
         roi_level = np.minimum(5, np.maximum(2, 4 + np.round(roi_level)))
         roi_level = np.squeeze(roi_level, 2)
 
