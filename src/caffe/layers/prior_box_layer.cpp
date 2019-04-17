@@ -156,45 +156,45 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         if (faceboxes_) {
           if (min_size_ == 32) {
             for (int i = -2; i < 2; i++) {
-        	  for (int j = -2; j < 2; j++) {
-        	    box_width = box_height = min_size_;
-        		top_data[idx++] = (center_x + j * 8
-        			- (box_width - 1) / 2.) / img_width;
-        		top_data[idx++] = (center_y + i * 8
-        			- (box_width - 1) / 2.) / img_height;
-        		top_data[idx++] = (center_x + j * 8
-        			+ (box_width - 1) / 2.) / img_width;
-        		top_data[idx++] = (center_y + i * 8
-        			+ (box_width - 1) / 2.) / img_height;
-        	  }
-        	}
+              for (int j = -2; j < 2; j++) {
+                box_width = box_height = min_size_;
+                top_data[idx++] = (center_x + j * 8
+                    - (box_width - 1) / 2.) / img_width;
+                top_data[idx++] = (center_y + i * 8
+                    - (box_width - 1) / 2.) / img_height;
+                top_data[idx++] = (center_x + j * 8
+                    + (box_width - 1) / 2.) / img_width;
+                top_data[idx++] = (center_y + i * 8
+                    + (box_width - 1) / 2.) / img_height;
+              }
+            }
           }
           else if (min_size_ == 64) {
             for (int i = -1; i < 1; i++) {
-        	  for (int j = -1; j < 1; j++) {
-        	    box_width = box_height = min_size_;
-        	    top_data[idx++] = (center_x + j * 16
-        	        - (box_width - 1) / 2.) / img_width;
-        		top_data[idx++] = (center_y + i * 16
-        			- (box_width - 1) / 2.) / img_height;
-        		top_data[idx++] = (center_x + j * 16
-        			+ (box_width - 1) / 2.) / img_width;
-        		top_data[idx++] = (center_y + i * 16
-        			+ (box_width - 1) / 2.) / img_height;
-        	  }
-        	}
+              for (int j = -1; j < 1; j++) {
+                box_width = box_height = min_size_;
+                top_data[idx++] = (center_x + j * 16
+                    - (box_width - 1) / 2.) / img_width;
+                top_data[idx++] = (center_y + i * 16
+                    - (box_width - 1) / 2.) / img_height;
+                top_data[idx++] = (center_x + j * 16
+                    + (box_width - 1) / 2.) / img_width;
+                top_data[idx++] = (center_y + i * 16
+                    + (box_width - 1) / 2.) / img_height;
+              }
+            }
           }
           else {
-        	// first prior: aspect_ratio = 1, size = min_size
-        	box_width = box_height = min_size_;
-        	// xmin
-        	top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
-        	// ymin
-        	top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
-        	// xmax
-        	top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
-        	// ymax
-        	top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
+            // first prior: aspect_ratio = 1, size = min_size
+            box_width = box_height = min_size_;
+            // xmin
+            top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
+            // ymin
+            top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
+            // xmax
+            top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
+            // ymax
+            top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
           }
         }
         //CUSTOMIZATION-->
