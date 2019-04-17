@@ -42,6 +42,7 @@ class Apply_Box_Deltas(caffe.Layer):
         y2 = y1 + height
         x2 = x1 + width
 
+        # Clip_boxes
         wy1 = 0
         wx1 = 0
         wy2 = self.height
@@ -52,7 +53,10 @@ class Apply_Box_Deltas(caffe.Layer):
         x2 = np.maximum(np.minimum(x2, wx2), wx1)
         result = np.stack([y1, x1, y2, x2], axis=1)
 
-        top[0].data[...] = result
+        # Normalize dimensions to range of 0 to 1.
+        normalized_result = result / np.array([[self.height, self.width, self.height, self.width]])
+
+        top[0].data[...] = normalized_result
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
