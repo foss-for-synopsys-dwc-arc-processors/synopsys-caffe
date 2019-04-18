@@ -13,13 +13,13 @@ namespace caffe {
 template <typename Dtype>
 void PyramidRoiAlignLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-	const PyramidRoiAlignParameter& pyramid_roi_align_param = this->layer_param_.pyramid_roi_align_param();
+  const PyramidRoiAlignParameter& pyramid_roi_align_param = this->layer_param_.pyramid_roi_align_param();
   num_output_ = pyramid_roi_align_param.num_output();
   axis_ = bottom[1]->CanonicalAxisIndex(pyramid_roi_align_param.axis());
   CHECK_GE(num_output_, 1) << "num_output must not be less than 1.";
   CHECK_GE(axis_, 0) << "axis must not be less than 0.";
-  CHECK_LE(axis_, bottom[1]->num_axes()) <<
-	"axis must be less than or equal to the number of axis.";
+  CHECK_LE(axis_, bottom[1]->num_axes())
+      << "axis must be less than or equal to the number of axis.";
   CHECK_LE(num_output_, bottom[1]->shape(axis_))
 	    << "num_output must be less than or equal to the dimension of the axis.";
 
@@ -79,21 +79,21 @@ void PyramidRoiAlignLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if(data_format_ == "NHWC"){
     channels_ = bottom[2]->shape(3);
     CHECK_EQ(bottom[2]->shape(3), bottom[3]->shape(3))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     CHECK_EQ(bottom[3]->shape(3), bottom[4]->shape(3))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     CHECK_EQ(bottom[4]->shape(3), bottom[5]->shape(3))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
   }
   else{ //NCHW format
     channels_ = bottom[2]->shape(1);
     CHECK_EQ(bottom[2]->shape(1), bottom[3]->shape(1))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     CHECK_EQ(bottom[3]->shape(1), bottom[4]->shape(1))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     CHECK_EQ(bottom[4]->shape(1), bottom[5]->shape(1))
-    << "Input images should have equal channel count.";
+        << "Input images should have equal channel count.";
     crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
   }
 
