@@ -31,6 +31,7 @@ void  PyramidRoiAlignLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom
   crop_width_ = pyramid_roi_align_param.crop_w();
   extrapolation_value_ = pyramid_roi_align_param.extrapolation_value();
   gather_axis_ = 0; //set for final gather
+  data_format_ = pyramid_roi_align_param.data_format();
 }
 
 template <typename Dtype>
@@ -74,14 +75,27 @@ void PyramidRoiAlignLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 	CHECK_EQ(bottom[3]->num_axes(), 4) << "bottom[3] must have 4 axes.";
 	CHECK_EQ(bottom[4]->num_axes(), 4) << "bottom[4] must have 4 axes.";
 	CHECK_EQ(bottom[5]->num_axes(), 4) << "bottom[5] must have 4 axes.";
-	channels_ = bottom[2]->shape(3);
-	CHECK_EQ(bottom[2]->shape(3), bottom[3]->shape(3))
-		<< "Input images should have equal channel count.";
-	CHECK_EQ(bottom[3]->shape(3), bottom[4]->shape(3))
-		<< "Input images should have equal channel count.";
-	CHECK_EQ(bottom[4]->shape(3), bottom[5]->shape(3))
-		<< "Input images should have equal channel count.";
-    crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
+
+	if(data_format_ == "NHWC"){
+	  channels_ = bottom[2]->shape(3);
+	  CHECK_EQ(bottom[2]->shape(3), bottom[3]->shape(3))
+		  << "Input images should have equal channel count.";
+	  CHECK_EQ(bottom[3]->shape(3), bottom[4]->shape(3))
+		  << "Input images should have equal channel count.";
+	  CHECK_EQ(bottom[4]->shape(3), bottom[5]->shape(3))
+          << "Input images should have equal channel count.";
+	  crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
+	}
+	else{ //NCHW format
+	  channels_ = bottom[2]->shape(1);
+	  CHECK_EQ(bottom[2]->shape(1), bottom[3]->shape(1))
+	      << "Input images should have equal channel count.";
+	  CHECK_EQ(bottom[3]->shape(1), bottom[4]->shape(1))
+		  << "Input images should have equal channel count.";
+	  CHECK_EQ(bottom[4]->shape(1), bottom[5]->shape(1))
+	      << "Input images should have equal channel count.";
+	  crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
+	}
 
     //<--final gather
     gather_axis_ = 0;
@@ -122,22 +136,23 @@ void PyramidRoiAlignLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void PyramidRoiAlignLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, const Dtype *bottom_rois,
-		Dtype *top_data, int num_boxes_, int image_height_, int image_width_)
+		Dtype *top_data, int num_boxes_, int image_height_, int image_width_, string data_format_)
 {
-    for (int b = 0; b < num_boxes_; ++b)
-    {
-      const float y1 = bottom_rois[b*4];
-      const float x1 = bottom_rois[b*4+1];
-      const float y2 = bottom_rois[b*4+2];
-      const float x2 = bottom_rois[b*4+3];
+  for (int b = 0; b < num_boxes_; ++b)
+  {
+    const float y1 = bottom_rois[b*4];
+    const float x1 = bottom_rois[b*4+1];
+    const float y2 = bottom_rois[b*4+2];
+    const float x2 = bottom_rois[b*4+3];
 
-      const int b_in = 0; // Assume batch_size is always 1
+    const int b_in = 0; // Assume batch_size is always 1
 
-      const float height_scale =
-          (crop_height_ > 1) ? (y2 - y1) * (image_height_ - 1) / (crop_height_ - 1) : 0;
-      const float width_scale =
-          (crop_width_ > 1) ? (x2 - x1) * (image_width_ - 1) / (crop_width_ - 1) : 0;
+    const float height_scale =
+        (crop_height_ > 1) ? (y2 - y1) * (image_height_ - 1) / (crop_height_ - 1) : 0;
+    const float width_scale =
+        (crop_width_ > 1) ? (x2 - x1) * (image_width_ - 1) / (crop_width_ - 1) : 0;
 
+    if(data_format_ == "NHWC"){
       for (int y = 0; y < crop_height_; ++y) {
         const float in_y = (crop_height_ > 1)
                                ? y1 * (image_height_ - 1) + y * height_scale
@@ -198,6 +213,63 @@ void PyramidRoiAlignLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, cons
            }
        }
     }
+    else{ //NHWC
+      for (int d = 0; d < channels_; ++d) {
+        for (int y = 0; y < crop_height_; ++y) {
+          const float in_y = (crop_height_ > 1)
+                                 ? y1 * (image_height_ - 1) + y * height_scale
+                                 : 0.5 * (y1 + y2) * (image_height_ - 1);
+          if (in_y < 0 || in_y > image_height_ - 1) {
+            for (int x = 0; x < crop_width_; ++x) {
+              top_data[((b*channels_ + d)*crop_height_ + y)*crop_width_ + x] = extrapolation_value_;
+              //crops(b, d, y, x) = extrapolation_value;
+            }
+            continue;
+          }
+
+          const int top_y_index = floorf(in_y);
+          const int bottom_y_index = ceilf(in_y);
+          const float y_lerp = in_y - top_y_index;
+
+          for (int x = 0; x < crop_width_; ++x) {
+               const float in_x = (crop_width_ > 1)
+                                      ? x1 * (image_width_ - 1) + x * width_scale
+                                      : 0.5 * (x1 + x2) * (image_width_ - 1);
+               if (in_x < 0 || in_x > image_width_ - 1) {
+                 top_data[((b*channels_ + d)*crop_height_ + y)*crop_width_ + x] = extrapolation_value_;
+                 //crops(b, d, y, x) = extrapolation_value;
+                 continue;
+               }
+               const int left_x_index = floorf(in_x);
+               const int right_x_index = ceilf(in_x);
+               const float x_lerp = in_x - left_x_index;
+
+               int index = ((b_in*channels_+d)*image_height_+top_y_index)*image_width_+left_x_index;
+               //(image(b_in, d, top_y_index, left_x_index));
+               const float top_left = static_cast<float>(bottom_data[index]);
+
+               index = ((b_in*channels_+d)*image_height_+top_y_index)*image_width_+right_x_index;
+               //(image(b_in, d, top_y_index, right_x_index));
+               const float top_right = static_cast<float>(bottom_data[index]);
+
+               index = ((b_in*channels_+d)*image_height_+bottom_y_index)*image_width_+left_x_index;
+               //(image(b_in, d, bottom_y_index, left_x_index));
+               const float bottom_left = static_cast<float>(bottom_data[index]);
+
+               index = ((b_in*channels_+d)*image_height_+bottom_y_index)*image_width_+right_x_index;
+               //(image(b_in, d, bottom_y_index, right_x_index));
+               const float bottom_right = static_cast<float>(bottom_data[index]);
+
+               const float top = top_left + (top_right - top_left) * x_lerp;
+               const float bottom = bottom_left + (bottom_right - bottom_left) * x_lerp;
+
+               top_data[((b*channels_ + d)*crop_height_ + y)*crop_width_ + x] = top + (bottom - top) * y_lerp;
+               //crops(b, d, y, x) = top + (bottom - top) * y_lerp;
+          }
+        }
+      }
+    }
+  }
 }
 
 template <typename Dtype>
@@ -275,41 +347,66 @@ void PyramidRoiAlignLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
 			  bottom_data_g + bottom_offset, top_data_g + top_offset);
   }
 
-  int num_boxes_= group.size();
+
+  int image_height_;
+  int image_width_;
+  int num_boxes_;
+
+  num_boxes_= group.size();
   const Dtype *bottom_data = bottom[2]->cpu_data();
   const Dtype *bottom_rois = gather_output_.cpu_data();
   Dtype *top_data = crop_output_.mutable_cpu_data();
-  // Assume the data is in NHWC format
-  int image_height_= bottom[2]->shape(1);
-  int image_width_= bottom[2]->shape(2);
-  Crop_And_Resize(bottom_data, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
+  if(data_format_ == "NHWC"){
+    image_height_= bottom[2]->shape(1);
+    image_width_= bottom[2]->shape(2);
+  }
+  else{  //NCHW format
+	image_height_= bottom[2]->shape(2);
+	image_width_= bottom[2]->shape(3);
+  }
+  Crop_And_Resize(bottom_data, bottom_rois, top_data, num_boxes_, image_height_, image_width_, data_format_);
 
   num_boxes_= group1.size();
   const Dtype *bottom_data1 = bottom[3]->cpu_data();
   bottom_rois += group.size() * 4;
   top_data += group.size() * crop_height_ * crop_width_ * channels_;
-  // Assume the data is in NHWC format
-  image_height_= bottom[3]->shape(1);
-  image_width_= bottom[3]->shape(2);
-  Crop_And_Resize(bottom_data1, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
+  if(data_format_ == "NHWC"){
+    image_height_= bottom[3]->shape(1);
+    image_width_= bottom[3]->shape(2);
+  }
+  else{  //NCHW format
+	image_height_= bottom[3]->shape(2);
+	image_width_= bottom[3]->shape(3);
+  }
+  Crop_And_Resize(bottom_data1, bottom_rois, top_data, num_boxes_, image_height_, image_width_, data_format_);
 
   num_boxes_= group2.size();
   const Dtype *bottom_data2 = bottom[4]->cpu_data();
   bottom_rois += group1.size() * 4;
   top_data += group1.size() * crop_height_ * crop_width_ * channels_;
-  // Assume the data is in NHWC format
-  image_height_= bottom[4]->shape(1);
-  image_width_= bottom[4]->shape(2);
-  Crop_And_Resize(bottom_data2, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
+  if(data_format_ == "NHWC"){
+    image_height_= bottom[4]->shape(1);
+    image_width_= bottom[4]->shape(2);
+  }
+  else{  //NCHW format
+	image_height_= bottom[4]->shape(2);
+	image_width_= bottom[4]->shape(3);
+  }
+  Crop_And_Resize(bottom_data2, bottom_rois, top_data, num_boxes_, image_height_, image_width_, data_format_);
 
   num_boxes_= group3.size();
   const Dtype *bottom_data3 = bottom[5]->cpu_data();
   bottom_rois += group2.size() * 4;
   top_data += group2.size() * crop_height_ * crop_width_ * channels_;
-  // Assume the data is in NHWC format
-  image_height_= bottom[5]->shape(1);
-  image_width_= bottom[5]->shape(2);
-  Crop_And_Resize(bottom_data3, bottom_rois, top_data, num_boxes_, image_height_, image_width_);
+  if(data_format_ == "NHWC"){
+    image_height_= bottom[5]->shape(1);
+    image_width_= bottom[5]->shape(2);
+  }
+  else{  //NCHW format
+	image_height_= bottom[5]->shape(2);
+	image_width_= bottom[5]->shape(3);
+  }
+  Crop_And_Resize(bottom_data3, bottom_rois, top_data, num_boxes_, image_height_, image_width_, data_format_);
 
   //<--topk reverse sort to get final indices
   std::vector<std::pair<Dtype, int> > bottom_data_vector(num_output_);

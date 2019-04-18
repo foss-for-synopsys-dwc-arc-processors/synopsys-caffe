@@ -34,7 +34,7 @@ public:
 
  protected:
   virtual void Crop_And_Resize(const Dtype *bottom_data, const Dtype *bottom_rois,
- 		Dtype *top_data, int num_boxes_, int image_height_, int image_width_);
+ 		Dtype *top_data, int num_boxes_, int image_height_, int image_width_, string data_format_);
 
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	  const vector<Blob<Dtype>*>& top);
@@ -71,6 +71,8 @@ public:
   int gather_axis_;
   int indices_dim_out_;
   vector<int> indices_shape_out_;
+
+  string data_format_;
 
 };
 

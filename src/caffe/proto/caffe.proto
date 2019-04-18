@@ -2927,6 +2927,7 @@ message PyramidRoiAlignParameter {
   optional uint32 crop_h = 3 [default = 0]; // The output height
   optional uint32 crop_w = 4 [default = 0]; // The output width
   optional float extrapolation_value = 5 [default = 0];
+  optional string data_format = 6 [default = "NHWC"];
 }
 
 message PadParameter{
