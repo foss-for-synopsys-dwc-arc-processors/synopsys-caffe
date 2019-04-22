@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 226 (last added: stack_param)
+// LayerParameter next available layer-specific ID: 227 (last added: resize_bilinear_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -627,6 +627,7 @@ message LayerParameter {
   optional SpaceToDepthParameter space_to_depth_param = 223;
   optional PadParameter pad_param = 224;
   optional StackParameter stack_param = 225;
+  optional ResizeBilinearParameter resize_bilinear_param = 226;
 }
 
 message AccumParameter {
@@ -2937,4 +2938,11 @@ message PadParameter{
 
 message StackParameter{
   optional int32 axis = 1 [default = 0]; 
+}
+
+message ResizeBilinearParameter {
+  optional bool align_corners = 1 [default = false];
+  required int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
+  required int32 output_width = 3;
+  optional string data_format = 4 [default = "NHWC"];
 }
