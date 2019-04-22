@@ -3,8 +3,8 @@ import numpy as np
 
 
 class Eltwise(caffe.Layer):
-    """
-    Get a tensor's slice: implementation of element-wise operatios with broadcasting
+    """Get a tensor's slice: implementation of element-wise operations
+    with broadcasting
     """
     def setup(self, bottom, top):
         # check number of inputs and outputs
@@ -16,7 +16,8 @@ class Eltwise(caffe.Layer):
             raise Exception("Only output one Tensor at a time!")
         d = eval(self.param_str)
         self.operation = d["operation"]
-        if self.operation == 1: # only SUM supports coeff
+        # only SUM supports coeff
+        if self.operation == 1:
             self.coeff = d["coeff"]
 
     def reshape(self, bottom, top):
@@ -25,15 +26,16 @@ class Eltwise(caffe.Layer):
             raise Exception("Input must not be empty!")
         b0 = bottom[0].data
         b1 = bottom[1].data
-        if b0.ndim > b1.ndim:
-            shape = b0.shape
-        elif b0.ndim < b1.ndim:
-            shape = b1.shape
+        min_dim = min(b0.ndim, b1.ndim)
+        if b0.ndim >= b1.ndim:
+            shape = list(b0.shape)
+            min_dim = b1.ndim
         else:
-            if b0.shape >= b1.shape:
-                shape = b0.shape
-            else:
-                shape = b1.shape
+            shape = list(b1.shape)
+            min_dim = b0.ndim
+        for i in range(-min_dim, 0, 1):
+            shape[i] = max(bottom[0].data.shape[i], bottom[1].data.shape[i])
+
         top[0].reshape(*shape)
 
     def forward(self, bottom, top):
@@ -48,7 +50,7 @@ class Eltwise(caffe.Layer):
                                           np.array(bottom[1].data))
         elif self.operation == 3:
             top[0].data[...] = np.divide(np.array(bottom[0].data),
-                                      np.array(bottom[1].data))
+                                         np.array(bottom[1].data))
         elif self.operation == 4:
             top[0].data[...] = np.minimum(np.array(bottom[0].data),
                                           np.array(bottom[1].data))
