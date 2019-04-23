@@ -1,5 +1,5 @@
-#ifndef CAFFE_MAX_LAYER_HPP_
-#define CAFFE_MAX_LAYER_HPP_
+#ifndef CAFFE_REDUCEMAX_LAYER_HPP_
+#define CAFFE_REDUCEMAX_LAYER_HPP_
 
 #include <vector>
 
@@ -10,16 +10,16 @@
 namespace caffe {
 
 	template <typename Dtype>
-	class MaxLayer : public Layer<Dtype> {
+	class ReduceMaxLayer : public Layer<Dtype> {
 	public:
-		explicit MaxLayer(const LayerParameter& param)
+		explicit ReduceMaxLayer(const LayerParameter& param)
 			: Layer<Dtype>(param) {}
 		virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 			const vector<Blob<Dtype>*>& top);
 		virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
 			const vector<Blob<Dtype>*>& top);
 
-		virtual inline const char* type() const { return "Max"; }
+		virtual inline const char* type() const { return "ReduceMax"; }
 		virtual inline int ExactNumBottomBlobs() const { return 1; }
 		virtual inline int ExactNumTopBlobs() const { return 1; }
 
@@ -35,9 +35,9 @@ namespace caffe {
 		}
 
 	protected:
-		virtual void OutMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-			int lv_out, int b_idx, int lv_in, int t_idx, vector<int> max_axis_);
-		virtual void InMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+		virtual void OutReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+			int lv_out, int b_idx, int lv_in, int t_idx, vector<int> reduce_max_axis_);
+		virtual void InReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
 			int b_idx, int lv_in, int t_idx, vector<int> idx_in);
 
 		virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -49,13 +49,13 @@ namespace caffe {
 		}
 
 
-		vector<int> max_axis_;
-		bool max_keepdims_;
+		vector<int> reduce_max_axis_;
+		bool reduce_max_keepdims_;
 		int axis_dim_;
 
 	};
 
 }  // namespace caffe
 
-#endif  // CAFFE_MAX_LAYER_HPP_
+#endif  // CAFFE_REDUCEMAX_LAYER_HPP_
 

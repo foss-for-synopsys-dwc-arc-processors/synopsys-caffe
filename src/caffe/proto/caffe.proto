@@ -628,8 +628,8 @@ message LayerParameter {
   optional PadParameter pad_param = 224;
   optional StackParameter stack_param = 225;
   optional ResizeBilinearParameter resize_bilinear_param = 226;
-  optional SumParameter sum_param = 227;
-  optional MaxParameter max_param = 228;
+  optional ReduceSumParameter reduce_sum_param = 227;
+  optional ReduceMaxParameter reduce_max_param = 228;
 }
 
 message AccumParameter {
@@ -2949,12 +2949,12 @@ message ResizeBilinearParameter {
   optional string data_format = 4 [default = "NHWC"];
 }
 
-message SumParameter{
+message ReduceSumParameter{
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
 
-message MaxParameter{
+message ReduceMaxParameter{
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }

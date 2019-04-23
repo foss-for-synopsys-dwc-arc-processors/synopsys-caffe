@@ -1,42 +1,43 @@
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/max_layer.hpp"
+#include "caffe/layers/reduce_max_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 
 	template <typename Dtype>
-	void MaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+	void ReduceMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
-		const MaxParameter& max_param = this->layer_param_.max_param();
+		const ReduceMaxParameter& reduce_max_param = this->layer_param_.reduce_max_param();
 
-		max_keepdims_ = max_param.keepdims();
+		reduce_max_keepdims_ = reduce_max_param.keepdims();
 
-		max_axis_.clear();
-		std::copy(max_param.axis().begin(),
-			max_param.axis().end(),
-			std::back_inserter(max_axis_));
-		axis_dim_ = max_axis_.size();
+		reduce_max_axis_.clear();
+		std::copy(reduce_max_param.axis().begin(),
+			reduce_max_param.axis().end(),
+			std::back_inserter(reduce_max_axis_));
+		axis_dim_ = reduce_max_axis_.size();
+		CHECK_LT(axis_dim_, bottom[0]->num_axes()) << "the dimension of axis should be less than input dimension!";
 		for (int i = 0; i < axis_dim_; ++i) {
-			max_axis_[i] = bottom[0]->CanonicalAxisIndex(max_axis_[i]);     //change negative axis to positive, check range
+			reduce_max_axis_[i] = bottom[0]->CanonicalAxisIndex(reduce_max_axis_[i]);     //change negative axis to positive, check range
 		}
-		std::sort(max_axis_.begin(), max_axis_.end());    // make element in max_axis_ in order
+		std::sort(reduce_max_axis_.begin(), reduce_max_axis_.end());    // make element in reduce_max_axis_ in order
 	}
 
 	template <typename Dtype>
-	void MaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+	void ReduceMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
 		const int num_axes = bottom[0]->num_axes();
 
 		vector<int> top_shape = bottom[0]->shape();
 		vector<int> bottom_shape = bottom[0]->shape();
 
-		if (max_keepdims_) {
+		if (reduce_max_keepdims_) {
 			if (axis_dim_ != 0) {
 				// has keepdims and axis
 				for (int i = 0; i < axis_dim_; ++i) {
-					top_shape[max_axis_[i]] = 1;
+					top_shape[reduce_max_axis_[i]] = 1;
 				}
 			}
 			else {
@@ -50,7 +51,7 @@ namespace caffe {
 			if (axis_dim_ != 0) {
 				// no keepdims but has axis
 				for (int i = axis_dim_ - 1; i > -1; --i) {
-					top_shape.erase(top_shape.begin() + max_axis_[i]);
+					top_shape.erase(top_shape.begin() + reduce_max_axis_[i]);
 				}
 			}
 			else {
@@ -62,7 +63,7 @@ namespace caffe {
 	}
 
 	template <typename Dtype>
-	void MaxLayer<Dtype>::InMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+	void ReduceMaxLayer<Dtype>::InReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
 		int b_idx, int lv_in, int t_idx, vector<int> idx_in) {
 
 		const Dtype* bottom_data = bottom[0]->cpu_data();
@@ -81,27 +82,27 @@ namespace caffe {
 				}
 			}
 			if (lv_in < shape_in.size() - 1) {
-				InMax(bottom, top, b_idx + b_idx_add, lv_in + 1, t_idx, idx_in);
+				InReduceMax(bottom, top, b_idx + b_idx_add, lv_in + 1, t_idx, idx_in);
 			}
 		}
 	};
 
 
 	template <typename Dtype>
-	void MaxLayer<Dtype>::OutMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		int lv_out, int b_idx, int lv_in, int t_idx, vector<int> max_axis_) {
+	void ReduceMaxLayer<Dtype>::OutReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+		int lv_out, int b_idx, int lv_in, int t_idx, vector<int> reduce_max_axis_) {
 
 		// parameters: axis_dim_, shape_out, idx_out
-		const int axis_dim_ = max_axis_.size();
+		const int axis_dim_ = reduce_max_axis_.size();
 		vector<int> shape_out = bottom[0]->shape();
 		vector<int> idx_out(bottom[0]->num_axes(), 0);
 		for (int i = 0; i < idx_out.size(); ++i) {
 			idx_out[i] = i;
 		}
-		//shape_out.resize(max_axis_[axis_dim_ - 1] + 1);
+		//shape_out.resize(reduce_max_axis_[axis_dim_ - 1] + 1);
 		for (int i = axis_dim_ - 1; i > -1; --i) {
-			shape_out.erase(shape_out.begin() + max_axis_[i]);
-			idx_out.erase(idx_out.begin() + max_axis_[i]);
+			shape_out.erase(shape_out.begin() + reduce_max_axis_[i]);
+			idx_out.erase(idx_out.begin() + reduce_max_axis_[i]);
 		}
 
 		// main part 
@@ -111,17 +112,17 @@ namespace caffe {
 			int t_idx_add = i * count_shape(shape_out, lv_out + 1);
 			if (lv_out == shape_out.size() - 1) {
 
-				InMax(bottom, top, b_idx + b_idx_add, lv_in, t_idx + t_idx_add, max_axis_);
+				InReduceMax(bottom, top, b_idx + b_idx_add, lv_in, t_idx + t_idx_add, reduce_max_axis_);
 
 			}
 			if (lv_out < shape_out.size() - 1) {
-				OutMax(bottom, top, lv_out + 1, b_idx + b_idx_add, lv_in, t_idx + t_idx_add, max_axis_);
+				OutReduceMax(bottom, top, lv_out + 1, b_idx + b_idx_add, lv_in, t_idx + t_idx_add, reduce_max_axis_);
 			}
 		}
 	};
 
 	template <typename Dtype>
-	void MaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+	void ReduceMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 		const vector<Blob<Dtype>*>& top) {
 
 		// get shape_in_count and shape_out_count
@@ -143,18 +144,18 @@ namespace caffe {
 			}
 		}
 		else {
-			// has axis, add all elements in dim:max_axis_
+			// has axis, add all elements in dim:reduce_max_axis_
 			int lv_out = 0;
 			int lv_in = 0;
 			int b_idx = 0;
 			int t_idx = 0;
 
-			OutMax(bottom, top, lv_out, b_idx, lv_in, t_idx, max_axis_);
+			OutReduceMax(bottom, top, lv_out, b_idx, lv_in, t_idx, reduce_max_axis_);
 		}
 
 	}
 
-	INSTANTIATE_CLASS(MaxLayer);
-	REGISTER_LAYER_CLASS(Max);
+	INSTANTIATE_CLASS(ReduceMaxLayer);
+	REGISTER_LAYER_CLASS(ReduceMax);
 
 }  // namespace caffe

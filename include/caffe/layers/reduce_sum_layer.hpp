@@ -1,5 +1,5 @@
-#ifndef CAFFE_SUM_LAYER_HPP_
-#define CAFFE_SUM_LAYER_HPP_
+#ifndef CAFFE_REDUCESUM_LAYER_HPP_
+#define CAFFE_REDUCESUM_LAYER_HPP_
 
 #include <vector>
 
@@ -10,16 +10,16 @@
 namespace caffe {
 
 template <typename Dtype>
-class SumLayer : public Layer<Dtype> {
+class ReduceSumLayer : public Layer<Dtype> {
  public:
-  explicit SumLayer(const LayerParameter& param)
+  explicit ReduceSumLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Sum"; }
+  virtual inline const char* type() const { return "ReduceSum"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
@@ -35,9 +35,9 @@ class SumLayer : public Layer<Dtype> {
 	}
 
  protected:
-	 virtual void OutSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		 int lv_out, int b_idx, int lv_in, int t_idx, vector<int> sum_axis_);
-	 virtual void InSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+	 virtual void OutReduceSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+		 int lv_out, int b_idx, int lv_in, int t_idx, vector<int> reduce_sum_axis_);
+	 virtual void InReduceSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
 		 int b_idx, int lv_in, int t_idx, vector<int> idx_in);
 
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -49,13 +49,13 @@ class SumLayer : public Layer<Dtype> {
 	}
 
 	
-	vector<int> sum_axis_;
-	bool sum_keepdims_;
+	vector<int> reduce_sum_axis_;
+	bool reduce_sum_keepdims_;
 	int axis_dim_;
 
 };
 
 }  // namespace caffe
 
-#endif  // CAFFE_SUM_LAYER_HPP_
+#endif  // CAFFE_REDUCESUM_LAYER_HPP_
 
