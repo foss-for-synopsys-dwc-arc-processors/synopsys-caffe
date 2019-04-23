@@ -62,6 +62,7 @@ Mask RCNN related
 -------------------  
 roi_align_layer  
 apply_box_deltas.py (customized Python layer)  
+generate_pyramid_anchors.py (customized Python layer)  
 maskrcnn_detection.py (customized Python layer)  
 pre_roi_align.py (customized Python layer)  
   
