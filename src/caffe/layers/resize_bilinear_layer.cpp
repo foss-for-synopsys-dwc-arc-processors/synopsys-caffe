@@ -82,20 +82,17 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const int input_width = bottom_shape[2];
     const int channels = bottom_shape[3];
 
-    const int output_height = top_shape[1];
-    const int output_width = top_shape[2];
-
-    std::vector<CachedInterpolation> ys(output_height + 1);
-    std::vector<CachedInterpolation> xs(output_width + 1);
+    std::vector<CachedInterpolation> ys(output_height_ + 1);
+    std::vector<CachedInterpolation> xs(output_width_ + 1);
 
     const float height_scale =
-      CalculateResizeScale(output_height, input_height, align_corners_);
+      CalculateResizeScale(output_height_, input_height, align_corners_);
     const float width_scale =
-      CalculateResizeScale(output_width, input_width, align_corners_);
+      CalculateResizeScale(output_width_, input_width, align_corners_);
 
-    compute_interpolation_weights(output_height, input_height,
+    compute_interpolation_weights(output_height_, input_height,
                                   height_scale, ys.data());
-    compute_interpolation_weights(output_width, input_width,
+    compute_interpolation_weights(output_width_, input_width,
                                   width_scale, xs.data());
     // Scale x interpolation weights to avoid a multiplication during iteration.
     for (int i = 0; i < xs.size(); ++i) {
@@ -105,14 +102,14 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const int in_row_size = input_width * channels;
     const int in_batch_num_values = input_height * in_row_size;
-    const int out_row_size = output_width * channels;
+    const int out_row_size = output_width_ * channels;
 
     for (int b = 0; b < batch_size; ++b) {
-      for (int y = 0; y < output_height; ++y) {
+      for (int y = 0; y < output_height_; ++y) {
         const Dtype* ys_input_lower_ptr = bottom_data + ys[y].lower * in_row_size;
         const Dtype* ys_input_upper_ptr = bottom_data + ys[y].upper * in_row_size;
         const float ys_lerp = ys[y].lerp;
-        for (int x = 0; x < output_width; ++x) {
+        for (int x = 0; x < output_width_; ++x) {
           int xs_lower = xs[x].lower;
           int xs_upper = xs[x].upper;
           float xs_lerp = xs[x].lerp;
@@ -131,16 +128,56 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       bottom_data += in_batch_num_values;
     }
   }
-  else{  //TODO: NCHW
+  else{  //NCHW
     const int channels = bottom_shape[1];
     const int input_height = bottom_shape[2];
     const int input_width = bottom_shape[3];
 
-    const int output_height = top_shape[2];
-    const int output_width = top_shape[3];
+    std::vector<CachedInterpolation> ys(output_height_ + 1);
+    std::vector<CachedInterpolation> xs(output_width_ + 1);
 
+    const float height_scale =
+      CalculateResizeScale(output_height_, input_height, align_corners_);
+    const float width_scale =
+      CalculateResizeScale(output_width_, input_width, align_corners_);
 
+    compute_interpolation_weights(output_height_, input_height,
+                                  height_scale, ys.data());
+    compute_interpolation_weights(output_width_, input_width,
+                                  width_scale, xs.data());
+    // Scale x interpolation weights to avoid a multiplication during iteration.
+    //for (int i = 0; i < xs.size(); ++i) {
+    //  xs[i].lower *= channels;
+    //  xs[i].upper *= channels;
+    //}
 
+    const int in_row_size = input_width;
+    const int in_channel_num_values = input_height * in_row_size; //
+    const int out_row_size = output_width_;
+
+    for (int b = 0; b < batch_size; ++b) {
+      for (int c = 0; c < channels; ++c) {
+        for (int y = 0; y < output_height_; ++y) {
+          const Dtype* ys_input_lower_ptr = bottom_data + ys[y].lower * in_row_size;
+          const Dtype* ys_input_upper_ptr = bottom_data + ys[y].upper * in_row_size;
+          const float ys_lerp = ys[y].lerp;
+          for (int x = 0; x < output_width_; ++x) {
+            int xs_lower = xs[x].lower;
+            int xs_upper = xs[x].upper;
+            float xs_lerp = xs[x].lerp;
+            const float top_left(ys_input_lower_ptr[xs_lower]);
+            const float top_right(ys_input_lower_ptr[xs_upper]);
+            const float bottom_left(ys_input_upper_ptr[xs_lower]);
+            const float bottom_right(ys_input_upper_ptr[xs_upper]);
+            top_data[x] =
+                compute_lerp(top_left, top_right, bottom_left, bottom_right,
+                    xs_lerp, ys_lerp);
+          }
+          top_data += out_row_size;
+        }
+        bottom_data += in_channel_num_values;
+      }
+    }
   }
 }
 
