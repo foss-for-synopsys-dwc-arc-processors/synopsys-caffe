@@ -23,7 +23,6 @@ class ReduceSumLayer : public Layer<Dtype> {
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
-	// count_shape()
 	inline int count_shape(vector<int>shape, int start) const {
 		CHECK_GE(start, 0);
 		CHECK_LE(start, shape.size());
@@ -36,9 +35,9 @@ class ReduceSumLayer : public Layer<Dtype> {
 
  protected:
 	 virtual void OutReduceSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		 int lv_out, int b_idx, int lv_in, int t_idx, vector<int> reduce_sum_axis_);
+		 int lv_out, int b_idx, int lv_in, int t_idx);
 	 virtual void InReduceSum(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		 int b_idx, int lv_in, int t_idx, vector<int> idx_in);
+		 int b_idx, int lv_in, int t_idx);
 
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
@@ -47,12 +46,10 @@ class ReduceSumLayer : public Layer<Dtype> {
 		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
 		NOT_IMPLEMENTED;
 	}
-
 	
 	vector<int> reduce_sum_axis_;
 	bool reduce_sum_keepdims_;
 	int axis_dim_;
-
 };
 
 }  // namespace caffe
