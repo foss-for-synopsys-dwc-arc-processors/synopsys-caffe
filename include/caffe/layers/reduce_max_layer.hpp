@@ -23,7 +23,6 @@ namespace caffe {
 		virtual inline int ExactNumBottomBlobs() const { return 1; }
 		virtual inline int ExactNumTopBlobs() const { return 1; }
 
-		// count_shape()
 		inline int count_shape(vector<int>shape, int start) const {
 			CHECK_GE(start, 0);
 			CHECK_LE(start, shape.size());
@@ -36,9 +35,9 @@ namespace caffe {
 
 	protected:
 		virtual void OutReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-			int lv_out, int b_idx, int lv_in, int t_idx, vector<int> reduce_max_axis_);
+			int lv_out, int b_idx, int lv_in, int t_idx);
 		virtual void InReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-			int b_idx, int lv_in, int t_idx, vector<int> idx_in);
+			int b_idx, int lv_in, int t_idx);
 
 		virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 			const vector<Blob<Dtype>*>& top);
@@ -48,11 +47,9 @@ namespace caffe {
 			NOT_IMPLEMENTED;
 		}
 
-
 		vector<int> reduce_max_axis_;
 		bool reduce_max_keepdims_;
 		int axis_dim_;
-
 	};
 
 }  // namespace caffe
