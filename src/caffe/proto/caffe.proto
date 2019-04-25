@@ -630,6 +630,7 @@ message LayerParameter {
   optional ResizeBilinearParameter resize_bilinear_param = 226;
   optional ReduceSumParameter reduce_sum_param = 227;
   optional ReduceMaxParameter reduce_max_param = 228;
+  optional ReduceMinParameter reduce_min_param = 229;
 }
 
 message AccumParameter {
@@ -2958,3 +2959,9 @@ message ReduceMaxParameter{
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
+
+message ReduceMinParameter{
+  repeated int32 axis = 1; 
+  optional bool keepdims = 2[default = false];
+}
+
