@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 231 (last added: reduce_prod_param)
+// LayerParameter next available layer-specific ID: 232 (last added: reduce_mean_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -632,6 +632,7 @@ message LayerParameter {
   optional ReduceMaxParameter reduce_max_param = 228;
   optional ReduceMinParameter reduce_min_param = 229;
   optional ReduceProdParameter reduce_prod_param = 230;
+  optional ReduceMeanParameter reduce_mean_param = 231;
 }
 
 message AccumParameter {
@@ -2967,6 +2968,11 @@ message ReduceMinParameter{
 }
 
 message ReduceProdParameter{
+  repeated int32 axis = 1; 
+  optional bool keepdims = 2[default = false];
+}
+
+message ReduceMeanParameter{
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
