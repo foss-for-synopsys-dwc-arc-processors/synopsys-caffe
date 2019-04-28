@@ -2938,7 +2938,7 @@ message PyramidRoiAlignParameter {
 
 message PadParameter{
   repeated uint32 paddings = 1;
-  optional int32 constant_values = 2 [default = 0];
+  optional float constant_values = 2 [default = 0.0];
 }
 
 message StackParameter{

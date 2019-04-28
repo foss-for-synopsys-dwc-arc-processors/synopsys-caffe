@@ -37,7 +37,7 @@ class PadLayer : public Layer<Dtype> {
   }
 
   vector<int> paddings_;
-  int constant_values_;
+  float constant_values_;
 };
 
 }  // namespace caffe
