@@ -16,6 +16,9 @@ nms_layer
 pad_layer  
 pyramid_roi_align_layer  
 reduce_max_layer  
+reduce_mean_layer  
+reduce_min_layer  
+reduce_prod_layer  
 reduce_sum_layer  
 resize_bilinear_layer  
 resize_nearest_neighbor_layer  
@@ -67,6 +70,11 @@ apply_box_deltas.py (customized Python layer)
 generate_pyramid_anchors.py (customized Python layer)  
 maskrcnn_detection.py (customized Python layer)  
 pre_roi_align.py (customized Python layer)  
+  
+SNNs related  
+------------
+selu_dropout_layer  
+selu_layer  
   
 YOLO related  
 --------------  
