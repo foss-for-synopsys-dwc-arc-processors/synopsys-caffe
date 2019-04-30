@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 233 (last added: selu_dropout_param)
+// LayerParameter next available layer-specific ID: 234 (last added: unstack_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -635,6 +635,7 @@ message LayerParameter {
   optional ReduceMeanParameter reduce_mean_param = 231;
   optional SeLuParameter selu_param = 232;
   optional SeLuDropoutParameter selu_dropout_param = 233;
+  optional UnstackParameter unstack_param = 234;
 }
 
 message AccumParameter {
@@ -2954,27 +2955,27 @@ message ResizeBilinearParameter {
   optional string data_format = 4 [default = "NHWC"];
 }
 
-message ReduceSumParameter{
+message ReduceSumParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
 
-message ReduceMaxParameter{
+message ReduceMaxParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
 
-message ReduceMinParameter{
+message ReduceMinParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
 
-message ReduceProdParameter{
+message ReduceProdParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
 
-message ReduceMeanParameter{
+message ReduceMeanParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
@@ -2987,4 +2988,9 @@ message SeLuParameter {
 message SeLuDropoutParameter {
   optional float dropout_ratio = 1 [default = 0.1]; // dropout ratio  recommend 0.05 or 0.1
   optional float alpha = 2 [default = -1.75809934];
+}
+
+message UnstackParameter {
+	optional uint32 num = 1[default = 0];
+	optional int32 axis = 2[default = 0];
 }
