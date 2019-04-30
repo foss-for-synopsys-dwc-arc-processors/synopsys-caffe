@@ -27,6 +27,7 @@ shape_layer
 spacetodepth_layer  
 stack_layer  
 topk_gather_layer  
+unstack_layer  
 where4_gathernd_crop_layer  
 where4_gathernd_layer  
 where4_layer  
