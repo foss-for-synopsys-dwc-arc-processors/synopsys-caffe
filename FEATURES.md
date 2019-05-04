@@ -24,6 +24,7 @@ resize_bilinear_layer
 resize_nearest_neighbor_layer  
 round_layer  
 shape_layer  
+softsign_layer  
 spacetodepth_layer  
 stack_layer  
 topk_gather_layer  
