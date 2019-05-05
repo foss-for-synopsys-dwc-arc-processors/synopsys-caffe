@@ -45,7 +45,6 @@ class StridedSlice(caffe.Layer):
             raise Exception("Only input one Tensor at a time!")
         if len(top) != 1:
             raise Exception("Only output one Tensor at a time!")
-        ndim = bottom[0].data.ndim
         shape = bottom[0].data.shape
 
         params = eval(self.param_str)
@@ -57,68 +56,48 @@ class StridedSlice(caffe.Layer):
         if len(begin) != len(end) or len(end) != len(strides):
             raise ValueError(
                 "begin, end and strides should be the same length")
-        self.begin_mask = params.get("begin_mask", 0)
-        self.end_mask = params.get("end_mask", 0)
-        self.ellipsis_mask = params.get("ellipsis_mask", 0)
-        self.new_axis_mask = params.get("new_axis_mask", 0)
-        self.shrink_axis_mask = params.get("shrink_axis_mask", 0)
-        length_diff = ndim - len(begin)
-        if length_diff > 0:
-            if length_diff ==1 and self.ellipsis_mask != 0:
-                begin.insert(self.ellipsis_mask, 0)
-                end.insert(self.ellipsis_mask, shape[self.ellipsis_mask])
-                strides.insert(self.ellipsis_mask, 1)
-            else:
-                begin.extend(length_diff*[0])
-                end.extend(shape[-length_diff:])
-                strides.extend([1]*length_diff)
-        elif length_diff < 0:
-            raise Exception("The length of begin exceeds ndim")
-
-        if self.new_axis_mask:
-            raise NotImplementedError("new_axis_mask is not implemented")
-        self.shrink_axis = []
-        for i, d in enumerate(shape):
-            if self.begin_mask & 1 << i:
+        begin_mask = params.get("begin_mask", 0)
+        end_mask = params.get("end_mask", 0)
+        ellipsis_mask = params.get("ellipsis_mask", 0)
+        new_axis_mask = params.get("new_axis_mask", 0)
+        shrink_axis_mask = params.get("shrink_axis_mask", 0)
+        for i in range(len(begin)):
+            if begin_mask & 1 << i:
                 begin[i] = 0
-            if self.end_mask & 1 << i:
+            if end_mask & 1 << i:
                 end[i] = shape[i]
-            if self.ellipsis_mask & 1 << i:
-                begin[i] = 0
-                end[i] = shape[i]
-                strides[i] = 1
-            if self.shrink_axis_mask & 1 << i:
+            if shrink_axis_mask & 1 << i:
                 end[i] = begin[i] + 1
                 strides[i] = 1
-                self.shrink_axis.append(i)
-        self.begin = begin
-        self.end = end
-        self.strides = strides
+        slices = [slice(*i) for i in zip(begin, end, strides)]
+
+        for i in range(len(slices)):
+            if ellipsis_mask & 1 << i:
+                slices[i] = Ellipsis
+                ellipsis_axis = i
+            if new_axis_mask & 1 << i:
+                slices[i] = np.newaxis
+        self.slices = tuple(slices)
+        # shape for reshape
+        shape = list(bottom[0].data[self.slices].shape)
+        ellipsis_expansion = len(shape) - len(begin)
+        # sqeeze the shape in the positions in shrink_axis_mask
+        for i in range(len(shape)):
+            if shrink_axis_mask & 1 << i:
+                if i < ellipsis_axis:
+                    del shape[i]
+                else:
+                    del shape[i+ellipsis_expansion]
+        self.shape = shape
 
     def reshape(self, bottom, top):
         # check input dimensions
         if bottom[0].count == 0:
             raise Exception("Input must not be empty!")
-        ndim = bottom[0].data.ndim
-        num = list(np.zeros(ndim, dtype=int))
-        for i in range(ndim):
-            if self.strides[i] == 0:
-                raise Exception("Strides should never be equal to 0!")
-            else:
-                num[i] = abs(self.end[i]-self.begin[i])/abs(self.strides[i])
-        for i in reversed(self.shrink_axis):
-            num.pop(i)
-        num = [int(i) for i in num]
-        top[0].reshape(*num)
+        top[0].reshape(*self.shape)
 
     def forward(self, bottom, top):
-        idx = tuple(slice(s[0], s[1], s[2])
-                    for s in zip(self.begin, self.end, self.strides))
-        if self.shrink_axis_mask:
-            top[0].data[...] = np.squeeze(
-                bottom[0].data[idx], axis=tuple(self.shrink_axis))
-        else:
-            top[0].data[...] = bottom[0].data[idx]
+        top[0].data[...] = bottom[0].data[self.slices].reshape(*self.shape)
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
