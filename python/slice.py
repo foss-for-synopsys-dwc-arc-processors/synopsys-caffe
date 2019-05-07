@@ -97,7 +97,7 @@ class StridedSlice(caffe.Layer):
         top[0].reshape(*self.shape)
 
     def forward(self, bottom, top):
-        top[0].data[...] = bottom[0].data[self.slices].reshape(*self.shape)
+        top[0].data[:] = bottom[0].data[self.slices][:]
 
     def backward(self, top, propagate_down, bottom):
         for i in range(len(propagate_down)):
