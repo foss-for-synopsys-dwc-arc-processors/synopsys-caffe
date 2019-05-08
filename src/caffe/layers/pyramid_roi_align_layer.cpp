@@ -94,7 +94,7 @@ void PyramidRoiAlignLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         << "Input images should have equal channel count.";
     CHECK_EQ(bottom[4]->shape(1), bottom[5]->shape(1))
         << "Input images should have equal channel count.";
-    crop_output_.Reshape(num_output_, crop_height_, crop_width_, channels_);
+    crop_output_.Reshape(num_output_, channels_, crop_height_, crop_width_);
   }
 
   //<--final gather
