@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 234 (last added: unstack_param)
+// LayerParameter next available layer-specific ID: 236 (last added: space_to_batch_nd_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -636,6 +636,8 @@ message LayerParameter {
   optional SeLuParameter selu_param = 232;
   optional SeLuDropoutParameter selu_dropout_param = 233;
   optional UnstackParameter unstack_param = 234;
+  optional BatchToSpaceNDParameter batch_to_space_nd_param = 235;
+  optional SpaceToBatchNDParameter space_to_batch_nd_param = 236;
 }
 
 message AccumParameter {
@@ -2993,4 +2995,14 @@ message SeLuDropoutParameter {
 message UnstackParameter {
 	optional uint32 num = 1[default = 0];
 	optional int32 axis = 2[default = 0];
+}
+
+message SpaceToBatchNDParameter{
+  repeated uint32 block_shape = 1;
+  repeated uint32 paddings = 2;
+}
+
+message BatchToSpaceNDParameter{
+  repeated uint32 block_shape = 1;
+  repeated uint32 crops = 2;
 }
