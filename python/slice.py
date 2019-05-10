@@ -70,6 +70,7 @@ class StridedSlice(caffe.Layer):
                 end[i] = begin[i] + 1
                 strides[i] = 1
         slices = [slice(*i) for i in zip(begin, end, strides)]
+        ellipsis_axis = None
 
         for i in range(len(slices)):
             if ellipsis_mask & 1 << i:
