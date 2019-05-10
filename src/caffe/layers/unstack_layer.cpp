@@ -26,7 +26,7 @@ template <typename Dtype>
 void UnstackLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const int num_axes = bottom[0]->num_axes();
-  const UnstackParameter& unstack_param = this->layer_param_.unstack_param();
+  //const UnstackParameter& unstack_param = this->layer_param_.unstack_param();
 	vector<int> bottom_shape = bottom[0]->shape();
   vector<int> top_shape = bottom[0]->shape();
 	top_shape.resize(num_axes - 1);
