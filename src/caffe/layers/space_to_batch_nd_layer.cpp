@@ -13,10 +13,10 @@ template <typename Dtype>
 void SpaceToBatchNDLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const SpaceToBatchNDParameter& space_to_batch_nd_param = this->layer_param_.space_to_batch_nd_param();
-  for(auto i = space_to_batch_nd_param.block_shape().begin(); i != space_to_batch_nd_param.block_shape().end(); ++i)
-    block_shape_.push_back(*i);
-  for(auto i = space_to_batch_nd_param.paddings().begin(); i != space_to_batch_nd_param.paddings().end(); ++i)
-    paddings_.push_back(*i);
+  for(auto i : space_to_batch_nd_param.block_shape())
+    block_shape_.push_back(i);
+  for(auto i : space_to_batch_nd_param.paddings())
+    paddings_.push_back(i);
 }
 
 template <typename Dtype>
@@ -65,7 +65,7 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   for(int i=block_shape_.size(); i<bottom_shape.size(); i++)
     strides *= bottom_shape[i];
 
-  // top shape after padding
+  // 1. Zero-pad the start and end of dimensions [1, ..., M] of the input according to paddings to produce padded of shape padded_shape.
   for(int i=0; i<paddings_.size()/2; i++)
     top_shape[i+1] += paddings_[2*i] + paddings_[2*i+1];
 
@@ -77,7 +77,7 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     int position_top = offset(coord_pad, top_shape);
     copy_n(bottom_data+position*strides, strides, top_data+position_top);
   }
-  // Reshape padded to reshaped_padded of shape:
+  // 2. Reshape padded to reshaped_padded of shape:
   // [batch] + [padded_shape[1] / block_shape[0], block_shape[0], ..., padded_shape[M] / block_shape[M-1], block_shape[M-1]] + remaining_shape
   vector<int> permuted_shape = top_shape;
   vector<int> permuted_order(2*top_shape.size()+1);
@@ -93,7 +93,7 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     permuted_order[i] = i + s;
   }
 
-  // Permute dimensions of reshaped_padded to produce permuted_reshaped_padded of shape:
+  // 3. Permute dimensions of reshaped_padded to produce permuted_reshaped_padded of shape:
   // block_shape + [batch] + [padded_shape[1] / block_shape[0], ..., padded_shape[M] / block_shape[M-1]] + remaining_shape
   vector<Dtype> top_temp(top[0]->count());
   copy_n(top_data, top[0]->count(), top_temp.begin());
@@ -107,7 +107,7 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     copy_n(top_temp.begin()+i, 1, top_data+position_permuted);
   }
 
-  // Reshape permuted_reshaped_padded to flatten block_shape into the batch dimension, producing an output tensor of shape:
+  // 4. Reshape permuted_reshaped_padded to flatten block_shape into the batch dimension, producing an output tensor of shape:
   // [batch * prod(block_shape)] + [padded_shape[1] / block_shape[0], ..., padded_shape[M] / block_shape[M-1]] + remaining_shape
 }
 
