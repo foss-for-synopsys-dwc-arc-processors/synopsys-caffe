@@ -214,7 +214,7 @@ void ResampleLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     else if (this->layer_param().resample_param().type() == ResampleParameter_ResampleType_CUBIC || this->layer_param().resample_param().type() == ResampleParameter_ResampleType_LINEAR)
     {
-        int filter_type;
+        int filter_type = 0;
         if (this->layer_param().resample_param().type() == ResampleParameter_ResampleType_CUBIC)
             filter_type = FILTER_BICUBIC;
         else if (this->layer_param().resample_param().type() == ResampleParameter_ResampleType_LINEAR)
