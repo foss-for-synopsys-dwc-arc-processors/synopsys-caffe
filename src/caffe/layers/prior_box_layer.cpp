@@ -13,7 +13,7 @@ void PriorBoxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const PriorBoxParameter& prior_box_param =
       this->layer_param_.prior_box_param();
   faceboxes_ = prior_box_param.faceboxes();
-  CHECK_GT(prior_box_param.min_size_size(), 0) << "must provide min_size.";
+  //CHECK_GT(prior_box_param.min_size_size(), 0) << "must provide min_size.";
   for (int i = 0; i < prior_box_param.min_size_size(); ++i) {
     min_sizes_.push_back(prior_box_param.min_size(i));
     CHECK_GT(min_sizes_.back(), 0) << "min_size must be positive.";
@@ -38,9 +38,9 @@ void PriorBoxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     }
   }
   if(faceboxes_ && min_sizes_.size()==3)
-	num_priors_ = 21;
+    num_priors_ = 21;
   else
-	num_priors_ = aspect_ratios_.size() * min_sizes_.size();
+    num_priors_ = aspect_ratios_.size() * min_sizes_.size();
   //num_priors_ = aspect_ratios_.size() * min_sizes_.size();
   if (prior_box_param.max_size_size() > 0) {
     CHECK_EQ(prior_box_param.min_size_size(), prior_box_param.max_size_size());
@@ -51,6 +51,23 @@ void PriorBoxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       num_priors_ += 1;
     }
   }
+  //<--CUSTOMIZATION
+  explicit_box_ = false;
+  if (prior_box_param.box_width_size() > 0) {
+    num_priors_ = prior_box_param.box_width_size(); //use the explicitly assigned box_width and height, instead of min_size and aspect_ratio
+    explicit_box_ = true;
+    box_width_.clear();
+    std::copy(prior_box_param.box_width().begin(),
+        prior_box_param.box_width().end(),
+        std::back_inserter(box_width_));
+    CHECK_EQ(prior_box_param.box_width_size(), prior_box_param.box_height_size())
+        << "must provide same number of box_with and box_height!";
+    box_height_.clear();
+    std::copy(prior_box_param.box_height().begin(),
+        prior_box_param.box_height().end(),
+        std::back_inserter(box_height_));
+  }
+  //CUSTOMIZATION-->
   clip_ = prior_box_param.clip();
   if (prior_box_param.variance_size() > 1) {
     // Must and only provide 4 variance.
@@ -150,90 +167,107 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       float center_x = (w + offset_) * step_w;
       float center_y = (h + offset_) * step_h;
       float box_width, box_height;
-      for (int s = 0; s < min_sizes_.size(); ++s) {
-        int min_size_ = min_sizes_[s];
-        //<--CUSTOMIZATION
-        if (faceboxes_) {
-          if (min_size_ == 32) {
-            for (int i = -2; i < 2; i++) {
-              for (int j = -2; j < 2; j++) {
-                box_width = box_height = min_size_;
-                top_data[idx++] = (center_x + j * 8
-                    - (box_width - 1) / 2.) / img_width;
-                top_data[idx++] = (center_y + i * 8
-                    - (box_width - 1) / 2.) / img_height;
-                top_data[idx++] = (center_x + j * 8
-                    + (box_width - 1) / 2.) / img_width;
-                top_data[idx++] = (center_y + i * 8
-                    + (box_width - 1) / 2.) / img_height;
+      if(!explicit_box_) {
+        for (int s = 0; s < min_sizes_.size(); ++s) {
+          int min_size_ = min_sizes_[s];
+          //<--CUSTOMIZATION
+          if (faceboxes_) {
+            if (min_size_ == 32) {
+              for (int i = -2; i < 2; i++) {
+                for (int j = -2; j < 2; j++) {
+                  box_width = box_height = min_size_;
+                  top_data[idx++] = (center_x + j * 8
+                      - (box_width - 1) / 2.) / img_width;
+                  top_data[idx++] = (center_y + i * 8
+                      - (box_width - 1) / 2.) / img_height;
+                  top_data[idx++] = (center_x + j * 8
+                      + (box_width - 1) / 2.) / img_width;
+                  top_data[idx++] = (center_y + i * 8
+                      + (box_width - 1) / 2.) / img_height;
+                }
               }
             }
-          }
-          else if (min_size_ == 64) {
-            for (int i = -1; i < 1; i++) {
-              for (int j = -1; j < 1; j++) {
-                box_width = box_height = min_size_;
-                top_data[idx++] = (center_x + j * 16
-                    - (box_width - 1) / 2.) / img_width;
-                top_data[idx++] = (center_y + i * 16
-                    - (box_width - 1) / 2.) / img_height;
-                top_data[idx++] = (center_x + j * 16
-                    + (box_width - 1) / 2.) / img_width;
-                top_data[idx++] = (center_y + i * 16
-                    + (box_width - 1) / 2.) / img_height;
+            else if (min_size_ == 64) {
+              for (int i = -1; i < 1; i++) {
+                for (int j = -1; j < 1; j++) {
+                  box_width = box_height = min_size_;
+                  top_data[idx++] = (center_x + j * 16
+                      - (box_width - 1) / 2.) / img_width;
+                  top_data[idx++] = (center_y + i * 16
+                      - (box_width - 1) / 2.) / img_height;
+                  top_data[idx++] = (center_x + j * 16
+                      + (box_width - 1) / 2.) / img_width;
+                  top_data[idx++] = (center_y + i * 16
+                      + (box_width - 1) / 2.) / img_height;
+                }
               }
             }
+            else {
+              // first prior: aspect_ratio = 1, size = min_size
+              box_width = box_height = min_size_;
+              // xmin
+              top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
+              // ymin
+              top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
+              // xmax
+              top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
+              // ymax
+              top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
+            }
           }
+          //CUSTOMIZATION-->
           else {
             // first prior: aspect_ratio = 1, size = min_size
             box_width = box_height = min_size_;
             // xmin
-            top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
+            top_data[idx++] = (center_x - box_width / 2.) / img_width;
             // ymin
-            top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
+            top_data[idx++] = (center_y - box_height / 2.) / img_height;
             // xmax
-            top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
+            top_data[idx++] = (center_x + box_width / 2.) / img_width;
             // ymax
-            top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
+            top_data[idx++] = (center_y + box_height / 2.) / img_height;
+          }
+
+          if (max_sizes_.size() > 0) {
+            CHECK_EQ(min_sizes_.size(), max_sizes_.size());
+            int max_size_ = max_sizes_[s];
+            // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
+            box_width = box_height = sqrt(min_size_ * max_size_);
+            // xmin
+            top_data[idx++] = (center_x - box_width / 2.) / img_width;
+            // ymin
+            top_data[idx++] = (center_y - box_height / 2.) / img_height;
+            // xmax
+            top_data[idx++] = (center_x + box_width / 2.) / img_width;
+            // ymax
+            top_data[idx++] = (center_y + box_height / 2.) / img_height;
+          }
+
+          // rest of priors
+          for (int r = 0; r < aspect_ratios_.size(); ++r) {
+            float ar = aspect_ratios_[r];
+            if (fabs(ar - 1.) < 1e-6) {
+              continue;
+            }
+            box_width = min_size_ * sqrt(ar);
+            box_height = min_size_ / sqrt(ar);
+            // xmin
+            top_data[idx++] = (center_x - box_width / 2.) / img_width;
+            // ymin
+            top_data[idx++] = (center_y - box_height / 2.) / img_height;
+            // xmax
+            top_data[idx++] = (center_x + box_width / 2.) / img_width;
+            // ymax
+            top_data[idx++] = (center_y + box_height / 2.) / img_height;
           }
         }
-        //CUSTOMIZATION-->
-        else {
-          // first prior: aspect_ratio = 1, size = min_size
-          box_width = box_height = min_size_;
-          // xmin
-          top_data[idx++] = (center_x - box_width / 2.) / img_width;
-          // ymin
-          top_data[idx++] = (center_y - box_height / 2.) / img_height;
-          // xmax
-          top_data[idx++] = (center_x + box_width / 2.) / img_width;
-          // ymax
-          top_data[idx++] = (center_y + box_height / 2.) / img_height;
-        }
-
-        if (max_sizes_.size() > 0) {
-          CHECK_EQ(min_sizes_.size(), max_sizes_.size());
-          int max_size_ = max_sizes_[s];
-          // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
-          box_width = box_height = sqrt(min_size_ * max_size_);
-          // xmin
-          top_data[idx++] = (center_x - box_width / 2.) / img_width;
-          // ymin
-          top_data[idx++] = (center_y - box_height / 2.) / img_height;
-          // xmax
-          top_data[idx++] = (center_x + box_width / 2.) / img_width;
-          // ymax
-          top_data[idx++] = (center_y + box_height / 2.) / img_height;
-        }
-
-        // rest of priors
-        for (int r = 0; r < aspect_ratios_.size(); ++r) {
-          float ar = aspect_ratios_[r];
-          if (fabs(ar - 1.) < 1e-6) {
-            continue;
-          }
-          box_width = min_size_ * sqrt(ar);
-          box_height = min_size_ / sqrt(ar);
+      }
+      //<--CUSTOMIZATION
+      else { //use explicit box assignment
+        for (int b=0; b<box_width_.size();b++){
+          box_width = box_width_[b];
+          box_height = box_height_[b];
           // xmin
           top_data[idx++] = (center_x - box_width / 2.) / img_width;
           // ymin
@@ -244,6 +278,7 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           top_data[idx++] = (center_y + box_height / 2.) / img_height;
         }
       }
+      //CUSTOMIZATION-->
     }
   }
   // clip the prior's coordidate such that it is within [0, 1]
