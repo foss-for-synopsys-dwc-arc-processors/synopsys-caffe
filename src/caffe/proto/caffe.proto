@@ -2092,6 +2092,8 @@ message PriorBoxParameter {
   
   repeated float box_width = 15; //CUSTOMIZATION, ref https://github.com/opencv/opencv/blob/master/modules/dnn/src/layers/prior_box_layer.cpp
   repeated float box_height = 16; //CUSTOMIZATION
+  
+  optional bool tf = 17 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
 }
 
 message ProposalParameter {

@@ -42,6 +42,7 @@ pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingP
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
+faceboxes, box_width, box_height and tf in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
 eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
