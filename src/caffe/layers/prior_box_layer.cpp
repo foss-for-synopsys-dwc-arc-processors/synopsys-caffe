@@ -218,19 +218,7 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           }
           //CUSTOMIZATION-->
           else {
-            if(!tf_) {
-              // first prior: aspect_ratio = 1, size = min_size
-              box_width = box_height = min_size_;
-              // xmin
-              top_data[idx++] = (center_x - box_width / 2.) / img_width;
-              // ymin
-              top_data[idx++] = (center_y - box_height / 2.) / img_height;
-              // xmax
-              top_data[idx++] = (center_x + box_width / 2.) / img_width;
-              // ymax
-              top_data[idx++] = (center_y + box_height / 2.) / img_height;
-            }
-            else { //tf implementation
+            if((tf_) && (min_size_== 60))  { //CUSTOMIZATION, for tf implementation
               // first prior: aspect_ratio = 1, size = min_size
               box_width = box_height = min_size_;
               // xmin
@@ -241,6 +229,18 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               top_data[idx++] = (center_x + box_width / 2.) / img_width - 0.05;
               // ymax
               top_data[idx++] = (center_y + box_height / 2.) / img_height - 0.05;
+            }
+            else {
+              // first prior: aspect_ratio = 1, size = min_size
+              box_width = box_height = min_size_;
+              // xmin
+              top_data[idx++] = (center_x - box_width / 2.) / img_width;
+              // ymin
+              top_data[idx++] = (center_y - box_height / 2.) / img_height;
+              // xmax
+              top_data[idx++] = (center_x + box_width / 2.) / img_width;
+              // ymax
+              top_data[idx++] = (center_y + box_height / 2.) / img_height;
             }
           }
 
