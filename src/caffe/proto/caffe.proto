@@ -2094,6 +2094,7 @@ message PriorBoxParameter {
   repeated float box_height = 16; //CUSTOMIZATION
   
   optional bool tf = 17 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
+  optional bool yx_order = 18 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
 }
 
 message ProposalParameter {
