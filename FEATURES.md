@@ -1,7 +1,7 @@
 A Short Summary of New Features in Synopsys Caffe
 =================================================
 
-Synopsys Caffe Version: 2019.03  
+Synopsys Caffe Version: 2019.06  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -25,6 +25,7 @@ resize_bilinear_layer
 resize_nearest_neighbor_layer  
 round_layer  
 shape_layer  
+sin_layer  
 softsign_layer  
 space_to_batch_nd_layer  
 spacetodepth_layer  
