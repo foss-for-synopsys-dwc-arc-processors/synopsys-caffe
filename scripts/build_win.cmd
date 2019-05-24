@@ -11,7 +11,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 3 if using python 3.5/3.6 (only 2.7 and 3.5/3.6 are supported)
+    :: Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6 (only 2.7 and 3.5/3.6 are supported)
     if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=2
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
@@ -31,6 +31,9 @@ if DEFINED APPVEYOR (
     )
     :: Set python 3.5 with conda as the default python
     if !PYTHON_VERSION! EQU 3.5 (
+        set CONDA_ROOT=C:\Miniconda35-x64
+    )
+    if !PYTHON_VERSION! EQU 3 (
         set CONDA_ROOT=C:\Miniconda35-x64
     )
     set PATH=!CONDA_ROOT!;!CONDA_ROOT!\Scripts;!CONDA_ROOT!\Library\bin;!PATH!
