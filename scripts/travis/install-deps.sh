@@ -90,40 +90,33 @@ fi
 
 if $WITH_CUDA ; then
   # install repo packages
-  #CUDA_REPO_PKG=cuda-repo-ubuntu1404_7.5-18_amd64.deb
-  CUDA_REPO_PKG=cuda-repo-ubuntu1404_8.0.61-1_amd64.deb
+  CUDA_REPO_PKG=cuda-repo-ubuntu1404_7.5-18_amd64.deb
   wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_REPO_PKG
   dpkg -i $CUDA_REPO_PKG
   rm $CUDA_REPO_PKG
 
   if $WITH_CUDNN ; then
-   # ML_REPO_PKG=nvidia-machine-learning-repo-ubuntu1404_4.0-2_amd64.deb
-   # wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1404/x86_64/$ML_REPO_PKG
-   # dpkg -i $ML_REPO_PKG
-    ML_REPO_PKG=libcudnn7_7.0.5.15-1+cuda8.0_amd64.deb
-    ML_REPO_PKGD=libcudnn7-dev_7.0.5.15-1+cuda8.0_amd64.deb
+    ML_REPO_PKG=nvidia-machine-learning-repo-ubuntu1404_4.0-2_amd64.deb
     wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1404/x86_64/$ML_REPO_PKG
-    wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1404/x86_64/$ML_REPO_PKGD
-    dpkg -i $ML_REPO_PKG $ML_REPO_PKGD
+    dpkg -i $ML_REPO_PKG
   fi
 
   # update package lists
   apt-get -y update
 
   # install packages
-  CUDA_PKG_VERSION="8-0"
-  CUDA_VERSION="8.0"
+  CUDA_PKG_VERSION="7-5"
+  CUDA_VERSION="7.5"
   apt-get install -y --no-install-recommends \
     cuda-core-$CUDA_PKG_VERSION \
     cuda-cudart-dev-$CUDA_PKG_VERSION \
     cuda-cublas-dev-$CUDA_PKG_VERSION \
-    cuda-nvml-dev-$CUDA_PKG_VERSION \
     cuda-curand-dev-$CUDA_PKG_VERSION
   # manually create CUDA symlink
   ln -s /usr/local/cuda-$CUDA_VERSION /usr/local/cuda
 
   if $WITH_CUDNN ; then
-    apt-get install -y --no-install-recommends libcudnn7-dev libcudnn7
+    apt-get install -y --no-install-recommends libcudnn7-dev
   fi
 fi
 
