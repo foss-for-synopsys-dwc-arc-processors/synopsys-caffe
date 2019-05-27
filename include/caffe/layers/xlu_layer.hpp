@@ -17,7 +17,7 @@ template <typename Dtype>
 class XLULayer : public Layer<Dtype> {
  public:
   /**
-   * @param param provides XLUParameter relu_param,
+   * @param param provides XLUParameter xlu_param,
    *     with XLULayer options:
    *   - negative_slope (\b optional, default 0).
    *     the value @f$ \nu @f$ by which negative values are multiplied.
@@ -46,8 +46,6 @@ class XLULayer : public Layer<Dtype> {
    *      the computed outputs are @f$ y = \max(0, x) + \nu \min(0, x) @f$.
    */
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
   /**
@@ -80,10 +78,8 @@ class XLULayer : public Layer<Dtype> {
    */
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 };
 
 }  // namespace caffe
 
-#endif  // CAFFE_RELU_LAYER_HPP_
+#endif  // CAFFE_XLU_LAYER_HPP_

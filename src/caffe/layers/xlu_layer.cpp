@@ -21,10 +21,10 @@ void XLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
-  Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
-  Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
-  Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
-  Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
+  Dtype negative_slope = this->layer_param_.xlu_param().negative_slope();
+  Dtype relu6 = this->layer_param_.xlu_param().relu6(); //CUSTOMIZATION
+  Dtype maximum = this->layer_param_.xlu_param().maximum(); //CUSTOMIZATION
+  Dtype minimum = this->layer_param_.xlu_param().minimum(); //CUSTOMIZATION
   if (bottom.size() > 1)  //bottom[1] provides the maximum case
   	maximum = bottom[1]->cpu_data()[0];
   for (int i = 0; i < count; ++i) {
@@ -50,10 +50,10 @@ void XLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     const int count = bottom[0]->count();
-    Dtype negative_slope = this->layer_param_.relu_param().negative_slope();
-    Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
-    Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
-    Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
+    Dtype negative_slope = this->layer_param_.xlu_param().negative_slope();
+    Dtype relu6 = this->layer_param_.xlu_param().relu6(); //CUSTOMIZATION
+    Dtype maximum = this->layer_param_.xlu_param().maximum(); //CUSTOMIZATION
+    Dtype minimum = this->layer_param_.xlu_param().minimum(); //CUSTOMIZATION
     if (bottom.size() > 1)  //bottom[1] provides the maximum case
       maximum = bottom[1]->cpu_data()[0];
     for (int i = 0; i < count; ++i) {
@@ -69,10 +69,6 @@ void XLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-
-#ifdef CPU_ONLY
-STUB_GPU(XLULayer);
-#endif
 
 INSTANTIATE_CLASS(XLULayer);
 REGISTER_LAYER_CLASS(XLU);
