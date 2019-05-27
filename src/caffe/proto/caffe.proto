@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 236 (last added: space_to_batch_nd_param)
+// LayerParameter next available layer-specific ID: 237 (last added: xlu_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -567,6 +567,9 @@ message LayerParameter {
   optional LSTMUnitParameter lstm_unit_param = 217;
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
+
+  optional XLUParameter xlu_param = 237;
+
   optional ReshapeParameter reshape_param = 133;
   optional ROIAlignParameter roi_align_param = 247;
   optional ROIPoolingParameter roi_pooling_param = 8266711;
@@ -2182,6 +2185,34 @@ message ReductionParameter {
 
 // Message that stores parameters used by ReLULayer
 message ReLUParameter {
+  // Allow non-zero slope for negative inputs to speed up optimization
+  // Described in:
+  // Maas, A. L., Hannun, A. Y., & Ng, A. Y. (2013). Rectifier nonlinearities
+  // improve neural network acoustic models. In ICML Workshop on Deep Learning
+  // for Audio, Speech, and Language Processing.
+  optional float negative_slope = 1 [default = 0];
+  optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
+  optional float maximum = 6 [default = 0]; //CUSTOMIZATION, act as MAX range setting
+  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting 
+  //<--CUSTOMIZATION
+  enum SaturateMethod {
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 4 [default = None]; //control the output in certain range
+  //CUSTOMIZATION-->
+  enum Engine {
+    DEFAULT = 0;
+    CAFFE = 1;
+    CUDNN = 2;
+  }
+  optional Engine engine = 2 [default = DEFAULT];
+}
+
+message XLUParameter {
   // Allow non-zero slope for negative inputs to speed up optimization
   // Described in:
   // Maas, A. L., Hannun, A. Y., & Ng, A. Y. (2013). Rectifier nonlinearities
