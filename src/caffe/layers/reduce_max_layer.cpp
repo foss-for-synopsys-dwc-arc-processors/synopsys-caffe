@@ -58,55 +58,30 @@ namespace caffe {
 		top[0]->Reshape(top_shape);
 	}
 
-	template <typename Dtype>
-	void ReduceMaxLayer<Dtype>::InReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		int b_idx, int lv_in, int t_idx) {
-		const Dtype* bottom_data = bottom[0]->cpu_data();
-		Dtype* top_data = top[0]->mutable_cpu_data();
-		vector<int> shape_in(reduce_max_axis_.size(), 0);
-		for (int i = 0; i < reduce_max_axis_.size(); ++i) {
-			shape_in[i] = bottom[0]->shape()[reduce_max_axis_[i]];
-		}
-		for (int i = 0; i < shape_in[lv_in]; ++i) {
-			int b_idx_add = i * bottom[0]->count(reduce_max_axis_[lv_in] + 1);
-			if (lv_in == shape_in.size() - 1) {
-				if (top_data[t_idx] < bottom_data[b_idx + b_idx_add]) {
-					top_data[t_idx] = bottom_data[b_idx + b_idx_add];
-				}
-			}
-			if (lv_in < shape_in.size() - 1) {
-				InReduceMax(bottom, top, b_idx + b_idx_add, lv_in + 1, t_idx);
-			}
-		}
-	};
-
 
 	template <typename Dtype>
-	void ReduceMaxLayer<Dtype>::OutReduceMax(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		int lv_out, int b_idx, int lv_in, int t_idx) {
-		// parameters: axis_dim_, shape_out, idx_out
-		vector<int> shape_out = bottom[0]->shape();
-		vector<int> idx_out(bottom[0]->num_axes(), 0);
-		for (int i = 0; i < idx_out.size(); ++i) {
-			idx_out[i] = i;
-		}
-		for (int i = axis_dim_ - 1; i > -1; --i) {
-			shape_out.erase(shape_out.begin() + reduce_max_axis_[i]);
-			idx_out.erase(idx_out.begin() + reduce_max_axis_[i]);
-		}
+	inline vector<int>
+	ReduceMaxLayer<Dtype>::indices(int offset, const vector<int> &shape) const {
+	  vector<int> indices(shape.size());
+	  int r = offset;
+	  for (int i = shape.size() - 1; i >= 0; i--) {
+	    indices[i] = r % shape[i];
+	    r /= shape[i];
+	  }
+	  return indices;
+	}
 
-		// main part 
-		for (int i = 0; i < shape_out[lv_out]; ++i) {
-			int b_idx_add = i * bottom[0]->count(idx_out[lv_out] + 1);
-			int t_idx_add = i * count_shape(shape_out, lv_out + 1);
-			if (lv_out == shape_out.size() - 1) {
-				InReduceMax(bottom, top, b_idx + b_idx_add, lv_in, t_idx + t_idx_add);
-			}
-			if (lv_out < shape_out.size() - 1) {
-				OutReduceMax(bottom, top, lv_out + 1, b_idx + b_idx_add, lv_in, t_idx + t_idx_add);
-			}
+	template <typename Dtype>
+	inline int
+	ReduceMaxLayer<Dtype>::offset(const vector<Blob<Dtype>*>& bottom, const vector<int> &shape, 
+		const vector<int> &axis_ind, const vector<int> &indices) const {
+		int offset = 0;
+		for (int i = 0; i < axis_ind.size(); ++i) {
+			offset += indices[i] * bottom[0]->count(axis_ind[i] + 1);
 		}
-	};
+		return offset;
+	}
+	
 
 	template <typename Dtype>
 	void ReduceMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -116,6 +91,7 @@ namespace caffe {
 		Dtype* top_data = top[0]->mutable_cpu_data();
 		const int bottom_count = bottom[0]->count();
 		const int top_count = top[0]->count();
+		const vector<int> bottom_shape = bottom[0]->shape();
 		// initialize the top_data
 		std::vector<Dtype> bottom_sort(bottom_count, 0);
 		for (int i = 0; i < bottom_count; ++i) {
@@ -135,11 +111,35 @@ namespace caffe {
 		}
 		else {
 			// has axis, compare all elements in dim:reduce_max_axis_
-			int lv_out = 0;
-			int lv_in = 0;
-			int b_idx = 0;
-			int t_idx = 0;
-			OutReduceMax(bottom, top, lv_out, b_idx, lv_in, t_idx);
+			vector<int> shape_out = bottom[0]->shape();
+			vector<int> axis_out(bottom[0]->num_axes(), 0);
+			for (int i = 0; i < axis_out.size(); ++i) {
+				axis_out[i] = i;
+			}
+			for (int i = axis_dim_ - 1; i > -1; --i) {
+				shape_out.erase(shape_out.begin() + reduce_max_axis_[i]);
+				axis_out.erase(axis_out.begin() + reduce_max_axis_[i]);
+			}
+
+			vector<int> shape_in(reduce_max_axis_.size(), 0);
+			for (int i = 0; i < reduce_max_axis_.size(); ++i) {
+				shape_in[i] = bottom[0]->shape()[reduce_max_axis_[i]];
+			}
+
+
+			for (int i = 0; i < top_count; ++i){
+				vector<int> ind_out = indices(i, shape_out);
+				int offset_out = offset(bottom, bottom_shape, axis_out, ind_out);
+				for (int j = 0; j < bottom_count/top_count; ++j) {
+					vector<int> ind_in = indices(j, shape_in);
+					int offset_in = offset(bottom, bottom_shape, reduce_max_axis_, ind_in);
+					int b_idx = offset_out + offset_in;
+					if (top_data[i] < bottom_data[b_idx]) {
+						top_data[i] = bottom_data[b_idx];
+					}
+					
+				}		
+			}
 		}
 	}
 
