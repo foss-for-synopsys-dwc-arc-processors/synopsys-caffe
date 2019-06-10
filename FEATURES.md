@@ -13,6 +13,7 @@ depthtospace_layer
 gather_layer  
 gather_nd_layer  
 nms_gather_layer  
+mirror_pad_layer  
 nms_layer  
 pad_layer  
 pyramid_roi_align_layer  
