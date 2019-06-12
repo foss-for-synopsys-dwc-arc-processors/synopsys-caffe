@@ -31,6 +31,7 @@ softsign_layer
 space_to_batch_nd_layer  
 spacetodepth_layer  
 stack_layer  
+tile_nd_layer  
 topk_gather_layer  
 unstack_layer  
 where4_gathernd_crop_layer  
