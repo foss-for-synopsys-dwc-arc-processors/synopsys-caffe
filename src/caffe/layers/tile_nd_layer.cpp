@@ -128,6 +128,8 @@ void TileNDLayer<Dtype>::Forward_cpu(
 template <typename Dtype>
 void TileNDLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+  NOT_IMPLEMENTED;
+  /*
   if (!propagate_down[0]) { return; }
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
@@ -143,6 +145,7 @@ void TileNDLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       bottom_diff += inner_dim_[s];
     }
   }
+  */
 }
 
 //#ifdef CPU_ONLY
