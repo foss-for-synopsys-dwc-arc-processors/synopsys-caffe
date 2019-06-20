@@ -10,9 +10,8 @@
 namespace caffe {
 
 /*
- * @brief Implement tf.expand_dims.
+ * @brief Inserts several dimension of 1 at the dimension index axis of input's shape.
  *
- * Inserts a dimension of 1 at the dimension index axis of input's shape.
  * The dimension index axis starts at zero;
  * if you specify a negative number for axis it is counted backward from the end.
  */

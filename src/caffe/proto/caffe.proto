@@ -3064,5 +3064,5 @@ message TileNDParameter {
 message ExpandParameter {
   // Inserts a dimension of 1 at the dimension index axis of input.
   // May be negative to index from the end (e.g., -1 for the last axis).
-  optional int32 axis = 1 [default = 0];
+  repeated int32 axis = 1;
 }
