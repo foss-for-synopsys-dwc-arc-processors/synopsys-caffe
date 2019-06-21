@@ -9,7 +9,7 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 atan_layer  
 batch_to_space_nd_layer  
 crop_and_resize  
-depthtospace_layer  
+depth_to_space_layer  
 expand_dims_nd_layer  
 gather_layer  
 gather_nd_layer  
@@ -30,7 +30,7 @@ shape_layer
 sin_layer  
 softsign_layer  
 space_to_batch_nd_layer  
-spacetodepth_layer  
+space_to_depth_layer  
 stack_layer  
 tile_nd_layer  
 topk_gather_layer  
