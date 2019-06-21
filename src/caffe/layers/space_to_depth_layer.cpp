@@ -1,6 +1,6 @@
 #include <vector>
 
-#include "caffe/layers/spacetodepth_layer.hpp"
+#include "caffe/layers/space_to_depth_layer.hpp"
 
 namespace caffe {
 
