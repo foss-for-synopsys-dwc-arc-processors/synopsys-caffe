@@ -1,5 +1,5 @@
-#ifndef CAFFE_EXPAND_LAYER_HPP_
-#define CAFFE_EXPAND_LAYER_HPP_
+#ifndef CAFFE_EXPAND_DIMS_ND_LAYER_HPP_
+#define CAFFE_EXPAND_DIMS_ND_LAYER_HPP_
 
 #include <vector>
 
@@ -17,14 +17,14 @@ namespace caffe {
  */
 
 template <typename Dtype>
-class ExpandLayer : public Layer<Dtype> {
+class ExpandDimsNDLayer : public Layer<Dtype> {
  public:
-  explicit ExpandLayer(const LayerParameter& param)
+  explicit ExpandDimsNDLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Expand"; }
+  virtual inline const char* type() const { return "ExpandDimsND"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
@@ -39,4 +39,4 @@ class ExpandLayer : public Layer<Dtype> {
 
 }  // namespace caffe
 
-#endif  // CAFFE_EXPAND_LAYER_HPP_
+#endif  // CAFFE_EXPAND_DIMS_ND_LAYER_HPP_

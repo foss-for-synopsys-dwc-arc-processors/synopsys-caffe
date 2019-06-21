@@ -1,18 +1,18 @@
 #include <vector>
 
-#include "caffe/layers/expand_layer.hpp"
+#include "caffe/layers/expand_dims_nd_layer.hpp"
 
 namespace caffe {
 
 template <typename Dtype>
-void ExpandLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+void ExpandDimsNDLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   vector<int> axis;
   axis.clear();
-  std::copy(this->layer_param_.expand_param().axis().begin(),
-      this->layer_param_.expand_param().axis().end(),
+  std::copy(this->layer_param_.expand_dims_nd_param().axis().begin(),
+      this->layer_param_.expand_dims_nd_param().axis().end(),
       std::back_inserter(axis));
   //int axis = this->layer_param_.expand_param().axis();
   for(int i=0; i<axis.size();i++)
@@ -45,18 +45,18 @@ void ExpandLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ExpandLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void ExpandDimsNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   top[0]->ShareData(*bottom[0]);
 }
 
 template <typename Dtype>
-void ExpandLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void ExpandDimsNDLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
   bottom[0]->ShareDiff(*top[0]);
 }
 
-INSTANTIATE_CLASS(ExpandLayer);
-REGISTER_LAYER_CLASS(Expand);
+INSTANTIATE_CLASS(ExpandDimsNDLayer);
+REGISTER_LAYER_CLASS(ExpandDimsND);
 
 }  // namespace caffe

@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 241 (last added: expand_param)
+// LayerParameter next available layer-specific ID: 241 (last added: expand_dims_nd_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -643,7 +643,7 @@ message LayerParameter {
   optional SpaceToBatchNDParameter space_to_batch_nd_param = 236;
   optional MirrorPadParameter mirror_pad_param = 238;
   optional TileNDParameter tile_nd_param = 239;
-  optional ExpandParameter expand_param = 240;
+  optional ExpandDimsNDParameter expand_dims_nd_param = 240;
 }
 
 message AccumParameter {
@@ -3061,8 +3061,8 @@ message TileNDParameter {
   repeated uint32 tiles = 2;
 }
 
-message ExpandParameter {
-  // Inserts a dimension of 1 at the dimension index axis of input.
+message ExpandDimsNDParameter {
+  // Inserts several dimension of 1 at the dimension index axis of input.
   // May be negative to index from the end (e.g., -1 for the last axis).
   repeated int32 axis = 1;
 }
