@@ -14,10 +14,10 @@ void TileNDLayer<Dtype>::LayerSetUp(
     tile_nd_param.multiples().end(),
     std::back_inserter(multiples_));
 
-  CHECK_GT(multiples_.size(), 0) << "Number of tiles must be positive!";
+  CHECK_EQ(multiples_.size(), bottom[0]->num_axes()) << "Length must be the same as the number of dimensions in input!";
   for(int i=0;i<multiples_.size();i++)
   {
-    CHECK_GT(multiples_[i], 0) << "Value of tiles must be positive!";
+    CHECK_GT(multiples_[i], 0) << "Value of multiples must be positive!";
   }
 }
 
