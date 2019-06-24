@@ -27,7 +27,8 @@ void TileNDLayer<Dtype>::Reshape(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   vector<int> top_shape = bottom[0]->shape();
   for(int i=multiples_.size()-1;i>=0;i--)
-    top_shape[i] = bottom[0]->shape()[i] * multiples_[i];
+    if (multiples_[i] > 1)
+      top_shape[i] = bottom[0]->shape()[i] * multiples_[i];
   top[0]->Reshape(top_shape);
 }
 
