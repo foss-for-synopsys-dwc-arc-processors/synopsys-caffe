@@ -9,21 +9,15 @@ template <typename Dtype>
 void TileNDLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   const TileNDParameter& tile_nd_param = this->layer_param_.tile_nd_param();
-  axis_.clear();
-  std::copy(tile_nd_param.axis().begin(),
-    tile_nd_param.axis().end(),
-    std::back_inserter(axis_));
-  tiles_.clear();
-  std::copy(tile_nd_param.tiles().begin(),
-    tile_nd_param.tiles().end(),
-    std::back_inserter(tiles_));
+  multiples_.clear();
+  std::copy(tile_nd_param.multiples().begin(),
+    tile_nd_param.multiples().end(),
+    std::back_inserter(multiples_));
 
-  CHECK_EQ(axis_.size(), tiles_.size()) << "Number of tiles must be equal to axis!";
-  CHECK_GT(tiles_.size(), 0) << "Number of tiles must be positive!";
-  for(int i=0;i<axis_.size();i++)
+  CHECK_GT(multiples_.size(), 0) << "Number of tiles must be positive!";
+  for(int i=0;i<multiples_.size();i++)
   {
-    axis_[i] = bottom[0]->CanonicalAxisIndex(axis_[i]);
-    CHECK_GT(tiles_[i], 0) << "Value of tiles must be positive!";
+    CHECK_GT(multiples_[i], 0) << "Value of tiles must be positive!";
   }
 }
 
@@ -32,8 +26,8 @@ template <typename Dtype>
 void TileNDLayer<Dtype>::Reshape(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   vector<int> top_shape = bottom[0]->shape();
-  for(int i=axis_.size()-1;i>=0;i--)
-    top_shape[axis_[i]] = bottom[0]->shape(axis_[i]) * tiles_[i];
+  for(int i=multiples_.size()-1;i>=0;i--)
+    top_shape[i] = bottom[0]->shape()[i] * multiples_[i];
   top[0]->Reshape(top_shape);
 }
 

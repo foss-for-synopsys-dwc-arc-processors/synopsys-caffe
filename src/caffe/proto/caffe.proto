@@ -3056,10 +3056,8 @@ message BatchToSpaceNDParameter{
 
 // Message that stores parameters used by TileNDLayer
 message TileNDParameter {
-  // The index of the axis to tile.
-  repeated int32 axis = 1;
   // The number of copies (tiles) of the blob to output.
-  repeated uint32 tiles = 2;
+  repeated uint32 multiples = 2;
 }
 
 message ExpandDimsNDParameter {

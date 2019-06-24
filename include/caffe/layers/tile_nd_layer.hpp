@@ -37,8 +37,7 @@ class TileNDLayer : public Layer<Dtype> {
   //virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
   //    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  vector<int> axis_;
-  vector<int> tiles_;
+  vector<int> multiples_;
   vector<int> outer_dim_, inner_dim_;
   vector<int> top_inner_dim_;
   Blob<Dtype> top_temp_;
