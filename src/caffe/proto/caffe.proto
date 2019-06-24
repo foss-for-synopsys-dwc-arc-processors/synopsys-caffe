@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 241 (last added: expand_dims_nd_param)
+// LayerParameter next available layer-specific ID: 242 (last added: squeeze_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -644,6 +644,7 @@ message LayerParameter {
   optional MirrorPadParameter mirror_pad_param = 238;
   optional TileNDParameter tile_nd_param = 239;
   optional ExpandDimsNDParameter expand_dims_nd_param = 240;
+  optional SqueezeParameter squeeze_param = 241;
 }
 
 message AccumParameter {
@@ -3066,3 +3067,11 @@ message ExpandDimsNDParameter {
   // May be negative to index from the end (e.g., -1 for the last axis).
   repeated int32 axis = 1;
 }
+
+message SqueezeParameter {
+  // Remove the dimension of shape 1 (at the given dimension axis) for input.
+  // May be negative to index from the end (e.g., -1 for the last axis).
+  // By default will remove all shape 1 dimension.
+  repeated int32 axis = 1;
+}
+

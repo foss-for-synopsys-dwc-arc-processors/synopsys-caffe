@@ -31,6 +31,7 @@ sin_layer
 softsign_layer  
 space_to_batch_nd_layer  
 space_to_depth_layer  
+squeeze_layer  
 stack_layer  
 tile_nd_layer  
 topk_gather_layer  
