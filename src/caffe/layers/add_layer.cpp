@@ -26,15 +26,15 @@ void AddLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   {
     for(int i=0;i<dim_diff_;i++)
       top_shape[i] = bottom[0]->shape(i);
-    for(int i=dim_diff_; i<dim_-dim_diff_; i++)
+    for(int i=dim_diff_; i<dim_; i++)
       top_shape[i] = bottom[0]->shape(i) >= bottom[1]->shape(i-dim_diff_) ? bottom[0]->shape(i): bottom[1]->shape(i-dim_diff_);
   }
   else //dim_diff_<0, bottom1 has more axes than bottom0
   {
-    for(int i=0;i<dim_diff_;i++)
+    for(int i=0;i<-dim_diff_;i++)
        top_shape[i] = bottom[1]->shape(i);
-     for(int i=dim_diff_; i<dim_-dim_diff_; i++)
-       top_shape[i] = bottom[0]->shape(i-dim_diff_) >= bottom[1]->shape(i) ? bottom[0]->shape(i-dim_diff_): bottom[1]->shape(i);
+     for(int i=-dim_diff_; i<dim_; i++)
+       top_shape[i] = bottom[0]->shape(i+dim_diff_) >= bottom[1]->shape(i) ? bottom[0]->shape(i+dim_diff_): bottom[1]->shape(i);
   }
   top[0]->Reshape(top_shape);
 }
@@ -59,6 +59,7 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     {
       int offset0 = 0;
       int offset1 = 0;
+
       if(dim_diff_ == 0)
       {
         for(int i=0;i<dim_-1;i++)
@@ -75,6 +76,51 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         offset0 += z0;
         offset1 += z1;
       }
+      else if(dim_diff_ > 0) //bottom0 has more axes than bottom1
+      {
+        for(int i=0;i<dim_diff_;i++)
+        {
+          int num = (d % top[0]->count(i)) / top[0]->count(i+1);
+          int n0 = 1 == bottom[0]->shape(i) ? 0 : num;
+          offset0 += n0 * bottom[0]->count(i+1);
+        }
+        for(int i=dim_diff_;i<dim_-1;i++)
+        {
+          int num = (d % top[0]->count(i)) / top[0]->count(i+1);
+          int n0 = 1 == bottom[0]->shape(i) ? 0 : num;
+          int n1 = 1 == bottom[1]->shape(i-dim_diff_) ? 0 : num;
+          offset0 += n0 * bottom[0]->count(i+1);
+          offset1 += n1 * bottom[1]->count(i-dim_diff_+1);
+        }
+        int z = d % top[0]->shape(dim_-1);
+        int z0 = 1 == bottom[0]->shape(dim_-1) ? 0 : z;
+        int z1 = 1 == bottom[1]->shape(dim_-dim_diff_-1) ? 0 : z;
+        offset0 += z0;
+        offset1 += z1;
+      }
+      else //dim_diff_<0, bottom1 has more axes than bottom0
+      {
+        for(int i=0;i<-dim_diff_;i++)
+        {
+          int num = (d % top[0]->count(i)) / top[0]->count(i+1);
+          int n1 = 1 == bottom[1]->shape(i) ? 0 : num;
+          offset1 += n1 * bottom[1]->count(i+1);
+        }
+        for(int i=-dim_diff_;i<dim_-1;i++)
+        {
+          int num = (d % top[0]->count(i)) / top[0]->count(i+1);
+          int n0 = 1 == bottom[0]->shape(i+dim_diff_) ? 0 : num;
+          int n1 = 1 == bottom[1]->shape(i) ? 0 : num;
+          offset0 += n0 * bottom[0]->count(i+dim_diff_+1);
+          offset1 += n1 * bottom[1]->count(i+1);
+        }
+        int z = d % top[0]->shape(dim_-1);
+        int z0 = 1 == bottom[0]->shape(dim_+dim_diff_-1) ? 0 : z;
+        int z1 = 1 == bottom[1]->shape(dim_-1) ? 0 : z;
+        offset0 += z0;
+        offset1 += z1;
+      }
+
       top_data[d] = bottom0_data[offset0] + bottom1_data[offset1];
     }
 
