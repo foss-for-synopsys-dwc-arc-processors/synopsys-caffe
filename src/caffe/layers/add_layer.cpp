@@ -11,10 +11,12 @@ void AddLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not allow in-place computation.";
   is_scalar_=false;
-  if(bottom[0]->num_axes()==0 || bottom[1]->num_axes()==0)
+  Blob<Dtype>* addend = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
+
+  if(bottom[0]->num_axes()==0 || addend->num_axes()==0)
     is_scalar_=true;
-  dim_diff_ = bottom[0]->num_axes() - bottom[1]->num_axes();
-  dim_ = bottom[0]->num_axes() >= bottom[1]->num_axes() ? bottom[0]->num_axes() : bottom[1]->num_axes();
+  dim_diff_ = bottom[0]->num_axes() - addend->num_axes();
+  dim_ = bottom[0]->num_axes() >= addend->num_axes() ? bottom[0]->num_axes() : addend->num_axes();
   vector<int> top_shape(dim_, 1);
   if(dim_diff_ == 0)
   {
@@ -22,9 +24,9 @@ void AddLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     {
       for(int i=0;i<dim_;i++)
       {
-        CHECK(bottom[0]->shape(i)==bottom[1]->shape(i) || bottom[0]->shape(i)==1 || bottom[1]->shape(i)==1)
+        CHECK(bottom[0]->shape(i)==addend->shape(i) || bottom[0]->shape(i)==1 || addend->shape(i)==1)
               << "Dimensions must be equal or 1 in the bottoms!";
-        top_shape[i] = bottom[0]->shape(i) >= bottom[1]->shape(i) ? bottom[0]->shape(i): bottom[1]->shape(i);
+        top_shape[i] = bottom[0]->shape(i) >= addend->shape(i) ? bottom[0]->shape(i): addend->shape(i);
       }
     }
   }
@@ -35,7 +37,7 @@ void AddLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       for(int i=0;i<dim_diff_;i++)
         top_shape[i] = bottom[0]->shape(i);
       for(int i=dim_diff_; i<dim_; i++)
-        top_shape[i] = bottom[0]->shape(i) >= bottom[1]->shape(i-dim_diff_) ? bottom[0]->shape(i): bottom[1]->shape(i-dim_diff_);
+        top_shape[i] = bottom[0]->shape(i) >= addend->shape(i-dim_diff_) ? bottom[0]->shape(i): addend->shape(i-dim_diff_);
     }
     else //bottom1 is a scalar
     {
@@ -48,16 +50,17 @@ void AddLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     if(!is_scalar_)
     {
       for(int i=0;i<-dim_diff_;i++)
-        top_shape[i] = bottom[1]->shape(i);
+        top_shape[i] = addend->shape(i);
       for(int i=-dim_diff_; i<dim_; i++)
-        top_shape[i] = bottom[0]->shape(i+dim_diff_) >= bottom[1]->shape(i) ? bottom[0]->shape(i+dim_diff_): bottom[1]->shape(i);
+        top_shape[i] = bottom[0]->shape(i+dim_diff_) >= addend->shape(i) ? bottom[0]->shape(i+dim_diff_): addend->shape(i);
     }
     else //bottom0 is a scalar
     {
       for(int i=0;i<dim_;i++)
-        top_shape[i] = bottom[1]->shape(i);
+        top_shape[i] = addend->shape(i);
     }
   }
+
   top[0]->Reshape(top_shape);
 }
 
@@ -65,7 +68,8 @@ template <typename Dtype>
 void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
 	  const Dtype* bottom0_data = bottom[0]->cpu_data();
-	  const Dtype* bottom1_data = bottom[1]->cpu_data();
+	  Blob<Dtype>* addend = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
+	  const Dtype* bottom1_data = addend->cpu_data();
 	  Dtype* top_data = top[0]->mutable_cpu_data();
     int count = top[0]->count();
 
@@ -90,13 +94,13 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           {
             int num = (d % top[0]->count(i)) / top[0]->count(i+1);
             int n0 = 1 == bottom[0]->shape(i) ? 0 : num;
-            int n1 = 1 == bottom[1]->shape(i) ? 0 : num;
+            int n1 = 1 == addend->shape(i) ? 0 : num;
             offset0 += n0 * bottom[0]->count(i+1);
-            offset1 += n1 * bottom[1]->count(i+1);
+            offset1 += n1 * addend->count(i+1);
           }
           int z = d % top[0]->shape(dim_-1);
           int z0 = 1 == bottom[0]->shape(dim_-1) ? 0 : z;
-          int z1 = 1 == bottom[1]->shape(dim_-1) ? 0 : z;
+          int z1 = 1 == addend->shape(dim_-1) ? 0 : z;
           offset0 += z0;
           offset1 += z1;
         }
@@ -112,13 +116,13 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           {
             int num = (d % top[0]->count(i)) / top[0]->count(i+1);
             int n0 = 1 == bottom[0]->shape(i) ? 0 : num;
-            int n1 = 1 == bottom[1]->shape(i-dim_diff_) ? 0 : num;
+            int n1 = 1 == addend->shape(i-dim_diff_) ? 0 : num;
             offset0 += n0 * bottom[0]->count(i+1);
-            offset1 += n1 * bottom[1]->count(i-dim_diff_+1);
+            offset1 += n1 * addend->count(i-dim_diff_+1);
           }
           int z = d % top[0]->shape(dim_-1);
           int z0 = 1 == bottom[0]->shape(dim_-1) ? 0 : z;
-          int z1 = 1 == bottom[1]->shape(dim_-dim_diff_-1) ? 0 : z;
+          int z1 = 1 == addend->shape(dim_-dim_diff_-1) ? 0 : z;
           offset0 += z0;
           offset1 += z1;
         }
@@ -127,20 +131,20 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           for(int i=0;i<-dim_diff_;i++)
           {
             int num = (d % top[0]->count(i)) / top[0]->count(i+1);
-            int n1 = 1 == bottom[1]->shape(i) ? 0 : num;
-            offset1 += n1 * bottom[1]->count(i+1);
+            int n1 = 1 == addend->shape(i) ? 0 : num;
+            offset1 += n1 * addend->count(i+1);
           }
           for(int i=-dim_diff_;i<dim_-1;i++)
           {
             int num = (d % top[0]->count(i)) / top[0]->count(i+1);
             int n0 = 1 == bottom[0]->shape(i+dim_diff_) ? 0 : num;
-            int n1 = 1 == bottom[1]->shape(i) ? 0 : num;
+            int n1 = 1 == addend->shape(i) ? 0 : num;
             offset0 += n0 * bottom[0]->count(i+dim_diff_+1);
-            offset1 += n1 * bottom[1]->count(i+1);
+            offset1 += n1 * addend->count(i+1);
           }
           int z = d % top[0]->shape(dim_-1);
           int z0 = 1 == bottom[0]->shape(dim_+dim_diff_-1) ? 0 : z;
-          int z1 = 1 == bottom[1]->shape(dim_-1) ? 0 : z;
+          int z1 = 1 == addend->shape(dim_-1) ? 0 : z;
           offset0 += z0;
           offset1 += z1;
         }
@@ -148,9 +152,9 @@ void AddLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         top_data[d] = bottom0_data[offset0] + bottom1_data[offset1];
       }
     }
-    else //has scalar
+    else //is scalar with shape ()
     {
-      if(bottom[1]->num_axes()==0) //bottom1 is a scalar
+      if(addend->num_axes()==0) //bottom1 is a scalar
       {
         caffe_copy(count, bottom0_data, top_data);
         Dtype scalar = bottom1_data[0];
