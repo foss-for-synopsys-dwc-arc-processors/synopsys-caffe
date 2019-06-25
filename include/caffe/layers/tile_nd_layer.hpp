@@ -38,9 +38,6 @@ class TileNDLayer : public Layer<Dtype> {
   //    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
   vector<int> multiples_;
-  vector<int> outer_dim_, inner_dim_;
-  vector<int> top_inner_dim_;
-  Blob<Dtype> top_temp_;
 };
 
 }  // namespace caffe

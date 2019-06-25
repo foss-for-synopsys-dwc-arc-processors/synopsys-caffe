@@ -40,6 +40,7 @@ class AddLayer : public Layer<Dtype> {
 
   int dim_diff_;
   int dim_;
+  bool is_scalar_;
 };
 
 }  // namespace caffe
