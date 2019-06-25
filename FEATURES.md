@@ -15,6 +15,7 @@ gather_layer
 gather_nd_layer  
 nms_gather_layer  
 mirror_pad_layer  
+mul_layer  
 nms_layer  
 pad_layer  
 pyramid_roi_align_layer  
@@ -33,6 +34,7 @@ space_to_batch_nd_layer
 space_to_depth_layer  
 squeeze_layer  
 stack_layer  
+sub_layer  
 tile_nd_layer  
 topk_gather_layer  
 unstack_layer  
