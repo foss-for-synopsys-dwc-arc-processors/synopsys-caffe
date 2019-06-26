@@ -12,6 +12,7 @@ crop_and_resize
 depth_to_space_layer  
 div_layer  
 expand_dims_nd_layer  
+floor_div_layer  
 gather_layer  
 gather_nd_layer  
 nms_gather_layer  
