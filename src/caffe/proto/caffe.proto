@@ -2946,6 +2946,8 @@ message NMSGatherParameter {
 
 message GatherNdParameter {
   repeated uint32 indices = 1;
+  // repeated uint32 shape = 2;
+  // rename shape as indices_shape
   repeated uint32 indices_shape = 2;
 }
 
