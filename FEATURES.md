@@ -22,6 +22,7 @@ mirror_pad_layer
 mul_layer  
 nms_layer  
 pad_layer  
+pow_layer  
 pyramid_roi_align_layer  
 reduce_max_layer  
 reduce_mean_layer  
