@@ -10,6 +10,7 @@ atan_layer
 batch_to_space_nd_layer  
 crop_and_resize  
 depth_to_space_layer  
+div_layer  
 expand_dims_nd_layer  
 gather_layer  
 gather_nd_layer  

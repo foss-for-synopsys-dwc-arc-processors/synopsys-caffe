@@ -82,6 +82,20 @@ void caffe_add_scalar(const int N, const double alpha, double* Y) {
   }
 }
 
+template <>
+void caffe_div_scalar(const int N, const float alpha, float* Y) {
+  for (int i = 0; i < N; ++i) {
+    Y[i] /= alpha;
+  }
+}
+
+template <>
+void caffe_div_scalar(const int N, const double alpha, double* Y) {
+  for (int i = 0; i < N; ++i) {
+    Y[i] /= alpha;
+  }
+}
+
 template <typename Dtype>
 void caffe_copy(const int N, const Dtype* X, Dtype* Y) {
   if (X != Y) {
