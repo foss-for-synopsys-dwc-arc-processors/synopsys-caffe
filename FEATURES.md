@@ -16,6 +16,7 @@ floor_div_layer
 gather_layer  
 gather_nd_layer  
 nms_gather_layer  
+maximum_layer  
 minimum_layer  
 mirror_pad_layer  
 mul_layer  
