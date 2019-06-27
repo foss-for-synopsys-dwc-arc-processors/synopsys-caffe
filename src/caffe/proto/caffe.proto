@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 242 (last added: squeeze_param)
+// LayerParameter next available layer-specific ID: 243 (last added: broadcast_to_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -645,6 +645,7 @@ message LayerParameter {
   optional TileNDParameter tile_nd_param = 239;
   optional ExpandDimsNDParameter expand_dims_nd_param = 240;
   optional SqueezeParameter squeeze_param = 241;
+  optional BroadcastToParameter broadcast_to_param = 242;
 }
 
 message AccumParameter {
@@ -3075,3 +3076,7 @@ message SqueezeParameter {
   repeated int32 axis = 1;
 }
 
+message BroadcastToParameter {
+	//The shape of the desired output.
+  repeated uint32 shape = 1;
+}
