@@ -9,11 +9,13 @@ evconvert (TensorFlow/ONNX/... to Caffe Converter) related
 atan_layer  
 batch_to_space_nd_layer  
 broadcast_to_layer  
-crop_and_resize  
+crop_and_resize_layer  
+ceil_layer  
 depth_to_space_layer  
 div_layer  
 expand_dims_nd_layer  
 floor_div_layer  
+floor_layer  
 floor_mod_layer  
 gather_layer  
 gather_nd_layer  
