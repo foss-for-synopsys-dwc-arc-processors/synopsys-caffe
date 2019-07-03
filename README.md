@@ -38,7 +38,7 @@ export PYTHONPATH=${SYNOPSYS_CAFFE_HOME}/python:${PYTHONPATH}
 ### Windows
 A simple guide:
 1. Download the **Visual Studio 2015 Update 3** (Do not use the VS 2017, it is not supported!). Choose to install the support for visual C++ instead of applying the default settings.
-2. Install the CMake 3.4 or higher. Install Python 2.7 or 3.5/3.6. Add cmake.exe and python.exe to your PATH.
+2. Install the CMake 3.4 or higher. Install Python 2.7. Add cmake.exe and python.exe to your PATH.
 3. After installing the Python, please open a `cmd` prompt and use `pip install numpy` to install the **numpy** package.
 4. Checkout the Synopsys Caffe **master** branch for build. The windows branch is deprecated, please do not use it. We use `C:\Projects` as the current folder for the following instructions.
 5. Edit any of the options inside **synopsys-caffe\scripts\build_win.cmd** to suit your needs, such as settings for Python version, CUDA/CuDNN enabling etc.   
