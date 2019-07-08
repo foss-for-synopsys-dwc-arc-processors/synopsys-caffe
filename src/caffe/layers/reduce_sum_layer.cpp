@@ -37,9 +37,7 @@ void ReduceSumLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
       }
     } else {
       // has keepdims but no axis
-      for (int i = 0; i < num_axes; ++i) {
-        top_shape[i] = 1;
-      }
+      top_shape.assign(top_shape.size(), 1);
     }
   } else {
     if (axis_dim_ != 0) {

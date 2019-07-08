@@ -9,50 +9,38 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class ReduceProdLayer : public Layer<Dtype> {
- public:
-  explicit ReduceProdLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+template <typename Dtype> class ReduceProdLayer : public Layer<Dtype> {
+public:
+  explicit ReduceProdLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
+                          const vector<Blob<Dtype> *> &top);
+  virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
+                       const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char* type() const { return "ReduceProd"; }
+  virtual inline const char *type() const { return "ReduceProd"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
-	inline int count_shape(vector<int>shape, int start) const {
-		CHECK_GE(start, 0);
-		CHECK_LE(start, shape.size());
-		int count = 1;
-		for (int i = start; i < shape.size(); ++i) {
-			count *= shape[i];
-		}
-		return count;
-	}
+protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+                           const vector<Blob<Dtype> *> &top);
+  /// @brief Not implemented
+  virtual void Backward_cpu(const vector<Blob<Dtype> *> &top,
+                            const vector<bool> &propagate_down,
+                            const vector<Blob<Dtype> *> &bottom) {
+    NOT_IMPLEMENTED;
+  }
 
- protected:
-	 virtual void OutReduceProd(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		 int lv_out, int b_idx, int lv_in, int t_idx);
-	 virtual void InReduceProd(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		 int b_idx, int lv_in, int t_idx);
+  inline vector<int> indices(int offset, const vector<int> &shape) const;
+  inline int offset(const vector<Blob<Dtype> *> &bottom,
+                    const vector<int> &shape, const vector<int> &axis_ind,
+                    const vector<int> &indices) const;
 
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-	/// @brief Not implemented
-	virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-		NOT_IMPLEMENTED;
-	}
-	
-	vector<int> reduce_prod_axis_;
-	bool reduce_prod_keepdims_;
-	int axis_dim_;
+  vector<int> reduce_prod_axis_;
+  bool reduce_prod_keepdims_;
+  int axis_dim_;
 };
 
-}  // namespace caffe
+} // namespace caffe
 
-#endif  // CAFFE_REDUCEPROD_LAYER_HPP_
-
+#endif // CAFFE_REDUCEPROD_LAYER_HPP_
