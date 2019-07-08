@@ -9,40 +9,38 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class ReduceSumLayer : public Layer<Dtype> {
- public:
-  explicit ReduceSumLayer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+template <typename Dtype> class ReduceSumLayer : public Layer<Dtype> {
+public:
+  explicit ReduceSumLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
+                          const vector<Blob<Dtype> *> &top);
+  virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
+                       const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char* type() const { return "ReduceSum"; }
+  virtual inline const char *type() const { return "ReduceSum"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
+protected:
+  virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+                           const vector<Blob<Dtype> *> &top);
+  /// @brief Not implemented
+  virtual void Backward_cpu(const vector<Blob<Dtype> *> &top,
+                            const vector<bool> &propagate_down,
+                            const vector<Blob<Dtype> *> &bottom) {
+    NOT_IMPLEMENTED;
+  }
 
- protected:
+  inline vector<int> indices(int offset, const vector<int> &shape) const;
+  inline int offset(const vector<Blob<Dtype> *> &bottom,
+                    const vector<int> &shape, const vector<int> &axis_ind,
+                    const vector<int> &indices) const;
 
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-	/// @brief Not implemented
-	virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-		const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-		NOT_IMPLEMENTED;
-	}
- 
-	inline vector<int> indices(int offset, const vector<int> &shape) const;
-	inline int offset(const vector<Blob<Dtype>*> &bottom, const vector<int> &shape, const vector<int> &axis_ind, const vector<int> &indices) const;
-
-	vector<int> reduce_sum_axis_;
-	bool reduce_sum_keepdims_;
-	int axis_dim_;
+  vector<int> reduce_sum_axis_;
+  bool reduce_sum_keepdims_;
+  int axis_dim_;
 };
 
-}  // namespace caffe
+} // namespace caffe
 
-#endif  // CAFFE_REDUCESUM_LAYER_HPP_
-
+#endif // CAFFE_REDUCESUM_LAYER_HPP_
