@@ -26,7 +26,6 @@ void ReduceSumLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
 template <typename Dtype>
 void ReduceSumLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
                                     const vector<Blob<Dtype> *> &top) {
-  const int num_axes = bottom[0]->num_axes();
   vector<int> top_shape = bottom[0]->shape();
   vector<int> bottom_shape = bottom[0]->shape();
   if (reduce_sum_keepdims_) {
