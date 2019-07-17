@@ -58,12 +58,6 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   // shrink_axis_mask_ , new_axis_mask_
   int ellipsis_axis = -1;
   for (int i = 0; i < s_len_; ++i) {
-    // if (begin_mask_ & 1 << i) {
-    // strided_begin_[i] = ((strides_[i] > 0) ? 0 : b_shape[i] - 1);
-    //}
-    // if (end_mask_ & 1 << i) {
-    // strided_end_[i] = ((strides_[i] > 0) ? b_shape[i] : -1);
-    //}
     if (ellipsis_mask_ & 1 << i) {
       ellipsis_axis = i;
     }
@@ -89,18 +83,6 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       strides_[i] = 1;
     }
   }
-
-  // make sure all elements in begin and end are positive
-  // for (int i = 0; i < strided_begin_.size(); ++i) {
-  // if (strided_begin_[i] < 0) {
-  //  strided_begin_[i] += b_shape[i];
-  // }
-  // if (strided_end_[i] < 0) {
-  //  strided_end_[i] += b_shape[i];
-  // }
-  // CHECK_NE(strided_begin_[i], strided_end_[i]) << "begin[i] should not equal
-  // to end[i]!";
-  //}
 
   // ellipsis_mask_
   const int b_dim = b_shape.size();

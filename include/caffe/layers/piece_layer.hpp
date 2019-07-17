@@ -9,12 +9,6 @@
 
 namespace caffe {
 
-/**
- * @brief Takes a Blob and slices it along either the num or channel dimension,
- *        outputting multiple sliced Blob results.
- *
- * TODO(dox): thorough documentation for Forward, Backward, and proto params.
- */
 template <typename Dtype> class PieceLayer : public Layer<Dtype> {
 public:
   explicit PieceLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
@@ -25,7 +19,7 @@ public:
 
   virtual inline const char *type() const { return "Piece"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int MinTopBlobs() const { return 1; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }
 
 protected:
   virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
