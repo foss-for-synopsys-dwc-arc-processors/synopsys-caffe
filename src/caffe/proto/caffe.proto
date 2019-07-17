@@ -646,6 +646,8 @@ message LayerParameter {
   optional ExpandDimsNDParameter expand_dims_nd_param = 240;
   optional SqueezeParameter squeeze_param = 241;
   optional BroadcastToParameter broadcast_to_param = 242;
+  optional StridedSliceParameter strided_slice_param = 243;
+  optional PieceParameter piece_param = 244;
 }
 
 message AccumParameter {
@@ -3079,4 +3081,20 @@ message SqueezeParameter {
 message BroadcastToParameter {
 	//The shape of the desired output.
   repeated uint32 shape = 1;
+}
+
+message StridedSliceParameter {
+  repeated int32 begin = 1;
+  repeated int32 end = 2;
+  repeated int32 strides = 3;
+  optional int32 begin_mask = 4;
+  optional int32 end_mask = 5;
+  optional int32 ellipsis_mask = 6;
+  optional int32 new_axis_mask = 7;
+  optional int32 shrink_axis_mask = 8;
+}
+
+message PieceParameter {
+  repeated int32 begin = 1;
+  repeated int32 size = 2;
 }
