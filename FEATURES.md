@@ -26,6 +26,7 @@ mirror_pad_layer
 mul_layer  
 nms_layer  
 pad_layer  
+piece_layer  
 pow_layer  
 pyramid_roi_align_layer  
 reduce_max_layer  
@@ -43,6 +44,7 @@ space_to_batch_nd_layer
 space_to_depth_layer  
 squeeze_layer  
 stack_layer  
+strided_slice_layer  
 sub_layer  
 tile_nd_layer  
 topk_gather_layer  
