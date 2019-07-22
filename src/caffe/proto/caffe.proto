@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 243 (last added: broadcast_to_param)
+// LayerParameter next available layer-specific ID: 246 (last added: range_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -648,6 +648,7 @@ message LayerParameter {
   optional BroadcastToParameter broadcast_to_param = 242;
   optional StridedSliceParameter strided_slice_param = 243;
   optional PieceParameter piece_param = 244;
+  optional RangeParameter range_param = 245;
 }
 
 message AccumParameter {
@@ -3097,4 +3098,10 @@ message StridedSliceParameter {
 message PieceParameter {
   repeated int32 begin = 1;
   repeated int32 size = 2;
+}
+
+message RangeParameter {
+  optional float start = 1;
+  required float limit = 2;
+  optional float delta = 3;
 }
