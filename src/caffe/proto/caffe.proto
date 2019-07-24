@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 246 (last added: range_param)
+// LayerParameter next available layer-specific ID: 247 (last added: sparse_to_dense_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -649,6 +649,7 @@ message LayerParameter {
   optional StridedSliceParameter strided_slice_param = 243;
   optional PieceParameter piece_param = 244;
   optional RangeParameter range_param = 245;
+  optional SparseToDenseParameter sparse_to_dense_param = 246;
 }
 
 message AccumParameter {
@@ -3104,4 +3105,13 @@ message RangeParameter {
   optional float start = 1;
   required float limit = 2;
   optional float delta = 3;
+}
+
+message SparseToDenseParameter {
+  repeated uint32 sparse_indices = 1;
+  repeated uint32 sparse_indices_shape = 2;
+  repeated uint32 output_shape = 3;
+  repeated float sparse_values = 4;
+  optional float default_value = 5;
+  optional bool validate_indices = 6;
 }
