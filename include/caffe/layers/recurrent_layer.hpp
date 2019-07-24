@@ -173,6 +173,12 @@ class RecurrentLayer : public Layer<Dtype> {
    *        are layer inputs and outputs, respectively.
    */
   bool expose_hidden_;
+
+  /**
+   * @brief Whether RNN output will use h_t concat instead of tanh(W_ho * h_t + b_o) concat
+   *        
+   */
+  bool tf_rnn_;
   
   /**
    * @brief The The bias added to forget gates

@@ -2154,7 +2154,11 @@ message RecurrentParameter {
   // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
   // in TensorFlow, the default value is 1.0, 
   // but in Caffe, we need to make it 0 to be backward compatible
+  // Only for LSTM layer
   optional float forget_bias = 6 [default = 0];
+  // If set to true, ot will be ht, not tanh(W_ho * h_t + b_o) 
+  // to match rnn implementation in Tensorflow, only available for RNN layer
+  optional bool tf_rnn = 7 [default = false];
 }
 
 // Message that stores parameters used by LSTMUnitLayer
