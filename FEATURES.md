@@ -42,8 +42,8 @@ shape_layer
 sin_layer  
 softsign_layer  
 space_to_batch_nd_layer  
-space_to_depth_layer
-sparse_to_dense_layer
+space_to_depth_layer  
+sparse_to_dense_layer  
 squeeze_layer  
 stack_layer  
 strided_slice_layer  
