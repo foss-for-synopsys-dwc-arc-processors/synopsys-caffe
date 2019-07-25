@@ -11,8 +11,8 @@ if DEFINED APPVEYOR (
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6 (only 2.7 and 3.5/3.6 are supported)
-    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=2
+    :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6 (only 2.7 and 3.5/3.6 are supported)
+    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.6
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
     if NOT DEFINED BUILD_MATLAB set BUILD_MATLAB=0
@@ -23,6 +23,9 @@ if DEFINED APPVEYOR (
 
     :: Set python 2.7 with conda as the default python
     if !PYTHON_VERSION! EQU 2 (
+        set CONDA_ROOT=C:\Miniconda-x64
+    )
+    if !PYTHON_VERSION! EQU 2.7 (
         set CONDA_ROOT=C:\Miniconda-x64
     )
     :: Set python 3.6 with conda as the default python
@@ -91,8 +94,8 @@ if DEFINED APPVEYOR (
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     :: Change to 1 to build a caffe.dll
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 3 if using python 3.5/3.6 (only 2.7 and 3.5/3.6 are supported)
-    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=2
+    :: Change to 2 if using python 2.7, Change to 3 if using python 3.5/3.6 (only 2.7 and 3.5/3.6 are supported)
+    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.6
     :: Change these options for your needs.
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
