@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 250 (last added: embedding_lookup_param)
+// LayerParameter next available layer-specific ID: 251 (last added: embedding_lookup_sparse_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -651,6 +651,7 @@ message LayerParameter {
   optional RangeParameter range_param = 245;
   optional SparseToDenseParameter sparse_to_dense_param = 246;
   optional EmbeddingLookupParameter embedding_lookup_param = 249;
+  optional EmbeddingLookupSparseParameter embedding_lookup_sparse_param = 250;
 }
 
 message AccumParameter {
@@ -3122,4 +3123,14 @@ message EmbeddingLookupParameter {
   repeated uint32 ids_shape = 2;
   optional string partition_strategy = 3 [default = "mod"];
   optional float max_norm = 4 [default = 9999999999];
+}
+
+message EmbeddingLookupSparseParameter {
+  repeated int32 ids_indices = 1;
+  repeated uint32 ids_values = 2;
+  repeated uint32 ids_shape = 3;
+  repeated float weight_values = 4;
+  optional string partition_strategy = 5 [default = "mod"];
+  optional string combiner = 6 [default = "sqrtn"];
+  optional float max_norm = 7 [default = 9999999999];
 }
