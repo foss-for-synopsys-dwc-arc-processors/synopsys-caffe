@@ -28,12 +28,8 @@ void SparseToDenseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   std::copy(sparse_to_dense_param.sparse_values().begin(),
             sparse_to_dense_param.sparse_values().end(),
             std::back_inserter(sparse_values_));
-  default_value_ = (sparse_to_dense_param.has_default_value())
-                       ? sparse_to_dense_param.default_value()
-                       : 0;
-  validate_indices_ = (sparse_to_dense_param.has_validate_indices())
-                          ? sparse_to_dense_param.validate_indices()
-                          : true;
+  default_value_ = sparse_to_dense_param.default_value();
+  validate_indices_ = sparse_to_dense_param.validate_indices();
 
   int shape_count = 1;
   for (int i = 0; i < sparse_indices_shape_.size(); ++i) {

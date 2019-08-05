@@ -34,24 +34,13 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   }
   s_len_ = strided_begin_.size();
 
-  begin_mask_ = (strided_slice_param.has_begin_mask())
-                    ? strided_slice_param.begin_mask()
-                    : 0;
-  end_mask_ =
-      (strided_slice_param.has_end_mask()) ? strided_slice_param.end_mask() : 0;
-  new_axis_mask_ = (strided_slice_param.has_new_axis_mask())
-                       ? strided_slice_param.new_axis_mask()
-                       : 0;
-  shrink_axis_mask_ = (strided_slice_param.has_shrink_axis_mask())
-                          ? strided_slice_param.shrink_axis_mask()
-                          : 0;
-  if (strided_slice_param.has_ellipsis_mask()) {
-    ellipsis_mask_ = strided_slice_param.ellipsis_mask();
-    CHECK_EQ(ellipsis_mask_ & (ellipsis_mask_ - 1), 0)
-        << "Only one non-zero bit is allowed in ellipsis_mask! ";
-  } else {
-    ellipsis_mask_ = 0;
-  }
+  begin_mask_ = strided_slice_param.begin_mask();
+  end_mask_ = strided_slice_param.end_mask();
+  new_axis_mask_ = strided_slice_param.new_axis_mask();
+  shrink_axis_mask_ = strided_slice_param.shrink_axis_mask();
+  ellipsis_mask_ = strided_slice_param.ellipsis_mask();
+  CHECK_EQ(ellipsis_mask_ & (ellipsis_mask_ - 1), 0)
+      << "Only one non-zero bit is allowed in ellipsis_mask! ";
 
   b_shape = bottom[0]->shape();
 
