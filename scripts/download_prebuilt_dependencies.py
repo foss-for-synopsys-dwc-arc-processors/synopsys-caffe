@@ -19,7 +19,7 @@ WIN_DEPENDENCIES_URLS = {
     ('v140', '3.5'):("https://github.com/willyd/caffe-builder/releases/download/v1.1.0/libraries_v140_x64_py35_1.1.0.tar.bz2",
                   "f060403fd1a7448d866d27c0e5b7dced39c0a607"),
     ('v140', '3.6'):("https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/releases/download/v2019.09-ENG1/libraries_v140_x64_py36_1.1.0.tar.bz2",
-                  "36c2497124be79a1825d5d8724f38ff12d9e3e58"),
+                  "096c3725d96c67702f14afd88288ab69a6f0ca73"),
 }
 
 # function for checking SHA1.
