@@ -14,6 +14,7 @@ ceil_layer
 depth_to_space_layer  
 div_layer  
 embedding_lookup_layer  
+embedding_lookup_sparse_layer  
 expand_dims_nd_layer  
 floor_div_layer  
 floor_layer  
