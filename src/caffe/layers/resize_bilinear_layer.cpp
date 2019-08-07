@@ -24,9 +24,29 @@ void ResizeBilinearLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   const int batch_size = bottom_shape[0];
   if(data_format_ == "NHWC"){
     const int channels = bottom_shape[3];
+    if(!this->layer_param_.resize_bilinear_param().has_output_height())
+    {
+      float scale_height = this->layer_param_.resize_bilinear_param().scale_height();
+      output_height_ = floor(bottom_shape[1] * scale_height);
+    }
+    if(!this->layer_param_.resize_bilinear_param().has_output_width())
+    {
+      float scale_width = this->layer_param_.resize_bilinear_param().scale_width();
+      output_width_ = floor(bottom_shape[2] * scale_width);
+    }
     top[0]->Reshape(batch_size, output_height_, output_width_, channels);
   } else { //NCHW
     const int channels = bottom_shape[1];
+    if(!this->layer_param_.resize_bilinear_param().has_output_height())
+    {
+      float scale_height = this->layer_param_.resize_bilinear_param().scale_height();
+      output_height_ = floor(bottom_shape[2] * scale_height);
+    }
+    if(!this->layer_param_.resize_bilinear_param().has_output_width())
+    {
+      float scale_width = this->layer_param_.resize_bilinear_param().scale_width();
+      output_width_ = floor(bottom_shape[3] * scale_width);
+    }
     top[0]->Reshape(batch_size, channels, output_height_, output_width_);
   }
 }

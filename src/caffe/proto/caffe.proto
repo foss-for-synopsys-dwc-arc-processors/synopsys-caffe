@@ -2923,9 +2923,11 @@ message SpaceToDepthParameter {
 
 message ResizeNearestNeighborParameter {
   optional bool align_corners = 1 [default = false];
-  required int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
-  required int32 output_width = 3;
+  optional int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
+  optional int32 output_width = 3;
   optional string data_format = 4 [default = "NHWC"];
+  optional float scale_height = 5 [default = 1];
+  optional float scale_width = 6 [default = 1];
 }
 
 message GatherParameter{
@@ -3008,9 +3010,11 @@ message StackParameter{
 
 message ResizeBilinearParameter {
   optional bool align_corners = 1 [default = false];
-  required int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
-  required int32 output_width = 3;
+  optional int32 output_height = 2; //required by Caffe to calculate the layer shape in setting up phase
+  optional int32 output_width = 3;
   optional string data_format = 4 [default = "NHWC"];
+  optional float scale_height = 5 [default = 1];
+  optional float scale_width = 6 [default = 1];
 }
 
 message ReduceSumParameter {

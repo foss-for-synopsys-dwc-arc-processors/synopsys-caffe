@@ -24,9 +24,29 @@ void ResizeNearestNeighborLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bott
   const int batch_size = bottom_shape[0];
   if(this->data_format == "NHWC"){
     const int channels = bottom_shape[3];
+    if(!this->layer_param_.resize_nearest_neighbor_param().has_output_height())
+     {
+       float scale_height = this->layer_param_.resize_nearest_neighbor_param().scale_height();
+       this->output_height = floor(bottom_shape[1] * scale_height);
+     }
+     if(!this->layer_param_.resize_nearest_neighbor_param().has_output_width())
+     {
+       float scale_width = this->layer_param_.resize_nearest_neighbor_param().scale_width();
+       this->output_width = floor(bottom_shape[2] * scale_width);
+     }
     top[0]->Reshape(batch_size, this->output_height, this->output_width, channels);
   } else {
     const int channels = bottom_shape[1];
+    if(!this->layer_param_.resize_nearest_neighbor_param().has_output_height())
+    {
+      float scale_height = this->layer_param_.resize_nearest_neighbor_param().scale_height();
+      this->output_height = floor(bottom_shape[2] * scale_height);
+    }
+    if(!this->layer_param_.resize_nearest_neighbor_param().has_output_width())
+    {
+      float scale_width = this->layer_param_.resize_nearest_neighbor_param().scale_width();
+      this->output_width = floor(bottom_shape[3] * scale_width);
+    }
     top[0]->Reshape(batch_size, channels, this->output_height, this->output_width);
   }
 }
