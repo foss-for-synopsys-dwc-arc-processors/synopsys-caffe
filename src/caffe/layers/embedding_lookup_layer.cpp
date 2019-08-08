@@ -21,8 +21,11 @@ void EmbeddingLookupLayer<Dtype>::LayerSetUp(
             std::back_inserter(ids_shape));
   p_strategy = embedding_lookup_param.partition_strategy();
 
-  // if max_norm = None, define None -> none_value = 9999999999
-  max_norm = embedding_lookup_param.max_norm();
+  // if max_norm != None
+  if (embedding_lookup_param.has_max_norm()) {
+    max_norm = embedding_lookup_param.max_norm();
+  }
+
   // CHECK PART
   const int num_axes = bottom[0]->num_axes();
   vector<int> bottom_shape = bottom[0]->shape();
@@ -49,10 +52,10 @@ void EmbeddingLookupLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
 template <typename Dtype>
 void EmbeddingLookupLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
+  const EmbeddingLookupParameter &embedding_lookup_param =
+      this->layer_param_.embedding_lookup_param();
   Dtype *top_data = top[0]->mutable_cpu_data();
   const int copy_num = bottom[0]->count(1);
-  // define none_value
-  const float none_value = 9999999999;
   // for one params
   if (bottom.size() == 1) {
     const Dtype *bottom_data = bottom[0]->cpu_data();
@@ -67,7 +70,7 @@ void EmbeddingLookupLayer<Dtype>::Forward_cpu(
       caffe_copy(copy_num, bottom_data + b_offset, top_data + t_offset);
       const auto normt = std::sqrt(caffe_cpu_dot(
           copy_num, bottom_data + b_offset, bottom_data + b_offset));
-      if (max_norm != none_value && (normt > max_norm)) {
+      if ((embedding_lookup_param.has_max_norm()) && (normt > max_norm)) {
         const auto alpha = max_norm / normt;
         caffe_scal(copy_num, alpha, top_data + t_offset);
       }
@@ -94,7 +97,7 @@ void EmbeddingLookupLayer<Dtype>::Forward_cpu(
         // max_norm part
         const auto normt = std::sqrt(caffe_cpu_dot(
             copy_num, bottom_data + b_offset, bottom_data + b_offset));
-        if (max_norm != none_value && (normt > max_norm)) {
+        if ((embedding_lookup_param.has_max_norm()) && (normt > max_norm)) {
           const auto alpha = max_norm / normt;
           caffe_scal(copy_num, alpha, top_data + t_offset);
         }
@@ -127,7 +130,7 @@ void EmbeddingLookupLayer<Dtype>::Forward_cpu(
         // max_norm part
         const auto normt = std::sqrt(caffe_cpu_dot(
             copy_num, bottom_data + b_offset, bottom_data + b_offset));
-        if (max_norm != none_value && (normt > max_norm)) {
+        if ((embedding_lookup_param.has_max_norm()) && (normt > max_norm)) {
           const auto alpha = max_norm / normt;
           caffe_scal(copy_num, alpha, top_data + t_offset);
         }

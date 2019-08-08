@@ -31,9 +31,10 @@ void EmbeddingLookupSparseLayer<Dtype>::LayerSetUp(
 
   p_strategy = embedding_lookup_sparse_param.partition_strategy();
   combiner = embedding_lookup_sparse_param.combiner();
-  max_norm = embedding_lookup_sparse_param
-                 .max_norm(); // default value as None:9999999999
-
+  // if max_norm != None
+  if (embedding_lookup_sparse_param.has_max_norm()) {
+    max_norm = embedding_lookup_sparse_param.max_norm();
+  }
   if (combiner == "None") {
     combiner = "sqrtn";
   }
@@ -68,7 +69,7 @@ void EmbeddingLookupSparseLayer<Dtype>::LayerSetUp(
     }
   }
   // get weight_values, if None, set it all 1
-  if (w_value[0] == 9999999999) {
+  if (w_value.size() == 0) {
     w_value.assign(ids_value.size(), 1);
   } else {
     CHECK_EQ(w_value.size(), ids_value.size())
@@ -90,13 +91,13 @@ void EmbeddingLookupSparseLayer<Dtype>::Reshape(
 template <typename Dtype>
 void EmbeddingLookupSparseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
+  const EmbeddingLookupSparseParameter &embedding_lookup_sparse_param =
+      this->layer_param_.embedding_lookup_sparse_param();
   Dtype *top_data = top[0]->mutable_cpu_data();
   Dtype *pre_data = top_pre.mutable_cpu_data();
   const int copy_num = bottom[0]->count(1);
   caffe_set(top[0]->count(), Dtype(0), top_data);
   caffe_set(top_pre.count(), Dtype(0), pre_data);
-  // define none_value
-  const float none_value = 9999999999;
   // calculate weight_sum and weight_suqared for combiner = mean/sqrtn
   vector<double> weight_sum(ids_id[ids_id.size() - 2] + 1, 0);
   vector<double> weight_squared(ids_id[ids_id.size() - 2] + 1, 0);
@@ -126,7 +127,8 @@ void EmbeddingLookupSparseLayer<Dtype>::Forward_cpu(
       caffe_copy(copy_num, bottom_data + b_offset, pre_data + p_offset);
       const auto normt = std::sqrt(caffe_cpu_dot(
           copy_num, bottom_data + b_offset, bottom_data + b_offset));
-      if (max_norm != none_value && (normt > max_norm)) {
+      if ((embedding_lookup_sparse_param.has_max_norm()) &&
+          (normt > max_norm)) {
         caffe_scal(copy_num, Dtype(max_norm / normt), pre_data + p_offset);
       }
       // if row does not change, add them to top_data[row,:]
@@ -168,7 +170,8 @@ void EmbeddingLookupSparseLayer<Dtype>::Forward_cpu(
         // max_norm part
         const auto normt = std::sqrt(caffe_cpu_dot(
             copy_num, bottom_data + b_offset, bottom_data + b_offset));
-        if (max_norm != none_value && (normt > max_norm)) {
+        if ((embedding_lookup_sparse_param.has_max_norm()) &&
+            (normt > max_norm)) {
           caffe_scal(copy_num, Dtype(max_norm / normt), pre_data + p_offset);
         }
       }
@@ -199,7 +202,8 @@ void EmbeddingLookupSparseLayer<Dtype>::Forward_cpu(
         // max_norm part
         const auto normt = std::sqrt(caffe_cpu_dot(
             copy_num, bottom_data + b_offset, bottom_data + b_offset));
-        if (max_norm != none_value && (normt > max_norm)) {
+        if ((embedding_lookup_sparse_param.has_max_norm()) &&
+            (normt > max_norm)) {
           caffe_scal(copy_num, Dtype(max_norm / normt), pre_data + p_offset);
         }
       }

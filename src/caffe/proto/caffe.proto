@@ -3126,7 +3126,7 @@ message EmbeddingLookupParameter {
   repeated uint32 ids = 1;
   repeated uint32 ids_shape = 2;
   optional string partition_strategy = 3 [default = "mod"];
-  optional float max_norm = 4 [default = 9999999999];
+  optional float max_norm = 4;
 }
 
 message EmbeddingLookupSparseParameter {
@@ -3136,5 +3136,5 @@ message EmbeddingLookupSparseParameter {
   repeated float weight_values = 4;
   optional string partition_strategy = 5 [default = "mod"];
   optional string combiner = 6 [default = "sqrtn"];
-  optional float max_norm = 7 [default = 9999999999];
+  optional float max_norm = 7;
 }
