@@ -3143,6 +3143,6 @@ message EmbeddingLookupSparseParameter {
 message GemmParameter {
   optional float alpha = 1 [default = 1.0];
   optional float beta = 2 [default = 1.0];
-  optional uint32 transa = 3 [default = 0];
-  optional uint32 transb = 4 [default = 0];
+  optional uint32 transA = 3 [default = 0];
+  optional uint32 transB = 4 [default = 0];
 }
