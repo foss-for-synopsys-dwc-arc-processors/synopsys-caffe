@@ -21,6 +21,7 @@ floor_layer
 floor_mod_layer  
 gather_layer  
 gather_nd_layer  
+gemm_layer  
 nms_gather_layer  
 maximum_layer  
 minimum_layer  
@@ -32,6 +33,7 @@ piece_layer
 pow_layer  
 pyramid_roi_align_layer  
 range_layer  
+reduce_l1_layer  
 reduce_max_layer  
 reduce_mean_layer  
 reduce_min_layer  
