@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 251 (last added: embedding_lookup_sparse_param)
+// LayerParameter next available layer-specific ID: 253 (last added: reduce_l1_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -653,6 +653,7 @@ message LayerParameter {
   optional EmbeddingLookupParameter embedding_lookup_param = 249;
   optional EmbeddingLookupSparseParameter embedding_lookup_sparse_param = 250;
   optional GemmParameter gemm_param = 251;
+  optional ReduceL1Parameter reduce_l1_param = 252;
 }
 
 message AccumParameter {
@@ -3149,4 +3150,9 @@ message GemmParameter {
   optional float beta = 2 [default = 1.0];
   optional uint32 transA = 3 [default = 0];
   optional uint32 transB = 4 [default = 0];
+}
+
+message ReduceL1Parameter {
+  repeated int32 axes = 1;
+  optional int32 keepdims = 2 [default = 1];
 }
