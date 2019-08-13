@@ -24,10 +24,10 @@ class MaskRCNN_Detection(caffe.Layer):
             else:
                 self.WIDTH = 1024  # 1920
         except Exception as ex:
-            print "No params set, use default input dim instead:"
+            print("No params set, use default input dim instead:")
             self.HEIGHT = 1024  # 1920
             self.WIDTH = 1024  # 1920
-            print "Height:", self.HEIGHT, " Width:", self.WIDTH
+            print("Height:", self.HEIGHT, " Width:", self.WIDTH)
 
         self.BATCH_SIZE = 1
         self.DETECTION_MAX_INSTANCES = 100
@@ -230,7 +230,7 @@ class MaskRCNN_Detection(caffe.Layer):
                     detections, [(0, gap), (0, 0)], 'constant', constant_values=0)
             detections_batch.append(detections)
         detections_batch = np.array(detections_batch).astype(np.float32)
-        #print detections_batch
+        #print(detections_batch)
         top[0].data[...] = detections_batch
 
     def backward(self, top, propagate_down, bottom):
