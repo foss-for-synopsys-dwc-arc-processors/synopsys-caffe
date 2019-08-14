@@ -654,6 +654,8 @@ message LayerParameter {
   optional EmbeddingLookupSparseParameter embedding_lookup_sparse_param = 250;
   optional GemmParameter gemm_param = 251;
   optional ReduceL1Parameter reduce_l1_param = 252;
+  optional ReduceL2Parameter reduce_l2_param = 253;
+  
 }
 
 message AccumParameter {
@@ -3153,6 +3155,11 @@ message GemmParameter {
 }
 
 message ReduceL1Parameter {
+  repeated int32 axes = 1;
+  optional int32 keepdims = 2 [default = 1];
+}
+
+message ReduceL2Parameter {
   repeated int32 axes = 1;
   optional int32 keepdims = 2 [default = 1];
 }
