@@ -91,6 +91,8 @@ fi
 if $WITH_CUDA ; then
   # install repo packages
   CUDA_REPO_PKG=cuda-repo-ubuntu1404_8.0.61-1_amd64.deb
+  CUDA_PUBKEY=7fa2af80.pub
+  wget -qO - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_PUBKEY | sudo apt-key add -
   wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_REPO_PKG
   dpkg -i $CUDA_REPO_PKG
   rm $CUDA_REPO_PKG
