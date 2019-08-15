@@ -567,14 +567,14 @@ message LayerParameter {
   optional LSTMUnitParameter lstm_unit_param = 217;
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
-
-  optional XLUParameter xlu_param = 237;
+  optional XLUParameter xlu_param = 237; // for EV mappipngg tool
 
   optional ReshapeParameter reshape_param = 133;
   optional ROIAlignParameter roi_align_param = 247;
   optional ROIPoolingParameter roi_pooling_param = 8266711;
   optional ScaleParameter scale_param = 142;
   optional SegAccuracyParameter seg_accuracy_param = 164;
+  optional ShuffleChannelParameter shuffle_channel_param = 166;
   optional SigmoidParameter sigmoid_param = 124;
   optional SliceParameter slice_param = 126;
   optional SmoothL1LossParameter smooth_l1_loss_param = 8266712;
@@ -655,7 +655,6 @@ message LayerParameter {
   optional GemmParameter gemm_param = 251;
   optional ReduceL1Parameter reduce_l1_param = 252;
   optional ReduceL2Parameter reduce_l2_param = 253;
-  
 }
 
 message AccumParameter {
@@ -2396,6 +2395,10 @@ message SegAccuracyParameter {
   // will ignore pixels with this value when computing accuracy
   repeated int32 ignore_label = 2;
   optional bool reset = 3 [default = true];
+}
+
+message ShuffleChannelParameter {
+  optional uint32 group = 1 [default = 1]; // The number of group
 }
 
 message SigmoidParameter {
