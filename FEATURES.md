@@ -43,6 +43,7 @@ resize_bilinear_layer
 resize_nearest_neighbor_layer  
 round_layer  
 shape_layer  
+shuffle_channel_layer  
 sin_layer  
 softsign_layer  
 space_to_batch_nd_layer  

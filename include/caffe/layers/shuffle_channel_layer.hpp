@@ -9,6 +9,14 @@
 
 namespace caffe {
 
+/**
+ * @brief Merged from https://github.com/farmingyard/ShuffleNet
+ * This layer is used for reorder the data at channel layer.
+ * Could replace the 3 layers' functionality in ShuffleNet. Example:
+ * use ShuffleChannel layer group=2, equals to
+ * [1 232 14 14] Reshape(5D)-> [1 2 116 14 14] Permute(5D)-> [1 116 2 14 14] Reshape(4D)-> [1 232 14 14]
+ */
+
 template <typename Dtype>
 class ShuffleChannelLayer : public Layer<Dtype> {
 public:
