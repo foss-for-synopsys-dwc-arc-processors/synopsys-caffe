@@ -1,7 +1,7 @@
 #!/bin/bash
 # install dependencies
 # (this script must be run as root)
-set +x
+set -x
 BASEDIR=$(dirname $0)
 source $BASEDIR/defaults.sh
 
@@ -21,14 +21,38 @@ apt-get install -y --no-install-recommends \
   python-virtualenv \
   wget
 
-git clone https://github.com/tbeu/matio.git lib_matio
-cd lib_matio
-git submodule update --init  # for datasets used in unit tests
-./autogen.sh
-./configure
-make
-#make check  # Check cost a long time
-make install
+# Build MatIO
+WITH_MATIO=true
+if $WITH_MATIO ; then
+  MATIO_DIR=~/lib_matio
+  pushd .
+  if [ -d "$MATIO_DIR" ] && [ -e "$MATIO_DIR/src/libmatio.la" ]; then
+    echo "Using cached matio build ..."
+    cd $MATIO_DIR
+  else
+    echo "Building matio from source ..."
+    rm -rf $MATIO_DIR
+    mkdir $MATIO_DIR
+
+    wget https://github.com/tbeu/matio/archive/v1.5.17.tar.gz -O libmatio.tar.gz
+    tar -xzf libmatio.tar.gz -C $MATIO_DIR --strip 1
+    rm libmatio.tar.gz
+    cd $MATIO_DIR
+    ./autogen.sh
+    ./configure --prefix=/usr
+    make --jobs=$NUM_THREADS
+  fi
+  make install
+  popd
+fi
+#git clone https://github.com/tbeu/matio.git lib_matio
+#cd lib_matio
+#git submodule update --init  # for datasets used in unit tests
+#./autogen.sh
+#./configure
+#make --jobs=$NUM_THREADS
+##make check  # Check cost a long time
+#make install
 
 if $WITH_CMAKE ; then
   apt-get install -y --no-install-recommends cmake
@@ -90,32 +114,31 @@ fi
 
 if $WITH_CUDA ; then
   # install repo packages
-  CUDA_REPO_PKG=cuda-repo-ubuntu1404_7.5-18_amd64.deb
-  CUDA_PUBKEY=7fa2af80.pub
-  wget -qO - http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_PUBKEY | sudo apt-key add -
-  wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/$CUDA_REPO_PKG
+  CUDA_REPO_PKG=cuda-repo-ubuntu1804_10.0.130-1_amd64.deb
+  wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/$CUDA_REPO_PKG
+  apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+
   dpkg -i $CUDA_REPO_PKG
   rm $CUDA_REPO_PKG
 
   if $WITH_CUDNN ; then
-    ML_REPO_PKG=nvidia-machine-learning-repo-ubuntu1404_4.0-2_amd64.deb
-    wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1404/x86_64/$ML_REPO_PKG
+    ML_REPO_PKG=nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+    wget http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/$ML_REPO_PKG
     dpkg -i $ML_REPO_PKG
+    rm $ML_REPO_PKG
   fi
 
-  # update package lists
   apt-get -y update
+  apt-get install cuda-10-0
 
-  # install packages
-  CUDA_PKG_VERSION="7-5"
-  CUDA_VERSION="7.5"
-  apt-get install -y --no-install-recommends \
-    cuda-core-$CUDA_PKG_VERSION \
-    cuda-cudart-dev-$CUDA_PKG_VERSION \
-    cuda-cublas-dev-$CUDA_PKG_VERSION \
-    cuda-curand-dev-$CUDA_PKG_VERSION
-  # manually create CUDA symlink
-  ln -s /usr/local/cuda-$CUDA_VERSION /usr/local/cuda
+  if false ; then
+    apt-cache search cuda
+    apt-cache search libcudnn
+    ls -l /usr/local/
+    ls -l /usr/lib*
+    ls -l /usr/include/
+    ls -l /usr/lib/x86_64-linux-gnu
+  fi
 
   if $WITH_CUDNN ; then
     apt-get install -y --no-install-recommends libcudnn7-dev

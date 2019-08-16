@@ -11,7 +11,11 @@ fi
 
 if ! $WITH_CMAKE ; then
   make runtest
-  make pytest
+  CAFFE_PYTHON="$(readlink -f distribute)/python"
+  export PYTHONPATH=$CAFFE_PYTHON:$PYTHONPATH
+  if ! $WITH_PYTHON3 ; then
+    make pytest
+  fi
 else
   cd build
   make runtest

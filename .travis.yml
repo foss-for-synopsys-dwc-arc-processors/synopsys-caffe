@@ -1,4 +1,4 @@
-dist: trusty
+dist: bionic
 sudo: required
 
 language: cpp
@@ -6,7 +6,7 @@ compiler: gcc
 
 env:
   global:
-    - NUM_THREADS=4
+    - NUM_THREADS=6
   matrix:
     # Use a build matrix to test many builds in parallel
     # envvar defaults:
@@ -16,10 +16,12 @@ env:
     #   WITH_CUDA: false
     #   WITH_CUDNN: false
     - BUILD_NAME="default-make"
-#    - BUILD_NAME="python3-make" WITH_PYTHON3=true
-#    - BUILD_NAME="no-io-make" WITH_IO=false
+    - BUILD_NAME="python3-make" WITH_PYTHON3=true
     - BUILD_NAME="cuda-make" WITH_CUDA=true
+    - BUILD_NAME="python3-cuda-make" WITH_PYTHON3=true WITH_CUDA=true
     - BUILD_NAME="cudnn-make" WITH_CUDA=true WITH_CUDNN=true
+    - BUILD_NAME="python3-cudnn-make" WITH_PYTHON3=true WITH_CUDA=true WITH_CUDNN=true
+#    - BUILD_NAME="no-io-make" WITH_IO=false
 
 #    - BUILD_NAME="default-cmake" WITH_CMAKE=true
 #    - BUILD_NAME="python3-cmake" WITH_CMAKE=true WITH_PYTHON3=true
@@ -31,6 +33,7 @@ cache:
   apt: true
   directories:
     - ~/protobuf3
+    - ~/lib_matio
 
 before_install:
   - source ./scripts/travis/defaults.sh

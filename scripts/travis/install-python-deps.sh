@@ -13,3 +13,5 @@ else
   pip install protobuf==3.6.1
   pip install pydot
 fi
+python --version
+pip --version
