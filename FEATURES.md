@@ -34,6 +34,8 @@ pow_layer
 pyramid_roi_align_layer  
 range_layer  
 reduce_l1_layer  
+reduce_l2_layer  
+reduce_logsumexp_layer  
 reduce_max_layer  
 reduce_mean_layer  
 reduce_min_layer  
