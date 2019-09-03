@@ -45,6 +45,8 @@ protected:
   vector<int> t_shape;
   vector<int> t_shape2;
   vector<int> b_shape;
+  vector<int> axes_;
+  int onnx_flag_;
   int s_len_;
   int begin_mask_;
   int end_mask_;

@@ -3107,11 +3107,12 @@ message StridedSliceParameter {
   repeated int32 begin = 1;
   repeated int32 end = 2;
   repeated int32 strides = 3;
-  optional int32 begin_mask = 4 [default = 0];
-  optional int32 end_mask = 5 [default = 0];
-  optional int32 ellipsis_mask = 6 [default = 0];
-  optional int32 new_axis_mask = 7 [default = 0];
-  optional int32 shrink_axis_mask = 8 [default = 0];
+  repeated int32 axes = 4;
+  optional int32 begin_mask = 5 [default = 0];
+  optional int32 end_mask = 6 [default = 0];
+  optional int32 ellipsis_mask = 7 [default = 0];
+  optional int32 new_axis_mask = 8 [default = 0];
+  optional int32 shrink_axis_mask = 9 [default = 0];
 }
 
 message PieceParameter {
