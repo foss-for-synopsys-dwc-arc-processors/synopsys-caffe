@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 255 (last added: reduce_logsumexp_param)
+// LayerParameter next available layer-specific ID: 257 (last added: reduce_any_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -656,6 +656,8 @@ message LayerParameter {
   optional ReduceL1Parameter reduce_l1_param = 252;
   optional ReduceL2Parameter reduce_l2_param = 253;
   optional ReduceLogsumexpParameter reduce_logsumexp_param = 254;
+  optional ReduceAllParameter reduce_all_param = 255;
+  optional ReduceAnyParameter reduce_any_param = 256;
 }
 
 message AccumParameter {
@@ -3170,6 +3172,16 @@ message ReduceL2Parameter {
 }
 
 message ReduceLogsumexpParameter {
+  repeated int32 axis = 1; 
+  optional bool keepdims = 2[default = false];
+}
+
+message ReduceAllParameter {
+  repeated int32 axis = 1; 
+  optional bool keepdims = 2[default = false];
+}
+
+message ReduceAnyParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
 }
