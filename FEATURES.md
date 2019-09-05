@@ -33,6 +33,8 @@ piece_layer
 pow_layer  
 pyramid_roi_align_layer  
 range_layer  
+reduce_all_layer  
+reduce_any_layer  
 reduce_l1_layer  
 reduce_l2_layer  
 reduce_logsumexp_layer  
