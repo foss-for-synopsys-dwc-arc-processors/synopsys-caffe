@@ -3,17 +3,26 @@ Following this guide will build a full set of toolkits with Caffe to provide the
 This script will take python3.6 as build environment, and build the cpu-only version.
 
 ## Prerequisites
-1. gcc version >= 6
-2. gfortran version = gcc version  
+1. gcc version = gfortran version >= 7  
 If this is not fulfilled, you can use commands like the following to install:
 ```
-sudo apt-get install gfortran-6
+sudo apt-get install gcc-7
+sudo apt-get install gfortran-7
 ```
 and reset the default path:
 ```
+mkdir -p gcc-symlinks
 mkdir -p gfortran-symlinks
-ln -s /usr/bin/gfortran-6 gfortran-symlinks/gfortran
-export PATH=$PWD/gfortran-symlinks:$PATH
+ln -s /usr/bin/gcc-7 gcc-symlinks/gcc
+ln -s /usr/bin/gfortran-7 gfortran-symlinks/gfortran
+export PATH=$PWD/gfortran-symlinks:$PWD/gcc-symlinks:$PATH
+```
+
+2. openssl  
+Make sure it is installed and its lib path is set correctly:
+```
+sudo apt-get purge openssl
+sudo apt-get install openssl libssl-dev
 ```
 
 ## Build Steps
