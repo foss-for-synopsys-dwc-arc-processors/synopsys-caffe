@@ -9,6 +9,8 @@ It combines multiple customized branches and includes a large range of patches t
 Please check out the prerequisites and read the detailed notes at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) if this is your first time to install Caffe.
 
 ### Linux
+If you use Ubuntu, you can refer to the [detailed guideline](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/development/scripts/ubuntu_python3_build_caffe_guide.md) if you want to install the whole EV CNN environment with all the dependencies. 
+
 A simple guide:
 1. Ensure that you have all the dependencies mentioned at the [BVLC Caffe Installation](http://caffe.berkeleyvision.org/installation.html) for your OS installed (protobuf, leveldb, snappy, opencv, hdf5-serial, protobuf-compiler, BLAS, Python, CUDA etc.)
 2. Also Install [matio](https://github.com/tbeu/matio) in your environment. After that, add [your installed matio path]/lib to the LD_LIBRARY_PATH.
@@ -34,6 +36,7 @@ export SYNOPSYS_CAFFE_HOME=[your synopsys-caffe root folder path]
 export PATH=${SYNOPSYS_CAFFE_HOME}/build/tools:${PATH}
 export PYTHONPATH=${SYNOPSYS_CAFFE_HOME}/python:${PYTHONPATH}
 ```
+
 
 ### Windows
 A simple guide:
