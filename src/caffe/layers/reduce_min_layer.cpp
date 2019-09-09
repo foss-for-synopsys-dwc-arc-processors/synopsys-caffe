@@ -67,7 +67,6 @@ ReduceMinLayer<Dtype>::indices(int offset, const vector<int> &shape) const {
 
 template <typename Dtype>
 inline int ReduceMinLayer<Dtype>::offset(const vector<Blob<Dtype> *> &bottom,
-                                         const vector<int> &shape,
                                          const vector<int> &axis_ind,
                                          const vector<int> &indices) const {
   int offset = 0;
@@ -85,7 +84,6 @@ void ReduceMinLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
   Dtype *top_data = top[0]->mutable_cpu_data();
   const int bottom_count = bottom[0]->count();
   const int top_count = top[0]->count();
-  const vector<int> bottom_shape = bottom[0]->shape();
   // initialize the top_data
   std::vector<Dtype> bottom_sort(bottom_count, 0);
   for (int i = 0; i < bottom_count; ++i) {
@@ -121,10 +119,10 @@ void ReduceMinLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
 
     for (int i = 0; i < top_count; ++i) {
       vector<int> ind_out = indices(i, shape_out);
-      int offset_out = offset(bottom, bottom_shape, axis_out, ind_out);
+      int offset_out = offset(bottom, axis_out, ind_out);
       for (int j = 0; j < bottom_count / top_count; ++j) {
         vector<int> ind_in = indices(j, shape_in);
-        int offset_in = offset(bottom, bottom_shape, reduce_min_axis_, ind_in);
+        int offset_in = offset(bottom, reduce_min_axis_, ind_in);
         int b_idx = offset_out + offset_in;
         if (top_data[i] > bottom_data[b_idx]) {
           top_data[i] = bottom_data[b_idx];

@@ -37,7 +37,7 @@ protected:
   }
   inline vector<int> indices(int offset, const vector<int> &shape) const;
   inline int offset(const vector<Blob<Dtype> *> &bottom,
-                    const vector<int> &shape, const vector<int> &axes_ind,
+                    const vector<int> &axes_ind,
                     const vector<int> &indices) const;
 
   vector<int> axes_;
