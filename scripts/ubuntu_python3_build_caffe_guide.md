@@ -235,10 +235,10 @@ cd ../../..
 
 # MatIO: https://sourceforge.net/projects/matio/
 if [ ! -f distro/matio.tar.gz ]; then
-    wget -O distro/matio.tar.gz https://vorboss.dl.sourceforge.net/project/matio/matio/1.5.2/matio-1.5.2.tar.gz
+    wget -O distro/matio.tar.gz https://sourceforge.net/projects/matio/files/matio/1.5.12/matio-1.5.12.tar.gz
 fi
 tar zxf distro/matio.tar.gz -C build
-cd build/matio-1.5.2
+cd build/matio-1.5.12
 ./configure --prefix=$SYNOPSYS_CAFFE_HOME
 make
 make install
