@@ -408,7 +408,7 @@ pip3 install tqdm
 pip3 install configparser
 pip3 install prettytable
 pip3 install pyexcel-xls pyexcel
-pip3 install tensorflow==1.14.0
+pip3 install --default-timeout=100 tensorflow==1.14.0
 pip3 install onnx
 pip3 install protobuf==3.7.1
 pip3 install pandas==0.24.0
