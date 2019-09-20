@@ -9,13 +9,13 @@ namespace caffe {
 
 template <typename Dtype>
 void PadLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top) {
   const PadParameter& pad_param = this->layer_param_.pad_param();
   constant_values_ = pad_param.constant_values();
   paddings_.clear();
   std::copy(pad_param.paddings().begin(),
-	  pad_param.paddings().end(),
-	  std::back_inserter(paddings_));
+      pad_param.paddings().end(),
+      std::back_inserter(paddings_));
   int pad_dim = paddings_.size();
   CHECK_EQ(pad_dim % 2, 0) << "Paddings for each dimension should have 2 values!";
   CHECK_EQ(pad_dim / 2, bottom[0]->num_axes()) << "Paddings' num should be 2 times of bottom dimension!";
@@ -24,13 +24,13 @@ void PadLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void PadLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+    const vector<Blob<Dtype>*>& top) {
   int num_top_axes = bottom[0]->num_axes();
   std::vector<int> shape(num_top_axes, 1);
   shape = bottom[0]->shape();
   for (int i=0;i<num_top_axes;i++)
   {
-	shape[i] = shape[i] + paddings_[2*i] + paddings_[2*i+1];
+    shape[i] = shape[i] + paddings_[2*i] + paddings_[2*i+1];
   }
   top[0]->Reshape(shape);
 }
@@ -39,28 +39,28 @@ void PadLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 // Initially suggested by Tom Pennello
 template <typename Dtype>
 void PadLayer<Dtype>::Pad(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-		int level, int bottom_index, int top_index, vector<int> paddings) {
-	const Dtype* bottom_data = bottom[0]->cpu_data();
-	Dtype* top_data = top[0]->mutable_cpu_data();
-	vector<int> BS = bottom[0]->shape();
-	vector<int> TS = top[0]->shape();
+    int level, int bottom_index, int top_index, vector<int> paddings) {
+  const Dtype* bottom_data = bottom[0]->cpu_data();
+  Dtype* top_data = top[0]->mutable_cpu_data();
+  vector<int> BS = bottom[0]->shape();
+  vector<int> TS = top[0]->shape();
 
-	bool innermost = (level == BS.size()-1);
-    int bottom_level_size = BS[level];
-    //int top_level_size = TS[level];
-    int padl = paddings[level*2];
+  bool innermost = (level == BS.size()-1);
+  int bottom_level_size = BS[level];
+  //int top_level_size = TS[level];
+  int padl = paddings[level*2];
 
-    for (int ix = 0; ix < bottom_level_size; ix++) {
-        int bix = bottom_index + ix;
-        int tix = top_index + padl + ix;
-        if (innermost) {
-            //printf("top_data[%d] <- bottom_data[%d]\n",tix,bix); //Show for debug
-            top_data[tix] = bottom_data[bix];
-        }
-        else {
-            Pad(bottom, top, level+1, bix*BS[level+1], tix*TS[level+1], paddings);
-        }
+  for (int ix = 0; ix < bottom_level_size; ix++) {
+    int bix = bottom_index + ix;
+    int tix = top_index + padl + ix;
+    if (innermost) {
+      //printf("top_data[%d] <- bottom_data[%d]\n",tix,bix); //Show for debug
+      top_data[tix] = bottom_data[bix];
     }
+    else {
+      Pad(bottom, top, level+1, bix*BS[level+1], tix*TS[level+1], paddings);
+    }
+  }
 };
 
 template <typename Dtype>
@@ -141,7 +141,7 @@ void PadLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     	top_data[top_index] = bottom_data[bottom_index];
     }
   }
-  */
+   */
 }
 
 INSTANTIATE_CLASS(PadLayer);
