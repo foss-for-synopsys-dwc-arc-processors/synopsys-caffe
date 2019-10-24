@@ -28,7 +28,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
 
   virtual inline int MinBottomBlobs() const { return 1; }
   virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline bool EqualNumBottomTopBlobs() const { return true; }
+  virtual inline bool EqualNumBottomTopBlobs() const { return false; } //CUSTOMIZATION to false
 
  protected:
   // Helper functions that abstract away the column buffer and gemm arguments.
