@@ -169,6 +169,9 @@ cd build/Python-3.6.5
 make
 make install
 cd ../..
+cd $SYNOPSYS_CAFFE_HOME/bin
+ln -s -f python3 python
+cd ../..
 cp -f env.sh $SYNOPSYS_CAFFE_HOME
 cp -f env.csh $SYNOPSYS_CAFFE_HOME
 
@@ -412,6 +415,8 @@ pip3 install --default-timeout=100 tensorflow==1.14.0
 pip3 install onnx
 pip3 install protobuf==3.7.1
 pip3 install pandas==0.24.0
+pip3 install virtualenv
+pip3 install flatbuffers
 
 cd src
 protoc caffe/proto/caffe.proto --cpp_out=$SYNOPSYS_CAFFE_HOME/include/
