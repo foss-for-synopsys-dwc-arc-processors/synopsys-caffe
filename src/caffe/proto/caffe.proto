@@ -1612,6 +1612,8 @@ message DetectionOutputParameter {
   optional float visualize_threshold = 11;
   // If provided, save outputs to video file.
   optional string save_file = 12;
+  //the objectness score is used for the anchor refinement module to filter easy negative anchor.
+  optional float objectness_score = 24 [default = 0.01];
 }
 
 message DomainTransformParameter {
@@ -1972,6 +1974,8 @@ message MultiBoxLossParameter {
   optional NonMaximumSuppressionParameter nms_param = 21;
   optional int32 sample_size = 22 [default = 64];
   optional bool use_prior_for_nms = 23 [default = false];
+  //the objectness score is used for the anchor refinement module to filter easy negative anchor.
+  optional float objectness_score = 24 [default = 0.01];
 }
 
 message MVNParameter {
