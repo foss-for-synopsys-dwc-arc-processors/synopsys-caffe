@@ -145,16 +145,6 @@ make
 make install
 cd ../../..
 
-# Tk
-if [ ! -f distro/tk.tar.gz ]; then
-    wget -O distro/tk.tar.gz https://prdownloads.sourceforge.net/tcl/tk8.6.8-src.tar.gz
-fi
-tar zxf distro/tk.tar.gz -C build
-cd build/tk8.6.8/unix
-./configure --prefix=$SYNOPSYS_CAFFE_HOME
-make
-make install
-cd ../../..
 
 # Python: https://www.python.org/
 # please make sure you have installed the openssl packages correctly,
@@ -168,7 +158,7 @@ if [ ! -f distro/python.tar.gz ]; then
 fi
 tar zxf distro/python.tar.gz -C build
 cd build/Python-3.6.5
-./configure --prefix=$SYNOPSYS_CAFFE_HOME --enable-shared --with-ensurepip=install --enable-unicode=ucs4 --with-tcltk-includes="-I${SYNOPSYS_CAFFE_HOME}/include" --with-tcltk-libs="-L${SYNOPSYS_CAFFE_HOME}/lib"
+./configure --prefix=$SYNOPSYS_CAFFE_HOME
 make
 make install
 cd ../..
