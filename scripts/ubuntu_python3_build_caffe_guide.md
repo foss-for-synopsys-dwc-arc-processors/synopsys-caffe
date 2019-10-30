@@ -187,9 +187,9 @@ tar zxf distro/snappy.tar.gz -C build
 cd build/snappy-1.1.7
 mkdir result
 cd result
-# add -DSNAPPY_BUILD_TESTS=0 -DCMAKE_BUILD_TYPE=Release specially for Ubuntu,
-# otherwise may cause errors
-cmake -DSNAPPY_BUILD_TESTS=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME ..
+# add -DSNAPPY_BUILD_TESTS=0 -DCMAKE_BUILD_TYPE=Release if errors occur
+# add -D CMAKE_C_COMPILER=gcc-7 -D CMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
+cmake -DCMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME ..
 make
 make install
 cd ../../..
