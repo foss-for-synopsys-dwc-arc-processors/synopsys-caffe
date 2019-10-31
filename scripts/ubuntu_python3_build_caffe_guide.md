@@ -145,7 +145,6 @@ make
 make install
 cd ../../..
 
-
 # Python: https://www.python.org/
 # please make sure you have installed the openssl packages correctly,
 # otherwise you may have certificate issues in pip install in the future
@@ -163,8 +162,10 @@ make
 make install
 cd ../..
 cd $SYNOPSYS_CAFFE_HOME/bin
+# make a link to use "python" as "python3" directly
 ln -s -f python3 python
 cd ../..
+
 cp -f env.sh $SYNOPSYS_CAFFE_HOME
 cp -f env.csh $SYNOPSYS_CAFFE_HOME
 
@@ -188,7 +189,7 @@ cd build/snappy-1.1.7
 mkdir result
 cd result
 # add -DSNAPPY_BUILD_TESTS=0 -DCMAKE_BUILD_TYPE=Release if errors occur
-# add -D CMAKE_C_COMPILER=gcc-7 -D CMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
+# add -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
 cmake -DCMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME ..
 make
 make install
@@ -216,7 +217,7 @@ cd build/boost_1_65_1
 ./b2 install --prefix=$SYNOPSYS_CAFFE_HOME
 cd ../..
 
-# HDF5: https://support.hdfgroup.org/HDF5/
+# HDF5 Szip: https://support.hdfgroup.org/HDF5/
 if [ ! -f distro/szip.tar.gz ]; then
     wget -O distro/szip.tar.gz https://support.hdfgroup.org/ftp/lib-external/szip/2.1.1/src/szip-2.1.1.tar.gz
 fi
@@ -224,6 +225,7 @@ tar zxf distro/szip.tar.gz -C build
 cd build/szip-2.1.1
 mkdir result
 cd result
+# add -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
 cmake -DCMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME ..
 make
 make install
@@ -259,6 +261,7 @@ tar zxf distro/gflags.tar.gz -C build
 cd build/gflags-2.2.1
 mkdir result
 cd result
+# add -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
 cmake -DCMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME -DCMAKE_CXX_FLAGS:STRING=-fPIC ..
 make
 make install
@@ -304,6 +307,7 @@ unzip -q -o distro/opencv-2.zip -d build
 cd build/opencv-2.4.13.6
 mkdir result
 cd result
+# add -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 if system can't find the correct gcc/gc++ version 
 cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=$SYNOPSYS_CAFFE_HOME -D WITH_CUDA=OFF -D WITH_CUFFT=OFF -D WITH_QT=OFF -D WITH_GTK=OFF -DBUILD_opencv_java=OFF ..
 make
 make install
