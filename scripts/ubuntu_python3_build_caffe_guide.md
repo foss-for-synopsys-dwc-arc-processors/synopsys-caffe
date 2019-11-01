@@ -157,7 +157,7 @@ if [ ! -f distro/python.tar.gz ]; then
 fi
 tar zxf distro/python.tar.gz -C build
 cd build/Python-3.6.5
-./configure --prefix=$SYNOPSYS_CAFFE_HOME
+./configure --prefix=$SYNOPSYS_CAFFE_HOME --enable-shared --with-ensurepip=install 
 make
 make install
 cd ../..
