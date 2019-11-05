@@ -658,6 +658,7 @@ message LayerParameter {
   optional ReduceLogsumexpParameter reduce_logsumexp_param = 254;
   optional ReduceAllParameter reduce_all_param = 255;
   optional ReduceAnyParameter reduce_any_param = 256;
+  optional ReverseSequenceParameter reverse_sequence_param = 257;
 }
 
 message AccumParameter {
@@ -3188,4 +3189,10 @@ message ReduceAllParameter {
 message ReduceAnyParameter {
   repeated int32 axis = 1; 
   optional bool keepdims = 2[default = false];
+}
+
+message ReverseSequenceParameter {
+  repeated uint32 seq_lengths = 1;
+  required uint32 seq_axis = 2;
+  optional uint32 batch_axis = 3[default = 0]; 
 }
