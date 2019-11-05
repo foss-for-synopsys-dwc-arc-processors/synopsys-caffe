@@ -45,6 +45,7 @@ reduce_prod_layer
 reduce_sum_layer  
 resize_bilinear_layer  
 resize_nearest_neighbor_layer  
+reverse_sequence_layer  
 round_layer  
 shape_layer  
 shuffle_channel_layer  
