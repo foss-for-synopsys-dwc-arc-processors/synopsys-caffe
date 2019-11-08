@@ -22,6 +22,7 @@ floor_mod_layer
 gather_layer  
 gather_nd_layer  
 gemm_layer  
+hard_sigmoid_layer  
 nms_gather_layer  
 maximum_layer  
 minimum_layer  
@@ -58,6 +59,7 @@ squeeze_layer
 stack_layer  
 strided_slice_layer  
 sub_layer  
+thresholded_relu_layer  
 tile_nd_layer  
 topk_gather_layer  
 unstack_layer  
