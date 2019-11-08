@@ -14,7 +14,7 @@ __global__ void SeLUForward(const int n, const Dtype* in, Dtype* out,
 }
 
 template <typename Dtype>
-void SeLuLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+void SeLULayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
@@ -34,7 +34,7 @@ __global__ void SeLUBackward(const int n, const Dtype* in_diff,
 }
 
 template <typename Dtype>
-void SeLuLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+void SeLULayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {

@@ -636,8 +636,8 @@ message LayerParameter {
   optional ReduceMinParameter reduce_min_param = 229;
   optional ReduceProdParameter reduce_prod_param = 230;
   optional ReduceMeanParameter reduce_mean_param = 231;
-  optional SeLuParameter selu_param = 232;
-  optional SeLuDropoutParameter selu_dropout_param = 233;
+  optional SeLUParameter selu_param = 232;
+  optional SeLUDropoutParameter selu_dropout_param = 233;
   optional UnstackParameter unstack_param = 234;
   optional BatchToSpaceNDParameter batch_to_space_nd_param = 235;
   optional SpaceToBatchNDParameter space_to_batch_nd_param = 236;
@@ -3064,12 +3064,12 @@ message ReduceMeanParameter {
   optional bool keepdims = 2[default = false];
 }
 
-message SeLuParameter {
+message SeLUParameter {
   optional float lambda = 1 [default = 1.050700987];
   optional float alpha = 2 [default = 1.67326324];
 }
 
-message SeLuDropoutParameter {
+message SeLUDropoutParameter {
   optional float dropout_ratio = 1 [default = 0.1]; // dropout ratio  recommend 0.05 or 0.1
   optional float alpha = 2 [default = -1.75809934];
 }
