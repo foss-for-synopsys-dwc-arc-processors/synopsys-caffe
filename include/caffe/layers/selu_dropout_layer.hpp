@@ -23,7 +23,7 @@ namespace caffe {
  *      the computed outputs @f$ y = |x| @f$
  */
 template <typename Dtype>
-class SeLuDropoutLayer : public NeuronLayer<Dtype> {
+class SeLUDropoutLayer : public NeuronLayer<Dtype> {
  public:
   /**
    * @param param provides DropoutParameter dropout_param,
@@ -31,14 +31,14 @@ class SeLuDropoutLayer : public NeuronLayer<Dtype> {
    *   - dropout_ratio (\b optional, default 0.5).
    *     Sets the probability @f$ p @f$ that any given unit is dropped.
    */
-  explicit SeLuDropoutLayer(const LayerParameter& param)
+  explicit SeLUDropoutLayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "SeLuDropout"; }
+  virtual inline const char* type() const { return "SeLUDropout"; }
 
  protected:
   /**

@@ -13,13 +13,13 @@
 namespace caffe {
 
 template <typename Dtype>
-class SeLuLayer : public NeuronLayer<Dtype> {
+class SeLULayer : public NeuronLayer<Dtype> {
  public:
-  explicit SeLuLayer(const LayerParameter& param)
+  explicit SeLULayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
-  virtual inline const char* type() const { return "SeLu"; }
+  virtual inline const char* type() const { return "SeLU"; }
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,

@@ -8,7 +8,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void SeLUDropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
   threshold_ = this->layer_param_.selu_dropout_param().dropout_ratio();
@@ -23,7 +23,7 @@ void SeLuDropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
+void SeLUDropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::Reshape(bottom, top);
   // Set up the cache for random number generation
@@ -32,7 +32,7 @@ void SeLuDropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void SeLUDropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -50,7 +50,7 @@ void SeLuDropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void SeLUDropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
@@ -70,10 +70,10 @@ void SeLuDropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 
 #ifdef CPU_ONLY
-STUB_GPU(SeLuDropoutLayer);
+STUB_GPU(SeLUDropoutLayer);
 #endif
 
-INSTANTIATE_CLASS(SeLuDropoutLayer);
-REGISTER_LAYER_CLASS(SeLuDropout);
+INSTANTIATE_CLASS(SeLUDropoutLayer);
+REGISTER_LAYER_CLASS(SeLUDropout);
 
 }  // namespace caffe

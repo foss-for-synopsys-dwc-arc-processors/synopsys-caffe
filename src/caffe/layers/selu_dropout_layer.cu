@@ -15,7 +15,7 @@ __global__ void DropoutForward(const int n, const Dtype* in,
 }
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+void SeLUDropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
@@ -44,7 +44,7 @@ __global__ void DropoutBackward(const int n, const Dtype* in_diff,
 }
 
 template <typename Dtype>
-void SeLuDropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+void SeLUDropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
@@ -65,6 +65,6 @@ void SeLuDropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
   }
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(SeLuDropoutLayer);
+INSTANTIATE_LAYER_GPU_FUNCS(SeLUDropoutLayer);
 
 }  // namespace caffe

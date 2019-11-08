@@ -6,14 +6,14 @@
 namespace caffe {
 
 template <typename Dtype>
-void SeLuLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+void SeLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
     alpha = this->layer_param_.selu_param().alpha();
     lambda = this->layer_param_.selu_param().lambda();
 }
 
 template <typename Dtype>
-void SeLuLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+void SeLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -25,7 +25,7 @@ void SeLuLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SeLuLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
+void SeLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down,
     const vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
@@ -42,10 +42,10 @@ void SeLuLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 
 #ifdef CPU_ONLY
-STUB_GPU(SeLuLayer);
+STUB_GPU(SeLULayer);
 #endif
 
-INSTANTIATE_CLASS(SeLuLayer);
-REGISTER_LAYER_CLASS(SeLu);
+INSTANTIATE_CLASS(SeLULayer);
+REGISTER_LAYER_CLASS(SeLU);
 
 }  // namespace caffe
