@@ -29,6 +29,7 @@ minimum_layer
 mirror_pad_layer  
 mul_layer  
 nms_layer  
+one_hot_layer  
 pad_layer  
 piece_layer  
 pow_layer  
