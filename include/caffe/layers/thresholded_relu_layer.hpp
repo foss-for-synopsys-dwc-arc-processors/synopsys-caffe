@@ -15,15 +15,14 @@ namespace caffe {
 // https://github.com/onnx/onnx/blob/master/docs/Operators.md#thresholdedrelu
 
 template <typename Dtype>
-class ThresholdedReluLayer : public NeuronLayer<Dtype> {
+class ThresholdedReLULayer : public NeuronLayer<Dtype> {
 public:
-  explicit ThresholdedReluLayer(const LayerParameter &param)
+  explicit ThresholdedReLULayer(const LayerParameter &param)
       : NeuronLayer<Dtype>(param) {}
 
-  virtual inline const char *type() const { return "ThresholdedRelu"; }
+  virtual inline const char *type() const { return "ThresholdedReLU"; }
 
 protected:
-  /// @copydoc ThresholdedReluLayer
   virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                            const vector<Blob<Dtype> *> &top);
   virtual void Backward_cpu(const vector<Blob<Dtype> *> &top,

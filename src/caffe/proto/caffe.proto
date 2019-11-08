@@ -660,7 +660,7 @@ message LayerParameter {
   optional ReduceAnyParameter reduce_any_param = 256;
   optional ReverseSequenceParameter reverse_sequence_param = 257;
   optional HardSigmoidParameter hard_sigmoid_param = 258;
-  optional ThresholdedReluParameter thresholded_relu_param = 259;
+  optional ThresholdedReLUParameter thresholded_relu_param = 259;
 }
 
 message AccumParameter {
@@ -3204,6 +3204,6 @@ message HardSigmoidParameter {
   optional float beta = 2[default = 0.5];
 }
 
-message ThresholdedReluParameter {
+message ThresholdedReLUParameter {
   optional float alpha = 1[default = 1.0];
 }

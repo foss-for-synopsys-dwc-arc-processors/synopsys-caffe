@@ -6,7 +6,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void ThresholdedReluLayer<Dtype>::Forward_cpu(
+void ThresholdedReLULayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
   const Dtype *bottom_data = bottom[0]->cpu_data();
   Dtype *top_data = top[0]->mutable_cpu_data();
@@ -16,7 +16,7 @@ void ThresholdedReluLayer<Dtype>::Forward_cpu(
   }
 }
 
-INSTANTIATE_CLASS(ThresholdedReluLayer);
-REGISTER_LAYER_CLASS(ThresholdedRelu);
+INSTANTIATE_CLASS(ThresholdedReLULayer);
+REGISTER_LAYER_CLASS(ThresholdedReLU);
 
 } // namespace caffe
