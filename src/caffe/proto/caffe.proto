@@ -659,6 +659,7 @@ message LayerParameter {
   optional ReduceAllParameter reduce_all_param = 255;
   optional ReduceAnyParameter reduce_any_param = 256;
   optional ReverseSequenceParameter reverse_sequence_param = 257;
+  optional HardSigmoidParameter hard_sigmoid_param = 258;
 }
 
 message AccumParameter {
@@ -3195,4 +3196,9 @@ message ReverseSequenceParameter {
   repeated uint32 seq_lengths = 1;
   required uint32 seq_axis = 2;
   optional uint32 batch_axis = 3[default = 0]; 
+}
+
+message HardSigmoidParameter {
+  optional float alpha = 1[default = 0.2];
+  optional float beta = 2[default = 0.5];
 }
