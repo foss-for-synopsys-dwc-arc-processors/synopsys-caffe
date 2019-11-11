@@ -202,7 +202,7 @@ void RNNLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       h_neuron_param->add_bottom("h_neuron_input_" + ts);
       h_neuron_param->add_top("h_" + ts);
     }
-    
+ 
     if (tf_rnn == false) {
         // Add layer to compute
         //     W_ho_h_t := W_ho * h_t + b_o
