@@ -1,7 +1,7 @@
 A Short Summary of New Features in Synopsys Caffe
 =================================================
 
-Synopsys Caffe Version: 2019.09  
+Synopsys Caffe Version: 2019.12  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -22,6 +22,7 @@ floor_mod_layer
 gather_layer  
 gather_nd_layer  
 gemm_layer  
+gru_layer  
 hard_sigmoid_layer  
 nms_gather_layer  
 maximum_layer  
