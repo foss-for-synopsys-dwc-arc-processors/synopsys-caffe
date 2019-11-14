@@ -43,7 +43,7 @@ class Generate_Pyramid_Anchors(caffe.Layer):
         shape = self.BACKBONE_SHAPES / self.RPN_ANCHOR_STRIDE
         shape = np.dot(shape[:, 0], shape[:, 1])
         shape = shape * len(self.RPN_ANCHOR_RATIOS)
-        shape = [shape, 4]
+        shape = (int(shape), 4)
 
         top[0].reshape(*shape)
 
