@@ -74,9 +74,10 @@ template <typename Dtype> class RecurrentLayer;
 * Shapes of weights and bias:
  1. W: (3*num_ouptut, input_size)
  2. B: (3*num_output,)
- 3. R_zr: (2*num_output, num_output)
- 4. R_h: (num_output, num_output)
- 5. Rb_h: (num_output,)  only available when linear_before_reset is not zero.
+ 3. R_z: (num_output, num_output)
+ 4. R_4: (num_output, num_output)
+ 5. R_h: (num_output, num_output)
+ 6. Rb_h: (num_output,)  only available when linear_before_reset is not zero.
     - linear_before_reset is introduced by [[https://github.com/onnx/onnx/blob/master/docs/Operators.md#GRU][ONNX GRU]]
 */
 template <typename Dtype>

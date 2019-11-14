@@ -172,9 +172,10 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       X_static_param->add_top("XW_X_static_" + ts);
     }
 
-    // Slice X * W into two parts:
-    // 1. R and Z
-    // 2. H
+    // Slice X * W into three parts:
+    // 1. R
+    // 2. Z
+    // 3. H
     {
       LayerParameter* wx_slice_param = net_param->add_layer();
       wx_slice_param->CopyFrom(slice_param);
@@ -183,10 +184,10 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
         wx_slice_param->add_bottom("XW_X_static_" + ts);
       else
         wx_slice_param->add_bottom("W_xc_x_" + ts);
-      wx_slice_param->add_top("W_xc_x_zr_" + ts);
+      wx_slice_param->add_top("W_xc_x_z_" + ts);
+      wx_slice_param->add_top("W_xc_x_r_" + ts);
       wx_slice_param->add_top("W_xc_x_h_" + ts);
       wx_slice_param->mutable_slice_param()->set_axis(2);
-      wx_slice_param->mutable_slice_param()->add_slice_point(2*num_output);
     }
 
     // Add layers to flush the hidden state when beginning a new
@@ -206,46 +207,66 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     }
 
     // Add layer to compute
-    //     R_zr_h_{t-1} := R_zr * h_conted_{t-1}
+    //     R_z_h_{t-1} := R_z * h_conted_{t-1}
     {
-      LayerParameter* R_zr_h_param = net_param->add_layer();
-      R_zr_h_param->CopyFrom(hidden_param);
-      R_zr_h_param->set_name("R_zr_h_" + ts);
-      R_zr_h_param->add_param()->set_name("R_zr");
-      R_zr_h_param->add_bottom("h_conted_" + tm1s);
-      R_zr_h_param->add_top("R_zr_h_" + ts);
-      R_zr_h_param->mutable_inner_product_param()->set_num_output(num_output * 2);
-      R_zr_h_param->mutable_inner_product_param()->set_axis(2);
+      LayerParameter* R_z_h_param = net_param->add_layer();
+      R_z_h_param->CopyFrom(hidden_param);
+      R_z_h_param->set_name("R_z_h_" + ts);
+      R_z_h_param->add_param()->set_name("R_z");
+      R_z_h_param->add_bottom("h_conted_" + tm1s);
+      R_z_h_param->add_top("R_z_h_" + ts);
+      R_z_h_param->mutable_inner_product_param()->set_num_output(num_output);
+      R_z_h_param->mutable_inner_product_param()->set_axis(2);
     }
-    // Compute the inner part of Z and R:
-    //      R_zr * h_conted_{t-1} + W_xc * x_t + b_c
+    // Compute the inner part of Z:
+    //      R_z * h_conted_{t-1} + W_xc * x_t + b_c
     {
-      LayerParameter* inner_zr_sum_layer = net_param->add_layer();
-      inner_zr_sum_layer->CopyFrom(sum_param);
-      inner_zr_sum_layer->set_name("inner_zr_" + ts);
-      inner_zr_sum_layer->add_bottom("R_zr_h_" + ts);
-      inner_zr_sum_layer->add_bottom("W_xc_x_zr_" + ts);
-      inner_zr_sum_layer->add_top("inner_zr_" + ts);
+      LayerParameter* inner_z_sum_param = net_param->add_layer();
+      inner_z_sum_param->CopyFrom(sum_param);
+      inner_z_sum_param->set_name("inner_z_" + ts);
+      inner_z_sum_param->add_bottom("R_z_h_" + ts);
+      inner_z_sum_param->add_bottom("W_xc_x_z_" + ts);
+      inner_z_sum_param->add_top("inner_z_" + ts);
     }
     // - zt = f(Xt*(Wz^T) + Ht-1*(Rz^T) + Wbz + Rbz)
+    {
+      LayerParameter* f_z_param = net_param->add_layer();
+      f_z_param->CopyFrom(sigmoid_param);
+      f_z_param->add_bottom("inner_z_" + ts);
+      f_z_param->add_top("z_" + ts);
+      f_z_param->set_name("z_" + ts);
+    }
+    // Add layer to compute
+    //     R_r_h_{t-1} := R_r * h_conted_{t-1}
+    {
+      LayerParameter* R_r_h_param = net_param->add_layer();
+      R_r_h_param->CopyFrom(hidden_param);
+      R_r_h_param->set_name("R_r_h_" + ts);
+      R_r_h_param->add_param()->set_name("R_r");
+      R_r_h_param->add_bottom("h_conted_" + tm1s);
+      R_r_h_param->add_top("R_r_h_" + ts);
+      R_r_h_param->mutable_inner_product_param()->set_num_output(num_output);
+      R_r_h_param->mutable_inner_product_param()->set_axis(2);
+    }
+    // Compute the inner part of R:
+    //      R_r * h_conted_{t-1} + W_xc * x_t + b_c
+    {
+      LayerParameter* inner_r_sum_param = net_param->add_layer();
+      inner_r_sum_param->CopyFrom(sum_param);
+      inner_r_sum_param->set_name("inner_r_" + ts);
+      inner_r_sum_param->add_bottom("R_r_h_" + ts);
+      inner_r_sum_param->add_bottom("W_xc_x_r_" + ts);
+      inner_r_sum_param->add_top("inner_r_" + ts);
+    }
     // - rt = f(Xt*(Wr^T) + Ht-1*(Rr^T) + Wbr + Rbr)
     {
-      LayerParameter* f_layer = net_param->add_layer();
-      f_layer->CopyFrom(sigmoid_param);
-      f_layer->add_bottom("inner_zr_" + ts);
-      f_layer->add_top("zr_" + ts);
-      f_layer->set_name("zr_" + ts);
+      LayerParameter* f_r_param = net_param->add_layer();
+      f_r_param->CopyFrom(sigmoid_param);
+      f_r_param->add_bottom("inner_r_" + ts);
+      f_r_param->add_top("r_" + ts);
+      f_r_param->set_name("r_" + ts);
     }
 
-    {
-      LayerParameter* zr_slice_layer = net_param->add_layer();
-      zr_slice_layer->CopyFrom(slice_param);
-      zr_slice_layer->mutable_slice_param()->set_axis(2);
-      zr_slice_layer->add_bottom("zr_" + ts);
-      zr_slice_layer->set_name("zr_slice" + ts);
-      zr_slice_layer->add_top("z_" + ts);
-      zr_slice_layer->add_top("r_" + ts);
-    }
     // (rt (.) Ht-1)*(Rh^T)
     // # default, when linear_before_reset = 0
     if (linear_before_reset == 0){
