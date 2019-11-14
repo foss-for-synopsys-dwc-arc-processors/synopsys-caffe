@@ -387,7 +387,7 @@ message SolverParameter {
   // and overwrites this one(s).
 
   // If --snapshot command line parameter is specified, this one(s) are ignored.
-  // If several model files are expected, they can be listed in a one 
+  // If several model files are expected, they can be listed in a one
   // weights parameter separated by ',' (like in a command string) or
   // in repeated weights parameters separately.
   repeated string weights = 46;
@@ -613,7 +613,7 @@ message LayerParameter {
   optional YoloV2LossParameter yolo_v2_loss_param = 198;
   optional YoloV3LossParameter yolo_v3_loss_param = 199;
   optional UpsampleDarknetParameter upsample_darknet_param = 209; // Darknet layer used in yolov3
-  
+
   //TensorFlow related
   optional DepthToSpaceParameter depth_to_space_param = 208;
   optional ResizeNearestNeighborParameter resize_nearest_neighbor_param = 210;
@@ -655,7 +655,7 @@ message LayerParameter {
   optional GemmParameter gemm_param = 251;
   optional ReduceL1Parameter reduce_l1_param = 252;
   optional ReduceL2Parameter reduce_l2_param = 253;
-  optional ReduceLogsumexpParameter reduce_logsumexp_param = 254;
+  optional ReduceLogSumExpParameter reduce_logsumexp_param = 254;
   optional ReduceAllParameter reduce_all_param = 255;
   optional ReduceAnyParameter reduce_any_param = 256;
   optional ReverseSequenceParameter reverse_sequence_param = 257;
@@ -2115,12 +2115,12 @@ message PriorBoxParameter {
 
   // Offset to the top left corner of each cell.
   optional float offset = 13 [default = 0.5];
-  
+
   optional bool faceboxes = 14 [default = false]; //CUSTOMIZATION, for FaceBoxes
-  
+
   repeated float box_width = 15; //CUSTOMIZATION, ref https://github.com/opencv/opencv/blob/master/modules/dnn/src/layers/prior_box_layer.cpp
   repeated float box_height = 16; //CUSTOMIZATION
-  
+
   optional bool tf = 17 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
   optional bool yx_order = 18 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
 }
@@ -2165,24 +2165,26 @@ message RecurrentParameter {
 
   // The bias added to forget gates, adapt from TensorFlow,
   // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
-  // in TensorFlow, the default value is 1.0, 
+  // in TensorFlow, the default value is 1.0,
   // but in Caffe, we need to make it 0 to be backward compatible
   // Only for LSTM layer
   optional float forget_bias = 6 [default = 0];
-  // If set to true, ot will be ht, not tanh(W_ho * h_t + b_o) 
+  // If set to true, ot will be ht, not tanh(W_ho * h_t + b_o)
   // to match rnn implementation in Tensorflow, only available for RNN layer
   optional bool tf_rnn = 7 [default = false];
   // For GRU layer: When computing the output of the hidden gate,
   // apply the linear transformation before multiplying by the output
   // of the reset gate.
   optional uint32 linear_before_reset = 8 [default = 0];
+  // pecify if the RNN is forward or reverse. Must be one of forward (default), reverse.
+  optional string direction = 9 [default = "forward"];
 }
 
 // Message that stores parameters used by LSTMUnitLayer
 message LSTMUnitParameter {
   // The bias added to forget gates, adapt from TensorFlow,
   // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
-  // in TensorFlow, the default value is 1.0, 
+  // in TensorFlow, the default value is 1.0,
   // but in Caffe, we need to make it 0 to be backward compatible
   optional float forget_bias = 1 [default = 0];
 }
@@ -2226,7 +2228,7 @@ message ReLUParameter {
   optional float negative_slope = 1 [default = 0];
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
   optional float maximum = 6 [default = 0]; //CUSTOMIZATION, act as MAX range setting
-  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting 
+  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
@@ -2254,7 +2256,7 @@ message XLUParameter {
   optional float negative_slope = 1 [default = 0];
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
   optional float maximum = 6 [default = 0]; //CUSTOMIZATION, act as MAX range setting
-  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting 
+  optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
@@ -3031,7 +3033,7 @@ message MirrorPadParameter{
 }
 
 message StackParameter{
-  optional int32 axis = 1 [default = 0]; 
+  optional int32 axis = 1 [default = 0];
 }
 
 message ResizeBilinearParameter {
@@ -3044,27 +3046,27 @@ message ResizeBilinearParameter {
 }
 
 message ReduceSumParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceMaxParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceMinParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceProdParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceMeanParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
@@ -3183,25 +3185,25 @@ message ReduceL2Parameter {
   optional int32 keepdims = 2 [default = 1];
 }
 
-message ReduceLogsumexpParameter {
-  repeated int32 axis = 1; 
+message ReduceLogSumExpParameter {
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceAllParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReduceAnyParameter {
-  repeated int32 axis = 1; 
+  repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
 }
 
 message ReverseSequenceParameter {
   repeated uint32 seq_lengths = 1;
   required uint32 seq_axis = 2;
-  optional uint32 batch_axis = 3[default = 0]; 
+  optional uint32 batch_axis = 3[default = 0];
 }
 
 message HardSigmoidParameter {
@@ -3214,7 +3216,7 @@ message ThresholdedReLUParameter {
 }
 
 message OneHotParameter {
-  required uint32 depth = 1; 
+  required uint32 depth = 1;
   optional float on_value = 2[default = 1];
   optional float off_value = 3[default = 0];
   optional int32 axis = 4[default = -1];

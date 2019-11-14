@@ -9,16 +9,16 @@
 
 namespace caffe {
 
-template <typename Dtype> class ReduceLogsumexpLayer : public Layer<Dtype> {
+template <typename Dtype> class ReduceLogSumExpLayer : public Layer<Dtype> {
 public:
-  explicit ReduceLogsumexpLayer(const LayerParameter &param)
+  explicit ReduceLogSumExpLayer(const LayerParameter &param)
       : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                           const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "ReduceLogsumexp"; }
+  virtual inline const char *type() const { return "ReduceLogSumExp"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 

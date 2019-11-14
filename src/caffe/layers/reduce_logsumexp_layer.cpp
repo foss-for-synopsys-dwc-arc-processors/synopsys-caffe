@@ -6,9 +6,9 @@
 
 namespace caffe {
 template <typename Dtype>
-void ReduceLogsumexpLayer<Dtype>::LayerSetUp(
+void ReduceLogSumExpLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
-  const ReduceLogsumexpParameter &reduce_logsumexp_param =
+  const ReduceLogSumExpParameter &reduce_logsumexp_param =
       this->layer_param_.reduce_logsumexp_param();
   keepdims_ = reduce_logsumexp_param.keepdims();
   axis_.clear();
@@ -24,7 +24,7 @@ void ReduceLogsumexpLayer<Dtype>::LayerSetUp(
 }
 
 template <typename Dtype>
-void ReduceLogsumexpLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
+void ReduceLogSumExpLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
                                           const vector<Blob<Dtype> *> &top) {
   vector<int> top_shape = bottom[0]->shape();
   vector<int> bottom_shape = bottom[0]->shape();
@@ -54,7 +54,7 @@ void ReduceLogsumexpLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
 
 template <typename Dtype>
 inline vector<int>
-ReduceLogsumexpLayer<Dtype>::indices(int offset,
+ReduceLogSumExpLayer<Dtype>::indices(int offset,
                                      const vector<int> &shape) const {
   vector<int> indices(shape.size());
   int r = offset;
@@ -67,7 +67,7 @@ ReduceLogsumexpLayer<Dtype>::indices(int offset,
 
 template <typename Dtype>
 inline int
-ReduceLogsumexpLayer<Dtype>::offset(const vector<Blob<Dtype> *> &bottom,
+ReduceLogSumExpLayer<Dtype>::offset(const vector<Blob<Dtype> *> &bottom,
                                     const vector<int> &axis_ind,
                                     const vector<int> &indices) const {
   int offset = 0;
@@ -78,7 +78,7 @@ ReduceLogsumexpLayer<Dtype>::offset(const vector<Blob<Dtype> *> &bottom,
 }
 
 template <typename Dtype>
-void ReduceLogsumexpLayer<Dtype>::Forward_cpu(
+void ReduceLogSumExpLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
   const Dtype *bottom_data = bottom[0]->cpu_data();
   Dtype *top_data = top[0]->mutable_cpu_data();
@@ -123,7 +123,7 @@ void ReduceLogsumexpLayer<Dtype>::Forward_cpu(
   }
 }
 
-INSTANTIATE_CLASS(ReduceLogsumexpLayer);
-REGISTER_LAYER_CLASS(ReduceLogsumexp);
+INSTANTIATE_CLASS(ReduceLogSumExpLayer);
+REGISTER_LAYER_CLASS(ReduceLogSumExp);
 
 } // namespace caffe
