@@ -32,6 +32,7 @@ mul_layer
 nms_layer  
 one_hot_layer  
 pad_layer  
+peephole_lstm_layer  
 piece_layer  
 pow_layer  
 pyramid_roi_align_layer  
