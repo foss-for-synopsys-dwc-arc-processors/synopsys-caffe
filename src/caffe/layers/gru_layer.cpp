@@ -121,7 +121,29 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   }
 
   if (this->static_input_) {
-    LOG(FATAL) << "GRU layer doesn't support x_static input";
+    // Add layer to transform x_static to the gate dimension.
+    //     W_xc_x_static = W_xc_static * x_static
+    LayerParameter* x_static_transform_param = net_param->add_layer();
+    x_static_transform_param->CopyFrom(hidden_param);
+    x_static_transform_param->mutable_inner_product_param()->set_axis(1);
+    x_static_transform_param->set_name("W_xc_x_static");
+    x_static_transform_param->add_param()->set_name("W_xc_static");
+    x_static_transform_param->add_bottom("x_static");
+    x_static_transform_param->add_top("W_xc_x_static_preshape");
+    x_static_transform_param->add_propagate_down(true);
+
+    LayerParameter* reshape_param = net_param->add_layer();
+    reshape_param->set_type("Reshape");
+    BlobShape* new_shape =
+         reshape_param->mutable_reshape_param()->mutable_shape();
+    new_shape->add_dim(1);  // One timestep.
+    // Should infer this->N as the dimension so we can reshape on batch size.
+    new_shape->add_dim(-1);
+    new_shape->add_dim(
+        x_static_transform_param->inner_product_param().num_output());
+    reshape_param->set_name("W_xc_x_static_reshape");
+    reshape_param->add_bottom("W_xc_x_static_preshape");
+    reshape_param->add_top("W_xc_x_static");
   }
 
   LayerParameter* x_slice_param = net_param->add_layer();
@@ -141,6 +163,14 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
 
     cont_slice_param->add_top("cont_" + ts);
     x_slice_param->add_top("W_xc_x_" + ts);
+    if (this->static_input_) {
+      LayerParameter* X_static_param = net_param->add_layer();
+      X_static_param->CopyFrom(sum_param);
+      X_static_param->set_name("XW_X_static_" + ts);
+      X_static_param->add_bottom("W_xc_x_" + ts);
+      X_static_param->add_bottom("W_xc_x_static");
+      X_static_param->add_top("XW_X_static_" + ts);
+    }
 
     // Slice X * W into two parts:
     // 1. R and Z
@@ -149,7 +179,10 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       LayerParameter* wx_slice_param = net_param->add_layer();
       wx_slice_param->CopyFrom(slice_param);
       wx_slice_param->set_name("wx_slice" + ts);
-      wx_slice_param->add_bottom("W_xc_x_" + ts);
+      if (this->static_input_)
+        wx_slice_param->add_bottom("XW_X_static_" + ts);
+      else
+        wx_slice_param->add_bottom("W_xc_x_" + ts);
       wx_slice_param->add_top("W_xc_x_zr_" + ts);
       wx_slice_param->add_top("W_xc_x_h_" + ts);
       wx_slice_param->mutable_slice_param()->set_axis(2);
@@ -192,9 +225,6 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       inner_zr_sum_layer->set_name("inner_zr_" + ts);
       inner_zr_sum_layer->add_bottom("R_zr_h_" + ts);
       inner_zr_sum_layer->add_bottom("W_xc_x_zr_" + ts);
-      if (this->static_input_) {
-        LOG(FATAL) << "GRU layer doesn't support x_static input";
-      }
       inner_zr_sum_layer->add_top("inner_zr_" + ts);
     }
     // - zt = f(Xt*(Wz^T) + Ht-1*(Rz^T) + Wbz + Rbz)

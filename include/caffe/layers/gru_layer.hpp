@@ -20,7 +20,7 @@ template <typename Dtype> class RecurrentLayer;
  * @brief Processes sequential inputs using a "Gated Recurrent Unit" (GRU)
  *        [1] style recurrent neural network (RNN). Implemented by unrolling
  *        the GRU computation through time.
- *
+ * ONNX Specification begin
  *     Equations (Default: f=Sigmoid, g=Tanh):
  *     X - input tensor
  *     z - update gate
@@ -58,12 +58,13 @@ template <typename Dtype> class RecurrentLayer;
 //                                                                                                //
 // - Ht = (1 - zt) (.) ht + zt (.) Ht-1                                                           //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+*    ONNX Specification end
 * Inputs:
  1. X, shape (T, N, input_size)
   - T is the time step
   - N is the number of the independent streams
  2. continue flag, shape (T, N)
- 3. X_static (not support)
+ 3. X_static (N, input_size)
  4. init_hidden_state, shape (1, N, num_output)
 
 * Outputs:
