@@ -13,10 +13,15 @@ template <typename Dtype>
 void SpaceToBatchNDLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const SpaceToBatchNDParameter& space_to_batch_nd_param = this->layer_param_.space_to_batch_nd_param();
+  auto bottom_shape = bottom[0]->shape();
   for(auto i : space_to_batch_nd_param.block_shape())
     block_shape_.push_back(i);
   for(auto i : space_to_batch_nd_param.paddings())
     paddings_.push_back(i);
+  for (int i=0; i<block_shape_.size(); i++)
+    if((bottom_shape[i+1] + paddings_[2*i] + paddings_[2*i+1]) % block_shape_[i] != 0){
+      LOG(FATAL) << "block_shape[" << i << "] cannot divide bottom_shape[" << i+1 << "] + paddings[" << 2*i << "] + paddings[" << 2*i+1 << "]";
+    }
 }
 
 template <typename Dtype>
