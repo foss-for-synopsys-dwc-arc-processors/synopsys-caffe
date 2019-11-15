@@ -662,6 +662,7 @@ message LayerParameter {
   optional HardSigmoidParameter hard_sigmoid_param = 258;
   optional ThresholdedReLUParameter thresholded_relu_param = 259;
   optional OneHotParameter one_hot_param = 260;
+  optional ReverseParameter reverse_param = 261;
 }
 
 message AccumParameter {
@@ -3220,4 +3221,8 @@ message OneHotParameter {
   optional float on_value = 2[default = 1];
   optional float off_value = 3[default = 0];
   optional int32 axis = 4[default = -1];
+}
+
+message ReverseParameter {
+  repeated int32 axis = 1;
 }
