@@ -225,7 +225,6 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       lstm_unit_param->add_top("c_" + ts);
       lstm_unit_param->add_top("h_" + ts);
       lstm_unit_param->set_name("unit_" + ts);
-      lstm_unit_param->mutable_lstm_unit_param()->set_forget_bias(this->forget_bias_);
     }
     output_concat_layer.add_bottom("h_" + ts);
   }  // for (int t = 1; t <= this->T_; ++t)

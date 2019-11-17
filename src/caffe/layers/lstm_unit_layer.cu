@@ -19,17 +19,14 @@ __device__ Dtype tanh(const Dtype x) {
 
 template <typename Dtype>
 __global__ void LSTMActsForward(const int nthreads, const int dim,
-                                const Dtype* X, Dtype* X_acts, float forget_bias) {
+                                const Dtype* X, Dtype* X_acts) {
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int x_dim = 4 * dim;
     const int d = index % x_dim;
-    if ((d >= dim) && (d < 2 * dim)) {
-      // Add forget_bias value to forget gate
-      X_acts[index] = sigmoid(X[index] + forget_bias);
-    } else if (d >= 3 * dim) {
-      X_acts[index] = tanh(X[index]);
-    } else {
+    if (d < 3 * dim) {
       X_acts[index] = sigmoid(X[index]);
+    } else {
+      X_acts[index] = tanh(X[index]);
     }
   }
 }
@@ -67,7 +64,7 @@ void LSTMUnitLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const int X_count = bottom[1]->count();
   // NOLINT_NEXT_LINE(whitespace/operators)
   LSTMActsForward<Dtype><<<CAFFE_GET_BLOCKS(X_count), CAFFE_CUDA_NUM_THREADS>>>(
-      X_count, hidden_dim_, X, X_acts, forget_bias_);
+      X_count, hidden_dim_, X, X_acts);
   CUDA_POST_KERNEL_CHECK;
   // NOLINT_NEXT_LINE(whitespace/operators)
   LSTMUnitForward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(

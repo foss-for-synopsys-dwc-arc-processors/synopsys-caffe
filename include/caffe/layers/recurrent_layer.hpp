@@ -180,11 +180,6 @@ class RecurrentLayer : public Layer<Dtype> {
    */
   bool tf_rnn_;
 
-  /**
-   * @brief The The bias added to forget gates
-   */
-  float forget_bias_;
-
   vector<Blob<Dtype>* > recur_input_blobs_;
   vector<Blob<Dtype>* > recur_output_blobs_;
   vector<Blob<Dtype>* > output_blobs_;

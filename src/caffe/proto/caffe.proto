@@ -564,7 +564,6 @@ message LayerParameter {
   optional ProposalParameter proposal_param = 212;
   optional PythonParameter python_param = 130;
   optional RecurrentParameter recurrent_param = 146;
-  optional LSTMUnitParameter lstm_unit_param = 217;
   optional ReductionParameter reduction_param = 136;
   optional ReLUParameter relu_param = 123;
   optional XLUParameter xlu_param = 237; // for EV mappipngg tool
@@ -2164,12 +2163,6 @@ message RecurrentParameter {
   // recurrent architecture -- e.g., 1 for RNNs, 2 for LSTMs.
   optional bool expose_hidden = 5 [default = false];
 
-  // The bias added to forget gates, adapt from TensorFlow,
-  // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
-  // in TensorFlow, the default value is 1.0,
-  // but in Caffe, we need to make it 0 to be backward compatible
-  // Only for LSTM layer
-  optional float forget_bias = 6 [default = 0];
   // If set to true, ot will be ht, not tanh(W_ho * h_t + b_o)
   // to match rnn implementation in Tensorflow, only available for RNN layer
   optional bool tf_rnn = 7 [default = false];
@@ -2181,14 +2174,6 @@ message RecurrentParameter {
   optional string direction = 9 [default = "forward"];
 }
 
-// Message that stores parameters used by LSTMUnitLayer
-message LSTMUnitParameter {
-  // The bias added to forget gates, adapt from TensorFlow,
-  // see https://www.tensorflow.org/api_docs/python/tf/nn/rnn_cell/BasicLSTMCell,
-  // in TensorFlow, the default value is 1.0,
-  // but in Caffe, we need to make it 0 to be backward compatible
-  optional float forget_bias = 1 [default = 0];
-}
 
 // Message that stores parameters used by ReductionLayer
 message ReductionParameter {
