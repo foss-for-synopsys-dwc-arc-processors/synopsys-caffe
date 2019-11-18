@@ -49,6 +49,7 @@ reduce_prod_layer
 reduce_sum_layer  
 resize_bilinear_layer  
 resize_nearest_neighbor_layer  
+reverse_layer  
 reverse_sequence_layer  
 round_layer  
 shape_layer  
@@ -70,8 +71,7 @@ where4_gathernd_crop_layer
 where4_gathernd_layer  
 where4_layer  
 DIV and MIN in EltwiseOp  
-axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)  
-forget_bias in RecurrentParameter and LSTMUnitParameter  
+axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)    
 min_first in ArgMaxParameter  
 pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingParameter  
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
