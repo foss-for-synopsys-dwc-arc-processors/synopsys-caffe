@@ -79,16 +79,16 @@ AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias 
 ceil_mode in PoolingParameter  
 faceboxes, box_width, box_height, tf and yx_order in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
-eltwise.py (to be deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
+eltwise.py (deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
-pad.py and pads.py (customized Python layer, implementation of tf.pad)  
-range.py (customized Python layer, implementation of tf.range)  
+pad.py and pads.py (deprecated, customized Python layer, implementation of tf.pad)  
+range.py (deprecated, customized Python layer, implementation of tf.range)  
 rank.py (customized Python layer, implementation of tf.rank)  
 reshape.py (customized Python layer, implementation of tf.reshape with two inputs)  
 shape.py (deprecated, customized Python layer, implementation of tf.shape)  
-slice.py (customized Python layer, implementation of tf.slice and tf.strided_slice)  
-stack.py (customized Python layer, implementation of tf.stack)  
-statistics.py (customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum, tf.reduce_max, tf.reduce_min)  
+slice.py (deprecated, customized Python layer, implementation of tf.slice and tf.strided_slice)  
+stack.py (deprecated, customized Python layer, implementation of tf.stack)  
+statistics.py (deprecated, customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum, tf.reduce_max, tf.reduce_min)  
 stridedslice.py (deprecated, customized Python layer)  
   
 evprune (Network Pruning Tool) related  
