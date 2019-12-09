@@ -23,7 +23,6 @@ gather_layer
 gather_nd_layer  
 gemm_layer  
 nms_gather_layer  
-lp_normalization_layer  
 maximum_layer  
 minimum_layer  
 mirror_pad_layer  
