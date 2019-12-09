@@ -3214,6 +3214,6 @@ message ReverseParameter {
 }
 
 message LpNormalizationParameter {
-  optional int32 axis = 1[default = -1];
+  repeated int32 axis = 1;
   optional uint32 p = 2[default = 2];
 }

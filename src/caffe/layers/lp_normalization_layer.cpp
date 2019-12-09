@@ -10,13 +10,17 @@ void LpNormalizationLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype> *> &bottom, const vector<Blob<Dtype> *> &top) {
   const LpNormalizationParameter &lp_normalization_param =
       this->layer_param_.lp_normalization_param();
-  axis_ = (lp_normalization_param.axis() < 0)
-              ? lp_normalization_param.axis() + bottom[0]->num_axes()
-              : lp_normalization_param.axis();
   p_ = lp_normalization_param.p();
-
-  CHECK_LT(axis_, bottom[0]->num_axes())
-      << "the dimension of axis should be less than input dimension!";
+  axis_.clear();
+  std::copy(lp_normalization_param.axis().begin(),
+            lp_normalization_param.axis().end(), std::back_inserter(axis_));
+  axis_dim_ = axis_.size();
+  CHECK_LE(axis_dim_, bottom[0]->num_axes())
+      << "the dimension of axis should be less or equal than input dimension!";
+  for (int i = 0; i < axis_dim_; ++i) {
+    axis_[i] = bottom[0]->CanonicalAxisIndex(axis_[i]);
+  }
+  std::sort(axis_.begin(), axis_.end());
 }
 
 template <typename Dtype>
@@ -64,33 +68,38 @@ void LpNormalizationLayer<Dtype>::Forward_cpu(
   for (int i = 0; i < axis_out.size(); ++i) {
     axis_out[i] = i;
   }
-  shape_out.erase(shape_out.begin() + axis_);
-  axis_out.erase(axis_out.begin() + axis_);
+  for (int i = axis_dim_ - 1; i > -1; --i) {
+    shape_out.erase(shape_out.begin() + axis_[i]);
+    axis_out.erase(axis_out.begin() + axis_[i]);
+  }
 
-  const int shape_in = bottom[0]->shape(axis_);
-  const int out_count = bottom_count / shape_in;
+  vector<int> shape_in(axis_.size(), 0);
+  for (int i = 0; i < axis_.size(); ++i) {
+    shape_in[i] = bottom[0]->shape()[axis_[i]];
+  }
+
+  int in_count = 1;
+  for (int i = 0; i < shape_in.size(); ++i) {
+    in_count *= shape_in[i];
+  }
+  int out_count = bottom_count / in_count;
 
   for (int i = 0; i < out_count; ++i) {
     vector<int> ind_out = indices(i, shape_out);
     int offset_out = offset(bottom, axis_out, ind_out);
     Dtype nsum = 0;
-
-    for (int j = 0; j < shape_in; ++j) {
-      int offset_in = j * bottom[0]->count(axis_ + 1);
+    for (int j = 0; j < in_count; ++j) {
+      vector<int> ind_in = indices(j, shape_in);
+      int offset_in = offset(bottom, axis_, ind_in);
       int b_idx = offset_out + offset_in;
-      if (p_ == 1) {
-        nsum += std::abs(bottom_data[b_idx]);
-      } else {
-        CHECK_EQ(p_, 2) << "parameter p should be 1 or 2, not other numbers!!";
-        nsum += std::pow(bottom_data[b_idx], 2);
-      }
+      nsum += std::pow(std::abs(bottom_data[b_idx]), p_);
     }
-    if (p_ == 2) {
-      nsum = std::pow(nsum, 0.5);
-    }
+    const float rp = 1.0 / p_;
+    nsum = std::pow(nsum, rp);
 
-    for (int j = 0; j < shape_in; ++j) {
-      int offset_in = j * bottom[0]->count(axis_ + 1);
+    for (int j = 0; j < in_count; ++j) {
+      vector<int> ind_in = indices(j, shape_in);
+      int offset_in = offset(bottom, axis_, ind_in);
       int b_idx = offset_out + offset_in;
       top_data[b_idx] = bottom_data[b_idx] / nsum;
     }

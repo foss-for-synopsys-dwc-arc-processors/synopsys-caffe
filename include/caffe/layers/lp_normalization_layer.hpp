@@ -37,8 +37,9 @@ protected:
                     const vector<int> &axis_ind,
                     const vector<int> &indices) const;
 
-  int axis_;
+  vector<int> axis_;
   int p_;
+  int axis_dim_;
 };
 
 } // namespace caffe
