@@ -240,8 +240,8 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
       inner_non_c_slice_param->set_name("inner_non_c_slice" + ts);
       inner_non_c_slice_param->add_bottom("inner_non_c_sum_" + ts);
       inner_non_c_slice_param->add_top("W_xc_x_i_" + ts);
-      inner_non_c_slice_param->add_top("W_xc_x_f_" + ts);
       inner_non_c_slice_param->add_top("W_xc_x_o_" + ts);
+      inner_non_c_slice_param->add_top("W_xc_x_f_" + ts);
       inner_non_c_slice_param->add_top("W_xc_x_c_" + ts);
       inner_non_c_slice_param->mutable_slice_param()->set_axis(2);
     }
