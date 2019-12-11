@@ -620,7 +620,7 @@ message LayerParameter {
   optional TopkGatherParameter topk_gather_param = 213;
   optional NMSParameter nms_param = 214;
   optional NMSGatherParameter nms_gather_param = 215;
-  optional GatherNdParameter gather_nd_param = 216;
+  optional GatherNDParameter gather_nd_param = 216;
   optional Where4Parameter where4_param = 218;
   optional Where4GatherndParameter where4_gathernd_param = 219;
   optional CropAndResizeParameter crop_and_resize_param = 220;
@@ -2968,7 +2968,7 @@ message NMSGatherParameter {
   optional float iou_threshold = 3 [default = 0.7];
 }
 
-message GatherNdParameter {
+message GatherNDParameter {
   repeated uint32 indices = 1;
   // repeated uint32 shape = 2;
   // rename shape as indices_shape

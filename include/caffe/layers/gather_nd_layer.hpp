@@ -15,15 +15,15 @@ namespace caffe {
  * https://www.tensorflow.org/api_docs/python/tf/gather_nd
  */
 
-template <typename Dtype> class GatherNdLayer : public Layer<Dtype> {
+template <typename Dtype> class GatherNDLayer : public Layer<Dtype> {
 public:
-  explicit GatherNdLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
+  explicit GatherNDLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                           const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "GatherNd"; }
+  virtual inline const char *type() const { return "GatherND"; }
   virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 

@@ -8,9 +8,9 @@
 namespace caffe {
 
 template <typename Dtype>
-void GatherNdLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
+void GatherNDLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                                       const vector<Blob<Dtype> *> &top) {
-  const GatherNdParameter &gather_nd_param =
+  const GatherNDParameter &gather_nd_param =
       this->layer_param_.gather_nd_param();
   indices_.clear();
   std::copy(gather_nd_param.indices().begin(), gather_nd_param.indices().end(),
@@ -21,12 +21,12 @@ void GatherNdLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
 }
 
 template <typename Dtype>
-void GatherNdLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
+void GatherNDLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
                                    const vector<Blob<Dtype> *> &top) {
   const int num_axes = bottom[0]->num_axes();
   CHECK_GE(num_axes, 1)
       << "the dimension of input should be larger than or equal to 1";
-  // const GatherNdParameter& gather_nd_param =
+  // const GatherNDParameter& gather_nd_param =
   // this->layer_param_.gather_nd_param();
   indices_dim_ = indices_shape_.size();
   CHECK_GE(indices_dim_, 1)
@@ -62,7 +62,7 @@ void GatherNdLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
 }
 
 template <typename Dtype>
-void GatherNdLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+void GatherNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                        const vector<Blob<Dtype> *> &top) {
   const Dtype *bottom_data = bottom[0]->cpu_data();
   Dtype *top_data = top[0]->mutable_cpu_data();
@@ -82,7 +82,7 @@ void GatherNdLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
   }
 }
 
-INSTANTIATE_CLASS(GatherNdLayer);
-REGISTER_LAYER_CLASS(GatherNd);
+INSTANTIATE_CLASS(GatherNDLayer);
+REGISTER_LAYER_CLASS(GatherND);
 
 } // namespace caffe
