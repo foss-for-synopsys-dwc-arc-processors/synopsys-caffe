@@ -26,6 +26,7 @@ gru_layer
 hard_sigmoid_layer  
 lp_normalization_layer  
 nms_gather_layer  
+matmul_layer  
 maximum_layer  
 minimum_layer  
 mirror_pad_layer  
