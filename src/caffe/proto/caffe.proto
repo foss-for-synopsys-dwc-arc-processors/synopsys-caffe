@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 263 (last added: lp_normalization_param)
+// LayerParameter next available layer-specific ID: 264 (last added: matmul_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -663,6 +663,7 @@ message LayerParameter {
   optional OneHotParameter one_hot_param = 260;
   optional ReverseParameter reverse_param = 261;
   optional LpNormalizationParameter lp_normalization_param = 262;
+  optional MatMulParameter matmul_param = 263;
 }
 
 message AccumParameter {
@@ -3216,4 +3217,9 @@ message ReverseParameter {
 message LpNormalizationParameter {
   repeated int32 axis = 1;
   optional uint32 p = 2[default = 2];
+}
+
+message MatMulParameter {
+  optional bool transpose_a = 1[default = false];
+  optional bool transpose_b = 2[default = false];
 }
