@@ -19,8 +19,8 @@ void ExpandDimsNDLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   {
     CHECK_LE(axis[i], bottom[0]->num_axes())
         << "Newly inserted axis index should not be greater than bottom axis count!";
-    if(axis[i] != bottom[0]->num_axes())
-      axis[i] = bottom[0]->CanonicalAxisIndex(axis[i]);
+    if(axis[i] < 0)
+      axis[i] = bottom[0]->CanonicalAxisIndex(axis[i]) + 1;
   }
   vector<int> top_shape;
   /*
