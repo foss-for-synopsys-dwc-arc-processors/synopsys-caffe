@@ -664,6 +664,7 @@ message LayerParameter {
   optional ReverseParameter reverse_param = 261;
   optional LpNormalizationParameter lp_normalization_param = 262;
   optional MatMulParameter matmul_param = 263;
+  optional GatherV2Parameter gather_v2_param = 264;
 }
 
 message AccumParameter {
@@ -2947,7 +2948,9 @@ message ResizeNearestNeighborParameter {
 }
 
 message GatherParameter{
-  optional int32 axis = 1 [default = 0];
+  repeated uint32 indices = 1;
+  repeated uint32 shape = 2;
+  optional int32 axis = 3 [default = 0];
 }
 
 message TopkGatherParameter {
@@ -3220,4 +3223,8 @@ message LpNormalizationParameter {
 message MatMulParameter {
   optional bool transpose_a = 1[default = false];
   optional bool transpose_b = 2[default = false];
+}
+
+message GatherV2Parameter {
+  optional int32 axis = 1[default = 0];
 }

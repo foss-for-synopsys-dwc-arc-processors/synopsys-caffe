@@ -1,5 +1,5 @@
-#ifndef CAFFE_GATHER_LAYER_HPP_
-#define CAFFE_GATHER_LAYER_HPP_
+#ifndef CAFFE_GATHER_V2_LAYER_HPP_
+#define CAFFE_GATHER_V2_LAYER_HPP_
 
 #include <string>
 #include <vector>
@@ -11,20 +11,21 @@
 namespace caffe {
 /*
  * @brief Resize images to size using nearest neighbor interpolation. ////
- * Note: implementation of tf.gather
+ * Note: another implementation of tf.gather
  * https://www.tensorflow.org/api_docs/python/tf/gather
+ * In GatherV2, params and indices are inputs, axis is attribute
  */
 
-template <typename Dtype> class GatherLayer : public Layer<Dtype> {
+template <typename Dtype> class GatherV2Layer : public Layer<Dtype> {
 public:
-  explicit GatherLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
+  explicit GatherV2Layer(const LayerParameter &param) : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                           const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "Gather"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
+  virtual inline const char *type() const { return "GatherV2"; }
+  virtual inline int ExactNumBottomBlobs() const { return 2; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
 protected:
@@ -42,15 +43,11 @@ protected:
   //    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
   //    {}
 
-  // int count_;
-  int num_gather_;
-  int gather_size_;
   int gather_axis_;
   int indices_dim_;
-  vector<int> indices_;
   vector<int> indices_shape_;
 };
 
 } // namespace caffe
 
-#endif // CAFFE_GATHER_LAYER_HPP_
+#endif // CAFFE_GATHER_V2_LAYER_HPP_
