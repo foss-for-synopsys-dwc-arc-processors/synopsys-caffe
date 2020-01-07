@@ -6,7 +6,7 @@
 namespace caffe {
 
 template <typename Dtype>
-void HardTanhLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+void HardTanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                        const vector<Blob<Dtype> *> &top) {
   const Dtype *bottom_data = bottom[0]->cpu_data();
   Dtype *top_data = top[0]->mutable_cpu_data();
@@ -16,7 +16,7 @@ void HardTanhLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
   }
 }
 
-INSTANTIATE_CLASS(HardTanhLayer);
-REGISTER_LAYER_CLASS(HardTanh);
+INSTANTIATE_CLASS(HardTanHLayer);
+REGISTER_LAYER_CLASS(HardTanH);
 
 } // namespace caffe

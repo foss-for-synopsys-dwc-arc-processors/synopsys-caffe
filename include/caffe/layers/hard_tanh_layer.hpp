@@ -13,12 +13,12 @@ namespace caffe {
 
 // implement of hard_tanh activation
 
-template <typename Dtype> class HardTanhLayer : public NeuronLayer<Dtype> {
+template <typename Dtype> class HardTanHLayer : public NeuronLayer<Dtype> {
 public:
-  explicit HardTanhLayer(const LayerParameter &param)
+  explicit HardTanHLayer(const LayerParameter &param)
       : NeuronLayer<Dtype>(param) {}
 
-  virtual inline const char *type() const { return "HardTanh"; }
+  virtual inline const char *type() const { return "HardTanH"; }
 
 protected:
   virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
