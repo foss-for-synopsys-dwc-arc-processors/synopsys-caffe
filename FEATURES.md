@@ -24,6 +24,7 @@ gather_nd_layer
 gemm_layer  
 gru_layer  
 hard_sigmoid_layer  
+hard_tanh_layer  
 lp_normalization_layer  
 nms_gather_layer  
 matmul_layer  
