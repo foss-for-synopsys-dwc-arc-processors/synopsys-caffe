@@ -20,6 +20,7 @@ floor_div_layer
 floor_layer  
 floor_mod_layer  
 gather_layer  
+gather_v2_layer  
 gather_nd_layer  
 gemm_layer  
 gru_layer  
