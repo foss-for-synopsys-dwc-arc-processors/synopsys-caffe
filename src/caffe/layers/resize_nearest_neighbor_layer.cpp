@@ -15,6 +15,9 @@ void ResizeNearestNeighborLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& b
   this->data_format = this->layer_param_.resize_nearest_neighbor_param().data_format();
   this->output_height = this->layer_param_.resize_nearest_neighbor_param().output_height();
   this->output_width = this->layer_param_.resize_nearest_neighbor_param().output_width();
+  this->half_pixel_centers = this->layer_param_.resize_nearest_neighbor_param().half_pixel_centers();
+  CHECK(!(this->align_corners && this->half_pixel_centers)) <<
+      "If half_pixel_centers is True, align_corners must be False.";
 }
 
 template <typename Dtype>
@@ -73,6 +76,7 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
     const int output_width = top_shape[2];
 
     const bool align_corners = this->align_corners;
+    const bool half_pixel_centers = this->half_pixel_centers;
 
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
@@ -92,15 +96,38 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
     //it implies NHWC data format
     for (int b = 0; b < batch_size; b++) {
       for (int h = 0; h < output_height; h++) {
-        const int in_h = std::min( (align_corners)
-                                   ? static_cast<int>(roundf(h * height_scale))
-                                   : static_cast<int>(floorf(h * height_scale)),
-                                   input_height - 1);
+        int in_h;
+        if (!half_pixel_centers)
+        {
+          in_h = std::min((align_corners)
+              ? static_cast<int>(roundf(h * height_scale))
+                  : static_cast<int>(floorf(h * height_scale)),
+                    input_height - 1);
+        }
+        else //if (half_pixel_centers)
+        {
+          in_h =
+              std::max(std::min(static_cast<int>(
+                  floorf((static_cast<float>(h) + 0.5f) * height_scale)),
+                  input_height - 1),
+                  0);
+        }
         for (int w = 0; w < output_width; w++) {
-          const int in_w = std::min( (align_corners)
-                                     ? static_cast<int>(roundf(w * width_scale))
-                                     : static_cast<int>(floorf(w * width_scale)),
-                                     input_width - 1);
+          int in_w;
+          if (!half_pixel_centers)
+          {
+            in_w= std::min((align_corners)
+                ? static_cast<int>(roundf(w * width_scale))
+                    : static_cast<int>(floorf(w * width_scale)),
+                      input_width - 1);
+          }
+          else //if (half_pixel_centers)
+          {
+            in_w = std::max(std::min(static_cast<int>(
+                floorf((static_cast<float>(w) + 0.5f) * width_scale)),
+                input_width - 1),
+                0);
+          }
           for(int c = 0; c < channels; c++) {
             const int input_index = ((b*input_height + in_h)*input_width + in_w)*channels + c;
             const int output_index = ((b*output_height + h)*output_width + w)*channels + c;
@@ -120,6 +147,7 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
     const int output_width = top_shape[3];
 
     const bool align_corners = this->align_corners;
+    const bool half_pixel_centers = this->half_pixel_centers;
 
     const Dtype* bottom_data = bottom[0]->cpu_data();
     Dtype* top_data = top[0]->mutable_cpu_data();
@@ -133,15 +161,38 @@ void ResizeNearestNeighborLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& 
     for (int b = 0; b < batch_size; b++) {
       for(int c = 0; c < channels; c++) {
         for (int h = 0; h < output_height; h++) {
-          const int in_h = std::min( (align_corners)
-                                     ? static_cast<int>(roundf(h * height_scale))
-                                     : static_cast<int>(floorf(h * height_scale)),
-                                     input_height - 1);
+          int in_h;
+          if (!half_pixel_centers)
+          {
+            in_h = std::min((align_corners)
+                ? static_cast<int>(roundf(h * height_scale))
+                    : static_cast<int>(floorf(h * height_scale)),
+                      input_height - 1);
+          }
+          else //if (half_pixel_centers)
+          {
+            in_h =
+                std::max(std::min(static_cast<int>(
+                    floorf((static_cast<float>(h) + 0.5f) * height_scale)),
+                    input_height - 1),
+                    0);
+          }
           for (int w = 0; w < output_width; w++) {
-            const int in_w = std::min( (align_corners)
-                                       ? static_cast<int>(roundf(w * width_scale))
-                                       : static_cast<int>(floorf(w * width_scale)),
-                                       input_width - 1);
+            int in_w;
+            if (!half_pixel_centers)
+            {
+              in_w= std::min((align_corners)
+                  ? static_cast<int>(roundf(w * width_scale))
+                      : static_cast<int>(floorf(w * width_scale)),
+                        input_width - 1);
+            }
+            else //if (half_pixel_centers)
+            {
+              in_w = std::max(std::min(static_cast<int>(
+                  floorf((static_cast<float>(w) + 0.5f) * width_scale)),
+                  input_width - 1),
+                  0);
+            }
             const int input_index = ((b*channels + c)*input_height + in_h)*input_width + in_w;
             const int output_index = ((b*channels + c)*output_height + h)*output_width + w;
             top_data[output_index] = bottom_data[input_index];
