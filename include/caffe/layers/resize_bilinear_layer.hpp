@@ -50,6 +50,7 @@ class ResizeBilinearLayer : public Layer<Dtype> {
   int output_width_;
   bool align_corners_;
   string data_format_;
+  bool half_pixel_centers_;
 
   // Compute the interpolation indices only once.
   struct CachedInterpolation {

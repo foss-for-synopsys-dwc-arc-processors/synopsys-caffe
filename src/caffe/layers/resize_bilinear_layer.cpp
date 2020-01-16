@@ -15,6 +15,9 @@ void ResizeBilinearLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   data_format_ = this->layer_param_.resize_bilinear_param().data_format();
   output_height_ = this->layer_param_.resize_bilinear_param().output_height();
   output_width_ = this->layer_param_.resize_bilinear_param().output_width();
+  half_pixel_centers_ = this->layer_param_.resize_bilinear_param().half_pixel_centers();
+  CHECK(!(align_corners_ && half_pixel_centers_)) <<
+        "If half_pixel_centers is True, align_corners must be False.";
 }
 
 template <typename Dtype>
@@ -66,7 +69,16 @@ void ResizeBilinearLayer<Dtype>::compute_interpolation_weights(const int out_siz
   interpolation[out_size].lower = 0;
   interpolation[out_size].upper = 0;
   for (int i = out_size - 1; i >= 0; --i) {
-    const float in = static_cast<float>(i) * scale;
+    float in;
+    if (!half_pixel_centers_)
+    {
+      in = static_cast<float>(i) * scale;
+    }
+    else //if (half_pixel_centers_)
+    {
+      in = (static_cast<float>(i) + 0.5f) * scale - 0.5f;
+      // ref: https://github.com/tensorflow/tensorflow/blob/r1.15/tensorflow/core/kernels/image_resizer_state.h#L50
+    }
     const float in_f = std::floor(in);
     interpolation[i].lower =
         std::max(static_cast<int>(in_f), static_cast<int>(0));
