@@ -25,7 +25,6 @@ void GatherV2Layer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
   // Initialize with the first blob
   // The result shape is params.shape[-1:axis] + indices.shape +
   // params.shape[axis + 0:].
-  const int indices_dim_ = bottom[1]->num_axes();
   vector<int> top_shape = bottom[0]->shape();
   top_shape.erase(top_shape.begin() + gather_axis_);
   top_shape.insert(top_shape.begin() + gather_axis_, indices_shape_.begin(),
