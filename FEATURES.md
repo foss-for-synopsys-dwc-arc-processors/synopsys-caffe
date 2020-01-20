@@ -56,6 +56,7 @@ resize_nearest_neighbor_layer
 reverse_layer  
 reverse_sequence_layer  
 round_layer  
+scaled_tanh_layer  
 shape_layer  
 shuffle_channel_layer  
 sin_layer  
