@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 264 (last added: matmul_param)
+// LayerParameter next available layer-specific ID: 266 (last added: scaled_tanh__param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -665,6 +665,7 @@ message LayerParameter {
   optional LpNormalizationParameter lp_normalization_param = 262;
   optional MatMulParameter matmul_param = 263;
   optional GatherV2Parameter gather_v2_param = 264;
+  optional ScaledTanHParameter scaled_tanh_param = 265;
 }
 
 message AccumParameter {
@@ -3229,4 +3230,9 @@ message MatMulParameter {
 
 message GatherV2Parameter {
   optional int32 axis = 1[default = 0];
+}
+
+message ScaledTanHParameter {
+  required float alpha = 1;
+  required float beta = 2;
 }
