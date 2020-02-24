@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 266 (last added: scaled_tanh_param)
+// LayerParameter next available layer-specific ID: 267 (last added: pooling3d_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -558,6 +558,7 @@ message LayerParameter {
   optional ParameterParameter parameter_param = 145;
   optional PermuteParameter permute_param = 202;
   optional PoolingParameter pooling_param = 121;
+  optional Pooling3DParameter pooling3d_param = 266;
   optional PowerParameter power_param = 122;
   optional PReLUParameter prelu_param = 131;
   optional PriorBoxParameter prior_box_param = 203;
@@ -2070,6 +2071,39 @@ message PoolingParameter {
   optional bool global_pooling = 12 [default = false];
 
   optional bool ceil_mode = 14 [default = true]; // Specify floor/ceil mode rounding
+}
+
+message Pooling3DParameter {
+  enum PoolMethod {
+    MAX = 0;
+    AVE = 1;
+    AVE_EXC_PAD=2;
+  }
+  optional PoolMethod pool = 1 [default = MAX]; // The pooling method
+  
+  // Pad, kernel size, and stride are all given as a single value for equal
+  // dimensions in all spatial dimensions, or once per spatial dimension.
+  optional uint32 pad = 2 [default = 0]; // The padding size (equal in Y, X, D)
+  optional uint32 pad_h0 = 5 [default = 0]; // The padding top
+  optional uint32 pad_h1 = 6 [default = 0]; // The padding bottom
+  optional uint32 pad_w0 = 7 [default = 0]; // The padding left
+  optional uint32 pad_w1 = 8 [default = 0]; // The padding right
+  optional uint32 pad_d0 = 9 [default = 0]; // The padding in
+  optional uint32 pad_d1 = 10 [default = 0]; // The padding out
+  optional uint32 kernel_size = 3; // The kernel size (equal in Y, X, D)
+  optional uint32 kernel_h = 11; // The kernel height
+  optional uint32 kernel_w = 12; // The kernel width
+  optional uint32 kernel_d = 13; // The kernel depth
+  optional uint32 stride = 4 [default = 1]; // The stride (equal in Y, X, D)
+  optional uint32 stride_h = 14; // The stride height
+  optional uint32 stride_w = 15; // The stride width
+  optional uint32 stride_d = 16; // The stride width
+  
+  // If global_pooling then it will pool over the size of the bottom by doing
+  // kernel_h = bottom->height, kernel_w = bottom->width and kernel_d = bottom->depth
+  optional bool global_pooling = 17 [default = false];
+
+  optional bool ceil_mode = 18 [default = false]; // Specify floor/ceil mode rounding
 }
 
 message PowerParameter {
