@@ -1,7 +1,7 @@
 A Short Summary of New Features in Synopsys Caffe
 =================================================
 
-Synopsys Caffe Version: 2019.12  
+Synopsys Caffe Version: 2020.03  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -39,6 +39,7 @@ one_hot_layer
 pad_layer  
 peephole_lstm_layer  
 piece_layer  
+pooling3d_layer  
 pow_layer  
 pyramid_roi_align_layer  
 range_layer  

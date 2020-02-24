@@ -160,13 +160,87 @@ void Pooling3DLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
       for (int i = 0; i < top_count; ++i) {
         top_data[i] = 0;
       }
-
+      // The main loop
+      for (int n = 0; n < num_; ++n) {
+        for (int c = 0; c < channels_; ++c) {
+          for (int pd = 0; pd < pooled_depth_; ++pd) {
+            for (int ph = 0; ph < pooled_height_; ++ph) {
+              for (int pw = 0; pw < pooled_width_; ++pw) {
+                int dstart = pd * stride_d_ - pad_d0_;
+                int hstart = ph * stride_h_ - pad_h0_;
+                int wstart = pw * stride_w_ - pad_w0_;
+                int dend = min(dstart + kernel_d_, depth_ + pad_d1_);
+                int hend = min(hstart + kernel_h_, height_ + pad_h1_);
+                int wend = min(wstart + kernel_w_, width_ + pad_w1_);
+                int pool_size = (dend - dstart) * (hend - hstart) * (wend - wstart);
+                dstart = max(dstart, 0);
+                hstart = max(hstart, 0);
+                wstart = max(wstart, 0);
+                dend = min(dend, depth_);
+                hend = min(hend, height_);
+                wend = min(wend, width_);
+                for (int d = dstart; d < dend; ++d) {
+                  for (int h = hstart; h < hend; ++h) {
+                    for (int w = wstart; w < wend; ++w) {
+                      top_data[(pd * pooled_height_ + ph) * pooled_width_ + pw] +=
+                          bottom_data[(d * height_ + h) * width_ + w];
+                    }
+                  }
+                }
+                top_data[(pd * pooled_height_ + ph) * pooled_width_ + pw] /= pool_size;
+              }
+            }
+          }
+          // compute offset
+          int bottom_offset = depth_ * height_ * width_;
+          int top_offset = pooled_depth_ *  pooled_height_ * pooled_width_;
+          bottom_data += bottom_offset;
+          top_data += top_offset;
+        }
+      }
       break;
     case Pooling3DParameter_PoolMethod_AVE_EXC_PAD:
        for (int i = 0; i < top_count; ++i) {
          top_data[i] = 0;
        }
-
+       // The main loop
+       for (int n = 0; n < num_; ++n) {
+         for (int c = 0; c < channels_; ++c) {
+           for (int pd = 0; pd < pooled_depth_; ++pd) {
+             for (int ph = 0; ph < pooled_height_; ++ph) {
+               for (int pw = 0; pw < pooled_width_; ++pw) {
+                 int dstart = pd * stride_d_ - pad_d0_;
+                 int hstart = ph * stride_h_ - pad_h0_;
+                 int wstart = pw * stride_w_ - pad_w0_;
+                 int dend = min(dstart + kernel_d_, depth_ + pad_d1_);
+                 int hend = min(hstart + kernel_h_, height_ + pad_h1_);
+                 int wend = min(wstart + kernel_w_, width_ + pad_w1_);
+                 dstart = max(dstart, 0);
+                 hstart = max(hstart, 0);
+                 wstart = max(wstart, 0);
+                 dend = min(dend, depth_);
+                 hend = min(hend, height_);
+                 wend = min(wend, width_);
+                 int pool_size = (dend - dstart) * (hend - hstart) * (wend - wstart);
+                 for (int d = dstart; d < dend; ++d) {
+                   for (int h = hstart; h < hend; ++h) {
+                     for (int w = wstart; w < wend; ++w) {
+                       top_data[(pd * pooled_height_ + ph) * pooled_width_ + pw] +=
+                           bottom_data[(d * height_ + h) * width_ + w];
+                     }
+                   }
+                 }
+                 top_data[(pd * pooled_height_ + ph) * pooled_width_ + pw] /= pool_size;
+               }
+             }
+           }
+           // compute offset
+           int bottom_offset = depth_ * height_ * width_;
+           int top_offset = pooled_depth_ *  pooled_height_ * pooled_width_;
+           bottom_data += bottom_offset;
+           top_data += top_offset;
+         }
+       }
        break;
     default:
         LOG(FATAL) << "Unknown pooling method.";
