@@ -186,6 +186,10 @@ class RecurrentLayer : public Layer<Dtype> {
   Blob<Dtype>* x_input_blob_;
   Blob<Dtype>* x_static_input_blob_;
   Blob<Dtype>* cont_input_blob_;
+
+  vector<string> activations_;
+  vector<float> activation_alpha_;
+  vector<float> activation_beta_;
 };
 
 }  // namespace caffe

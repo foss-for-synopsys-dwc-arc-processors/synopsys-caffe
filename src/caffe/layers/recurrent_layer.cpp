@@ -29,6 +29,21 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // the hidden state blobs at the first and last timesteps.
   expose_hidden_ = this->layer_param_.recurrent_param().expose_hidden();
 
+  activations_.clear();
+  std::copy(this->layer_param_.recurrent_param().activations().begin(),
+            this->layer_param_.recurrent_param().activations().end(),
+            std::back_inserter(activations_));
+
+  activation_alpha_.clear();
+  std::copy(this->layer_param_.recurrent_param().activation_alpha().begin(),
+            this->layer_param_.recurrent_param().activation_alpha().end(),
+            std::back_inserter(activation_alpha_));
+
+  activation_beta_.clear();
+  std::copy(this->layer_param_.recurrent_param().activation_beta().begin(),
+            this->layer_param_.recurrent_param().activation_beta().end(),
+            std::back_inserter(activation_beta_));
+
   // Get (recurrent) input/output names.
   vector<string> output_names;
   OutputBlobNames(&output_names);

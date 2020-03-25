@@ -2210,6 +2210,20 @@ message RecurrentParameter {
   optional uint32 linear_before_reset = 8 [default = 0];
   // pecify if the RNN is forward or reverse. Must be one of forward (default), reverse.
   optional string direction = 9 [default = "forward"];
+  // Optional scaling values used by some activation functions. The
+  // values are consumed in the order of activation functions, for
+  // example (f, g, h) in LSTM. Default values are the same as of
+  // corresponding ONNX operators.For example with LeakyRelu, the
+  // default alpha is 0.01.
+  repeated float activation_alpha = 10;
+  // Optional scaling values used by some activation functions. The
+  // values are consumed in the order of activation functions, for
+  // example (f, g, h) in LSTM. Default values are the same as of
+  // corresponding ONNX operators.
+  repeated float activation_beta = 11;
+  // A list of activation functions for gates. The activation
+  // functions must be one of the activation functions recognized by EV
+  repeated string activations = 12;
 }
 
 
