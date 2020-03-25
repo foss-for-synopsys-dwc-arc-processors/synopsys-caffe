@@ -81,11 +81,17 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   slice_param.set_type("Slice");
   slice_param.mutable_slice_param()->set_axis(0);
 
-  LayerParameter sigmoid_param;
-  sigmoid_param.set_type("Sigmoid");
+  LayerParameter F_activation_param;
+  if (this->activations_.size() > 0)
+    F_activation_param.set_type(this->activations_[0]);
+  else
+    F_activation_param.set_type("Sigmoid");
 
-  LayerParameter tanh_param;
-  tanh_param.set_type("TanH");
+  LayerParameter G_activation_param;
+  if (this->activations_.size() > 1)
+    G_activation_param.set_type(this->activations_[1]);
+  else
+    G_activation_param.set_type("TanH");
 
   LayerParameter split_param;
   split_param.set_type("Split");
@@ -231,7 +237,7 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // - zt = f(Xt*(Wz^T) + Ht-1*(Rz^T) + Wbz + Rbz)
     {
       LayerParameter* f_z_param = net_param->add_layer();
-      f_z_param->CopyFrom(sigmoid_param);
+      f_z_param->CopyFrom(F_activation_param);
       f_z_param->add_bottom("inner_z_" + ts);
       f_z_param->add_top("z_" + ts);
       f_z_param->set_name("z_" + ts);
@@ -261,7 +267,7 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // - rt = f(Xt*(Wr^T) + Ht-1*(Rr^T) + Wbr + Rbr)
     {
       LayerParameter* f_r_param = net_param->add_layer();
-      f_r_param->CopyFrom(sigmoid_param);
+      f_r_param->CopyFrom(F_activation_param);
       f_r_param->add_bottom("inner_r_" + ts);
       f_r_param->add_top("r_" + ts);
       f_r_param->set_name("r_" + ts);
@@ -317,7 +323,7 @@ void GRULayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     }
     {
       LayerParameter* g_layer = net_param->add_layer();
-      g_layer->CopyFrom(tanh_param);
+      g_layer->CopyFrom(G_activation_param);
       g_layer->add_bottom("inner_h_" + ts);
       g_layer->add_top("ht_" + ts);
       g_layer->set_name("ht_" + ts);
