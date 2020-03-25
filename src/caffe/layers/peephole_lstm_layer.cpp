@@ -85,11 +85,23 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   slice_param.set_type("Slice");
   slice_param.mutable_slice_param()->set_axis(0);
 
-  LayerParameter sigmoid_param;
-  sigmoid_param.set_type("Sigmoid");
+  LayerParameter F_activation_param;
+  if (this->activations_.size() > 0)
+    F_activation_param.set_type(this->activations_[0]);
+  else
+    F_activation_param.set_type("Sigmoid");
 
-  LayerParameter tanh_param;
-  tanh_param.set_type("TanH");
+  LayerParameter G_activation_param;
+  if (this->activations_.size() > 1)
+    G_activation_param.set_type(this->activations_[1]);
+  else
+    G_activation_param.set_type("TanH");
+
+  LayerParameter H_activation_param;
+  if (this->activations_.size() > 2)
+    H_activation_param.set_type(this->activations_[2]);
+  else
+    H_activation_param.set_type("TanH");
 
   LayerParameter split_param;
   split_param.set_type("Split");
@@ -267,7 +279,7 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // - it = f(Xt*(Wi^T) + Ht-1*(Ri^T) + Pi (.) Ct-1 + Wbi + Rbi)
     {
       LayerParameter* f_i_param = net_param->add_layer();
-      f_i_param->CopyFrom(sigmoid_param);
+      f_i_param->CopyFrom(F_activation_param);
       f_i_param->add_bottom("inner_i_" + ts);
       f_i_param->add_top("i_" + ts);
       f_i_param->set_name("i_" + ts);
@@ -294,7 +306,7 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // - ft = f(Xt*(Wf^T) + Ht-1*(Rf^T) + Pf (.) Ct-1 + Wbf + Rbf)
     {
       LayerParameter* f_f_param = net_param->add_layer();
-      f_f_param->CopyFrom(sigmoid_param);
+      f_f_param->CopyFrom(F_activation_param);
       f_f_param->add_bottom("inner_f_" + ts);
       f_f_param->add_top("f_" + ts);
       f_f_param->set_name("f_" + ts);
@@ -302,7 +314,7 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // ct = g(Xt*(Wc^T) + Ht-1*(Rc^T) + Wbc + Rbc)
     {
       LayerParameter* c_half_param = net_param->add_layer();
-      c_half_param->CopyFrom(tanh_param);
+      c_half_param->CopyFrom(G_activation_param);
       c_half_param->set_name("c_half_" + ts);
       c_half_param->add_bottom("W_xc_x_c_" + ts);
       c_half_param->add_top("c_half_" + ts);
@@ -358,7 +370,7 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // ot = f(Xt*(Wo^T) + Ht-1*(Ro^T) + Po (.) Ct + Wbo + Rbo)
     {
       LayerParameter* f_o_param = net_param->add_layer();
-      f_o_param->CopyFrom(sigmoid_param);
+      f_o_param->CopyFrom(F_activation_param);
       f_o_param->add_bottom("inner_o_" + ts);
       f_o_param->add_top("o_" + ts);
       f_o_param->set_name("o_" + ts);
@@ -366,7 +378,7 @@ void PeepholeLSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
     // h(Ct)
     {
       LayerParameter* h_ct_param = net_param->add_layer();
-      h_ct_param->CopyFrom(tanh_param);
+      h_ct_param->CopyFrom(H_activation_param);
       h_ct_param->add_top("h_ct_" + ts);
       h_ct_param->add_bottom("c_" + ts);
       h_ct_param->set_name("h_ct_" + ts);
