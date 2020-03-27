@@ -60,6 +60,7 @@ if DEFINED APPVEYOR (
     )
     if !PYTHON_VERSION! EQU 3.5 (
         conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+        pip install six
     )
     if !PYTHON_VERSION! EQU 3.6 (
         conda install --yes cmake ninja numpy scipy protobuf==3.7.1 six scikit-image pyyaml pydotplus graphviz
