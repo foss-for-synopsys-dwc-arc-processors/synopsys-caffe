@@ -85,6 +85,8 @@ class PriorBoxLayer : public Layer<Dtype> {
 
   bool tf_; //CUSTOMIZATION
   bool yx_order_; //CUSTOMIZATION
+
+  bool keras_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

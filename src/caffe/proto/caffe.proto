@@ -2161,6 +2161,8 @@ message PriorBoxParameter {
 
   optional bool tf = 17 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
   optional bool yx_order = 18 [default = false]; //CUSTOMIZATION, for TensorFlow conversion
+
+  optional bool keras = 19 [default = false]; //CUSTOMIZATION, for keras conversion
 }
 
 message ProposalParameter {

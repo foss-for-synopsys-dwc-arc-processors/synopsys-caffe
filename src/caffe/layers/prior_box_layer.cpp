@@ -14,6 +14,7 @@ void PriorBoxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       this->layer_param_.prior_box_param();
   faceboxes_ = prior_box_param.faceboxes(); //CUSTOMIZATION
   tf_ = prior_box_param.tf(); //CUSTOMIZATION
+  keras_ = prior_box_param.keras(); //CUSTOMIZATION
   yx_order_ = prior_box_param.yx_order(); //CUSTOMIZATION
   //CHECK_GT(prior_box_param.min_size_size(), 0) << "must provide min_size.";
   for (int i = 0; i < prior_box_param.min_size_size(); ++i) {
@@ -169,113 +170,162 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       float center_x = (w + offset_) * step_w;
       float center_y = (h + offset_) * step_h;
       float box_width, box_height;
-      if(!explicit_box_) {
-        for (int s = 0; s < min_sizes_.size(); ++s) {
-          int min_size_ = min_sizes_[s];
-          //<--CUSTOMIZATION
-          if (faceboxes_) {
-            if (min_size_ == 32) {
-              for (int i = -2; i < 2; i++) {
-                for (int j = -2; j < 2; j++) {
-                  box_width = box_height = min_size_;
-                  top_data[idx++] = (center_x + j * 8
-                      - (box_width - 1) / 2.) / img_width;
-                  top_data[idx++] = (center_y + i * 8
-                      - (box_width - 1) / 2.) / img_height;
-                  top_data[idx++] = (center_x + j * 8
-                      + (box_width - 1) / 2.) / img_width;
-                  top_data[idx++] = (center_y + i * 8
-                      + (box_width - 1) / 2.) / img_height;
+      if (!explicit_box_)
+      {
+        if (!keras_)
+        {
+          for (int s = 0; s < min_sizes_.size(); ++s)
+          {
+            int min_size_ = min_sizes_[s];
+            //<--CUSTOMIZATION
+            if (faceboxes_)
+            {
+              if (min_size_ == 32)
+              {
+                for (int i = -2; i < 2; i++)
+                {
+                  for (int j = -2; j < 2; j++)
+                  {
+                    box_width = box_height = min_size_;
+                    top_data[idx++] = (center_x + j * 8 - (box_width - 1) / 2.) / img_width;
+                    top_data[idx++] = (center_y + i * 8 - (box_width - 1) / 2.) / img_height;
+                    top_data[idx++] = (center_x + j * 8 + (box_width - 1) / 2.) / img_width;
+                    top_data[idx++] = (center_y + i * 8 + (box_width - 1) / 2.) / img_height;
+                  }
+                }
+              }
+              else if (min_size_ == 64)
+              {
+                for (int i = -1; i < 1; i++)
+                {
+                  for (int j = -1; j < 1; j++)
+                  {
+                    box_width = box_height = min_size_;
+                    top_data[idx++] = (center_x + j * 16 - (box_width - 1) / 2.) / img_width;
+                    top_data[idx++] = (center_y + i * 16 - (box_width - 1) / 2.) / img_height;
+                    top_data[idx++] = (center_x + j * 16 + (box_width - 1) / 2.) / img_width;
+                    top_data[idx++] = (center_y + i * 16 + (box_width - 1) / 2.) / img_height;
+                  }
+                }
+              }
+              else
+              {
+                // first prior: aspect_ratio = 1, size = min_size
+                box_width = box_height = min_size_;
+                // xmin
+                top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
+                // ymin
+                top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
+                // xmax
+                top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
+                // ymax
+                top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
+              }
+            }
+            //CUSTOMIZATION-->
+            else
+            {
+              if ((tf_) && (min_size_ == 60))
+              { //CUSTOMIZATION, for tf implementation
+                // first prior: aspect_ratio = 1, size = min_size
+                box_width = box_height = min_size_;
+                if (yx_order_)
+                {
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height + 0.05;
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width + 0.05;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height - 0.05;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width - 0.05;
+                }
+                else
+                {
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width + 0.05;
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height + 0.05;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width - 0.05;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height - 0.05;
+                }
+              }
+              else
+              {
+                // first prior: aspect_ratio = 1, size = min_size
+                box_width = box_height = min_size_;
+                if (yx_order_)
+                {
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                }
+                else
+                {
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
                 }
               }
             }
-            else if (min_size_ == 64) {
-              for (int i = -1; i < 1; i++) {
-                for (int j = -1; j < 1; j++) {
-                  box_width = box_height = min_size_;
-                  top_data[idx++] = (center_x + j * 16
-                      - (box_width - 1) / 2.) / img_width;
-                  top_data[idx++] = (center_y + i * 16
-                      - (box_width - 1) / 2.) / img_height;
-                  top_data[idx++] = (center_x + j * 16
-                      + (box_width - 1) / 2.) / img_width;
-                  top_data[idx++] = (center_y + i * 16
-                      + (box_width - 1) / 2.) / img_height;
+
+            if (!tf_)
+            {
+              if (max_sizes_.size() > 0)
+              {
+                CHECK_EQ(min_sizes_.size(), max_sizes_.size());
+                int max_size_ = max_sizes_[s];
+                // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
+                box_width = box_height = sqrt(min_size_ * max_size_);
+                if (yx_order_)
+                {
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                }
+                else
+                {
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
                 }
               }
             }
-            else {
-              // first prior: aspect_ratio = 1, size = min_size
-              box_width = box_height = min_size_;
-              // xmin
-              top_data[idx++] = (center_x - (box_width - 1) / 2.) / img_width;
-              // ymin
-              top_data[idx++] = (center_y - (box_width - 1) / 2.) / img_height;
-              // xmax
-              top_data[idx++] = (center_x + (box_width - 1) / 2.) / img_width;
-              // ymax
-              top_data[idx++] = (center_y + (box_width - 1) / 2.) / img_height;
-            }
-          }
-          //CUSTOMIZATION-->
-          else {
-            if((tf_) && (min_size_== 60)) { //CUSTOMIZATION, for tf implementation
-              // first prior: aspect_ratio = 1, size = min_size
-              box_width = box_height = min_size_;
-              if (yx_order_) {
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height + 0.05;
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width + 0.05;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height - 0.05;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width - 0.05;
-              }
-              else {
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width + 0.05;
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height + 0.05;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width - 0.05;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height - 0.05;
-              }
-            }
-            else {
-              // first prior: aspect_ratio = 1, size = min_size
-              box_width = box_height = min_size_;
-              if (yx_order_) {
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height;
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width;
-              }
-              else {
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width;
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height;
-              }
-            }
-          }
 
-          if(!tf_) {
-            if (max_sizes_.size() > 0) {
-              CHECK_EQ(min_sizes_.size(), max_sizes_.size());
-              int max_size_ = max_sizes_[s];
-              // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
-              box_width = box_height = sqrt(min_size_ * max_size_);
-              if (yx_order_) {
+            // rest of priors
+            for (int r = 0; r < aspect_ratios_.size(); ++r)
+            {
+              float ar = aspect_ratios_[r];
+              if (fabs(ar - 1.) < 1e-6)
+              {
+                continue;
+              }
+              box_width = min_size_ * sqrt(ar);
+              box_height = min_size_ / sqrt(ar);
+              if (yx_order_)
+              {
                 // ymin
                 top_data[idx++] = (center_y - box_height / 2.) / img_height;
                 // xmin
@@ -285,7 +335,8 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                 // xmax
                 top_data[idx++] = (center_x + box_width / 2.) / img_width;
               }
-              else {
+              else
+              {
                 // xmin
                 top_data[idx++] = (center_x - box_width / 2.) / img_width;
                 // ymin
@@ -296,67 +347,137 @@ void PriorBoxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                 top_data[idx++] = (center_y + box_height / 2.) / img_height;
               }
             }
-          }
 
-          // rest of priors
-          for (int r = 0; r < aspect_ratios_.size(); ++r) {
-            float ar = aspect_ratios_[r];
-            if (fabs(ar - 1.) < 1e-6) {
-              continue;
-            }
-            box_width = min_size_ * sqrt(ar);
-            box_height = min_size_ / sqrt(ar);
-            if (yx_order_) {
-              // ymin
-              top_data[idx++] = (center_y - box_height / 2.) / img_height;
-              // xmin
-              top_data[idx++] = (center_x - box_width / 2.) / img_width;
-              // ymax
-              top_data[idx++] = (center_y + box_height / 2.) / img_height;
-              // xmax
-              top_data[idx++] = (center_x + box_width / 2.) / img_width;
-            }
-            else {
-              // xmin
-              top_data[idx++] = (center_x - box_width / 2.) / img_width;
-              // ymin
-              top_data[idx++] = (center_y - box_height / 2.) / img_height;
-              // xmax
-              top_data[idx++] = (center_x + box_width / 2.) / img_width;
-              // ymax
-              top_data[idx++] = (center_y + box_height / 2.) / img_height;
-            }
-          }
-
-          if(tf_) { //same as (!tf_) case, just for reorder the generated anchors to compare with tf results
-            if (max_sizes_.size() > 0) {
-              CHECK_EQ(min_sizes_.size(), max_sizes_.size());
-              int max_size_ = max_sizes_[s];
-              // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
-              box_width = box_height = sqrt(min_size_ * max_size_);
-              if (yx_order_) {
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height;
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width;
-              }
-              else {
-                // xmin
-                top_data[idx++] = (center_x - box_width / 2.) / img_width;
-                // ymin
-                top_data[idx++] = (center_y - box_height / 2.) / img_height;
-                // xmax
-                top_data[idx++] = (center_x + box_width / 2.) / img_width;
-                // ymax
-                top_data[idx++] = (center_y + box_height / 2.) / img_height;
+            if (tf_)
+            { //same as (!tf_) case, just for reorder the generated anchors to compare with tf results
+              if (max_sizes_.size() > 0)
+              {
+                CHECK_EQ(min_sizes_.size(), max_sizes_.size());
+                int max_size_ = max_sizes_[s];
+                // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
+                box_width = box_height = sqrt(min_size_ * max_size_);
+                if (yx_order_)
+                {
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                }
+                else
+                {
+                  // xmin
+                  top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                  // ymin
+                  top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                  // xmax
+                  top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                  // ymax
+                  top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                }
               }
             }
           }
         }
+        else //<--CUSTOMIZATION for keras case, order is different from tf/caffe case
+        {
+          for (int s = 0; s < min_sizes_.size(); ++s)
+          {
+            int min_size_ = min_sizes_[s];
+
+            if (max_sizes_.size() > 0)
+            {
+              CHECK_EQ(min_sizes_.size(), max_sizes_.size());
+              int max_size_ = max_sizes_[s];
+              // second prior: aspect_ratio = 1, size = sqrt(min_size * max_size)
+              box_width = box_height = sqrt(min_size_ * max_size_);
+              if (yx_order_)
+              {
+                // ymin
+                top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                // xmin
+                top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                // ymax
+                top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                // xmax
+                top_data[idx++] = (center_x + box_width / 2.) / img_width;
+              }
+              else
+              {
+                // xmin
+                top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                // ymin
+                top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                // xmax
+                top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                // ymax
+                top_data[idx++] = (center_y + box_height / 2.) / img_height;
+              }
+            }
+
+            // first prior: aspect_ratio = 1, size = min_size
+            box_width = box_height = min_size_;
+            if (yx_order_)
+            {
+              // ymin
+              top_data[idx++] = (center_y - box_height / 2.) / img_height;
+              // xmin
+              top_data[idx++] = (center_x - box_width / 2.) / img_width;
+              // ymax
+              top_data[idx++] = (center_y + box_height / 2.) / img_height;
+              // xmax
+              top_data[idx++] = (center_x + box_width / 2.) / img_width;
+            }
+            else
+            {
+              // xmin
+              top_data[idx++] = (center_x - box_width / 2.) / img_width;
+              // ymin
+              top_data[idx++] = (center_y - box_height / 2.) / img_height;
+              // xmax
+              top_data[idx++] = (center_x + box_width / 2.) / img_width;
+              // ymax
+              top_data[idx++] = (center_y + box_height / 2.) / img_height;
+            }
+
+            // rest of priors
+            for (int r = 0; r < aspect_ratios_.size(); ++r)
+            {
+              float ar = aspect_ratios_[r];
+              if (fabs(ar - 1.) < 1e-6)
+              {
+                continue;
+              }
+              box_width = min_size_ * sqrt(ar);
+              box_height = min_size_ / sqrt(ar);
+              if (yx_order_)
+              {
+                // ymin
+                top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                // xmin
+                top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                // ymax
+                top_data[idx++] = (center_y + box_height / 2.) / img_height;
+                // xmax
+                top_data[idx++] = (center_x + box_width / 2.) / img_width;
+              }
+              else
+              {
+                // xmin
+                top_data[idx++] = (center_x - box_width / 2.) / img_width;
+                // ymin
+                top_data[idx++] = (center_y - box_height / 2.) / img_height;
+                // xmax
+                top_data[idx++] = (center_x + box_width / 2.) / img_width;
+                // ymax
+                top_data[idx++] = (center_y + box_height / 2.) / img_height;
+              }
+            }
+          }
+        } //CUSTOMIZATION for keras case-->
       }
       //<--CUSTOMIZATION
       else { //use explicit box assignment
