@@ -24,22 +24,56 @@ void PriorBoxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   aspect_ratios_.clear();
   aspect_ratios_.push_back(1.);
   flip_ = prior_box_param.flip();
-  for (int i = 0; i < prior_box_param.aspect_ratio_size(); ++i) {
-    float ar = prior_box_param.aspect_ratio(i);
-    bool already_exist = false;
-    for (int j = 0; j < aspect_ratios_.size(); ++j) {
-      if (fabs(ar - aspect_ratios_[j]) < 1e-6) {
-        already_exist = true;
-        break;
+
+  if(!keras_){
+    for (int i = 0; i < prior_box_param.aspect_ratio_size(); ++i) {
+      float ar = prior_box_param.aspect_ratio(i);
+      bool already_exist = false;
+      for (int j = 0; j < aspect_ratios_.size(); ++j) {
+        if (fabs(ar - aspect_ratios_[j]) < 1e-6) {
+          already_exist = true;
+          break;
+        }
       }
-    }
-    if (!already_exist) {
-      aspect_ratios_.push_back(ar);
-      if (flip_) {
-        aspect_ratios_.push_back(1./ar);
+      if (!already_exist) {
+        aspect_ratios_.push_back(ar);
+        if (flip_) {
+          aspect_ratios_.push_back(1./ar);
+        }
       }
     }
   }
+  else{ //<--CUSTOMIZATION for keras case, ratio order is different from tf/caffe case
+    for (int i = 0; i < prior_box_param.aspect_ratio_size(); ++i) {
+      float ar = prior_box_param.aspect_ratio(i);
+      bool already_exist = false;
+      for (int j = 0; j < aspect_ratios_.size(); ++j) {
+        if (fabs(ar - aspect_ratios_[j]) < 1e-6) {
+          already_exist = true;
+          break;
+        }
+      }
+      if (!already_exist) {
+        aspect_ratios_.push_back(ar);
+      }
+    }
+    if(flip_){
+      for (int i = 0; i < prior_box_param.aspect_ratio_size(); ++i) {
+        float ar = 1./prior_box_param.aspect_ratio(i);
+        bool already_exist = false;
+        for (int j = 0; j < aspect_ratios_.size(); ++j) {
+          if (fabs(ar - aspect_ratios_[j]) < 1e-6) {
+            already_exist = true;
+            break;
+          }
+        }
+        if (!already_exist) {
+          aspect_ratios_.push_back(ar);
+        }
+      }
+    }
+  } //CUSTOMIZATION for keras case-->
+  
   if(faceboxes_ && min_sizes_.size()==3)
     num_priors_ = 21;
   else
