@@ -28,18 +28,19 @@ class MaskRCNN_Detection(caffe.Layer):
             self.HEIGHT = 1024  # 1920
             self.WIDTH = 1024  # 1920
             print("Height:", self.HEIGHT, " Width:", self.WIDTH)
-
-        self.BATCH_SIZE = 1
-        self.DETECTION_MAX_INSTANCES = 100
-        self.DETECTION_MIN_CONFIDENCE = 0.7
-        self.DETECTION_NMS_THRESHOLD = 0.3
-        self.BBOX_STD_DEV = np.array([0.1, 0.1, 0.2, 0.2])
+            
+        params = eval(self.param_str)
+        self.BATCH_SIZE = np.array(params["batch_size"])
+        self.DETECTION_MAX_INSTANCES = np.array(params["detection_max_instances"])
+        self.DETECTION_MIN_CONFIDENCE = np.array(params["detection_min_confidence"])
+        self.DETECTION_NMS_THRESHOLD = np.array(params["detection_nms_threshold"])
+        self.BBOX_STD_DEV = np.array(params["bbox_std_dev"])
 
     def reshape(self, bottom, top):
         # check input dimensions
         if bottom[0].count == 0:
             raise Exception("Input must not be empty!")
-        top[0].reshape(1, 100, 6)
+        top[0].reshape(self.BATCH_SIZE, 100, 6)
 
     def apply_box_deltas(self, boxes, deltas):
         """Applies the given deltas to the given boxes.

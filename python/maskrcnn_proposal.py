@@ -28,16 +28,13 @@ class MaskRCNN_Proposal(caffe.Layer):
             self.WIDTH = 1024  # 1920
             print("Height:", self.HEIGHT, " Width:", self.WIDTH)
 
-        self.BATCH_SIZE = 1
-        self.IMAGES_PER_GPU = 1
-        self.DETECTION_MAX_INSTANCES = 100
-        self.DETECTION_MIN_CONFIDENCE = 0.7
-        self.DETECTION_NMS_THRESHOLD = 0.3
-        self.BBOX_STD_DEV = np.array([0.1, 0.1, 0.2, 0.2])
-        self.RPN_BBOX_STD_DEV = np.array([0.1, 0.1, 0.2, 0.2])
-        self.PRE_NMS_LIMIT = 6000
-        self.RPN_NMS_THRESHOLD = 0.7
-        self.POST_NMS_ROIS_INFERENCE = 1000
+        params = eval(self.param_str)
+        self.BATCH_SIZE = np.array(params["batch_size"])
+        self.IMAGES_PER_GPU = np.array(params["images_per_gpu"])
+        self.RPN_BBOX_STD_DEV = np.array(params["rpn_bbox_std_dev"])
+        self.PRE_NMS_LIMIT = np.array(params["pre_nms_limit"])
+        self.RPN_NMS_THRESHOLD = np.array(params["rpn_nms_threshold"])
+        self.POST_NMS_ROIS_INFERENCE = np.array(params["post_nms_rois_inference"])
 
     def reshape(self, bottom, top):
         # check input dimensions
