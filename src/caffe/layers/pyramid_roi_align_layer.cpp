@@ -213,7 +213,7 @@ void PyramidRoiAlignLayer<Dtype>::Crop_And_Resize(const Dtype *bottom_data, cons
         }
       }
     }
-    else{ //NHWC
+    else{ //NCHW format
       for (int d = 0; d < channels_; ++d) {
         for (int y = 0; y < crop_height_; ++y) {
           const float in_y = (crop_height_ > 1)
