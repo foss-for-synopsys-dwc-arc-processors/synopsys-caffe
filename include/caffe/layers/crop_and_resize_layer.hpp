@@ -46,6 +46,8 @@ protected:
   int crop_width_;
 
   float extrapolation_value_;
+
+  string data_format_;
 };
 
 } // namespace caffe
