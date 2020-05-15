@@ -11,6 +11,7 @@ namespace caffe {
 
 /**
  * @brief Computes the log of softmax function.
+ * This layer is to avoid the -inf value issue of using Softmax (sometimes generate 0 as output) plus Log
  */
 template <typename Dtype>
 class LogSoftmaxLayer : public Layer<Dtype> {
