@@ -64,7 +64,7 @@ void LogSoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // avoid Log(0) case
   // ref: https://github.com/Microsoft/onnxruntime/blob/master/onnxruntime/core/providers/cpu/math/softmax_shared.cc#L74
   for (int i = 0; i < count; ++i) {
-      top_data[i] = std::max(top_data[i], Dtype(1e-20f));
+      top_data[i] = std::max(top_data[i], Dtype(1e-45f));
   }
   caffe_log(count, top_data, top_data);
 }
