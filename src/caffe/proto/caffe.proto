@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 267 (last added: pooling3d_param)
+// LayerParameter next available layer-specific ID: 268 (last added: log_softmax_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -579,6 +579,7 @@ message LayerParameter {
   optional SliceParameter slice_param = 126;
   optional SmoothL1LossParameter smooth_l1_loss_param = 8266712;
   optional SoftmaxParameter softmax_param = 125;
+  optional LogSoftmaxParameter log_softmax_param = 267; // onnx introduced
   optional SPPParameter spp_param = 132;
   optional SqueezeConvolutionParameter squeeze_convolution_param = 187;      // *************** MulticoreWare_Modified - Feature: Pruning / Splicing ****************
   optional SqueezeInnerProductParameter squeeze_inner_product_param = 188;
@@ -2504,6 +2505,13 @@ message SoftmaxParameter {
   optional int32 axis = 2 [default = 1];
   optional double input_scale = 3 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
+}
+
+message LogSoftmaxParameter {
+  // The axis along which to perform the softmax -- may be negative to index
+  // from the end (e.g., -1 for the last axis).
+  // Any other axes will be evaluated as independent softmaxes.
+  optional int32 axis = 1 [default = 1];
 }
 
 // ***************** MulticoreWare_Modified - Feature: Pruning / Splicing ******************
