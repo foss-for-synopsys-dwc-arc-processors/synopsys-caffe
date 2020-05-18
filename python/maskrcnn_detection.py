@@ -30,11 +30,11 @@ class MaskRCNN_Detection(caffe.Layer):
             print("Height:", self.HEIGHT, " Width:", self.WIDTH)
             
         params = eval(self.param_str)
-        self.BATCH_SIZE = np.array(params["batch_size"])
-        self.DETECTION_MAX_INSTANCES = np.array(params["detection_max_instances"])
-        self.DETECTION_MIN_CONFIDENCE = np.array(params["detection_min_confidence"])
-        self.DETECTION_NMS_THRESHOLD = np.array(params["detection_nms_threshold"])
-        self.BBOX_STD_DEV = np.array(params["bbox_std_dev"])
+        self.BATCH_SIZE = params["batch_size"]
+        self.DETECTION_MAX_INSTANCES = params["detection_max_instances"]
+        self.DETECTION_MIN_CONFIDENCE = params["detection_min_confidence"]
+        self.DETECTION_NMS_THRESHOLD = params["detection_nms_threshold"]
+        self.BBOX_STD_DEV = params["bbox_std_dev"]
 
     def reshape(self, bottom, top):
         # check input dimensions
