@@ -16,6 +16,7 @@ class MaskRCNN_Detection(caffe.Layer):
             
         params = eval(self.param_str)
         self.BATCH_SIZE = params["batch_size"]
+        self.IMAGES_PER_GPU = params["images_per_gpu"]
         self.DETECTION_MAX_INSTANCES = params["detection_max_instances"]
         self.DETECTION_MIN_CONFIDENCE = params["detection_min_confidence"]
         self.DETECTION_NMS_THRESHOLD = params["detection_nms_threshold"]
@@ -287,7 +288,7 @@ class MaskRCNN_Detection(caffe.Layer):
         # Run detection refinement graph on each item in the batch
         detections_batch = self.batch_slice(
                 [rois, mrcnn_class, mrcnn_bbox, window],
-                lambda x, y, w, z: self.refine_detections_graph(x, y, w, z))
+                lambda x, y, w, z: self.refine_detections_graph(x, y, w, z), self.IMAGES_PER_GPU)
 
         # Reshape output
         # [batch, num_detections, (y1, x1, y2, x2, class_id, class_score)] in
