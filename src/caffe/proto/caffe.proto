@@ -627,7 +627,7 @@ message LayerParameter {
   optional Where4GatherndParameter where4_gathernd_param = 219;
   optional CropAndResizeParameter crop_and_resize_param = 220;
   optional Where4GatherndCropParameter where4_gathernd_crop_param = 221;
-  optional PyramidRoiAlignParameter pyramid_roi_align_param = 222;
+  optional PyramidROIAlignParameter pyramid_roi_align_param = 222;
   optional SpaceToDepthParameter space_to_depth_param = 223;
   optional PadParameter pad_param = 224;
   optional StackParameter stack_param = 225;
@@ -3062,13 +3062,11 @@ message Where4GatherndCropParameter {
   optional float extrapolation_value = 5 [default = 0];
 }
 
-message PyramidRoiAlignParameter {
-  optional uint32 num_output = 1; // The number of outputs for the layer
-  optional int32 axis = 2 [default = 1]; // to be judged axis
-  optional uint32 crop_h = 3 [default = 0]; // The output height
-  optional uint32 crop_w = 4 [default = 0]; // The output width
-  optional float extrapolation_value = 5 [default = 0];
-  optional string data_format = 6 [default = "NHWC"];
+message PyramidROIAlignParameter {
+  required uint32 crop_height = 1;
+  required uint32 crop_width = 2;
+  optional float extrapolation_value = 3 [default = 0];
+  optional string data_format = 4 [default = "NHWC"];
 }
 
 message PadParameter{
