@@ -668,7 +668,7 @@ message LayerParameter {
   optional MatMulParameter matmul_param = 263;
   optional GatherV2Parameter gather_v2_param = 264;
   optional ScaledTanHParameter scaled_tanh_param = 265;
-  optional MaskrcnnDetectionParameter maskrcnn_detection_param = 268;
+  optional MaskRCNNDetectionParameter maskrcnn_detection_param = 268;
 }
 
 message AccumParameter {
@@ -3295,7 +3295,7 @@ message ScaledTanHParameter {
   required float beta = 2;
 }
 
-message MaskrcnnDetectionParameter {
+message MaskRCNNDetectionParameter {
   repeated float bbox_std_dev = 1;
   optional uint32 batch_size = 2[default = 1];
   optional uint32 detection_max_instances = 3[default = 100];
