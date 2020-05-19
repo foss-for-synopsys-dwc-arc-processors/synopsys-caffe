@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 268 (last added: log_softmax_param)
+// LayerParameter next available layer-specific ID: 269 (last added: maskrcnn_detection_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -668,6 +668,7 @@ message LayerParameter {
   optional MatMulParameter matmul_param = 263;
   optional GatherV2Parameter gather_v2_param = 264;
   optional ScaledTanHParameter scaled_tanh_param = 265;
+  optional MaskrcnnDetectionParameter maskrcnn_detection_param = 268;
 }
 
 message AccumParameter {
@@ -3293,3 +3294,12 @@ message ScaledTanHParameter {
   required float alpha = 1;
   required float beta = 2;
 }
+
+message MaskrcnnDetectionParameter {
+  repeated float bbox_std_dev = 1;
+  optional uint32 batch_size = 2[default = 1];
+  optional uint32 detection_max_instances = 3[default = 100];
+  optional float detection_min_confidence = 4[default = 0.7];
+  optional float detection_nms_threshold = 5[default = 0.3];
+}
+
