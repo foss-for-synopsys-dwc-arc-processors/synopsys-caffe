@@ -232,8 +232,6 @@ void MaskRCNNDetectionLayer<Dtype>::Forward_cpu(
         }
       }
       // get nms_order = np.argsort(-pre_nms_scores[ixs])
-      int x = 0;
-      std::iota(nms_order.begin(), nms_order.end(), x++); // Initializing
       std::sort(nms_order.begin(), nms_order.end(),
                 [&](int i, int j) { return nms_scores[i] > nms_scores[j]; });
       // get nms output
@@ -270,8 +268,6 @@ void MaskRCNNDetectionLayer<Dtype>::Forward_cpu(
                        ? detection_max_instances_
                        : keep2.size();
     // get tf.nn.top_k output
-    int x = 0;
-    std::iota(top_ids.begin(), top_ids.end(), x++); // Initializing
     std::sort(top_ids.begin(), top_ids.end(), [&](int i, int j) {
       return class_scores_keep[i] > class_scores_keep[j];
     });
