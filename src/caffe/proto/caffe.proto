@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 269 (last added: maskrcnn_detection_param)
+// LayerParameter next available layer-specific ID: 270 (last added: maskrcnn_detection_param)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -669,6 +669,7 @@ message LayerParameter {
   optional GatherV2Parameter gather_v2_param = 264;
   optional ScaledTanHParameter scaled_tanh_param = 265;
   optional MaskRCNNDetectionParameter maskrcnn_detection_param = 268;
+  optional MaskRCNNProposalParameter maskrcnn_proposal_param = 269;
 }
 
 message AccumParameter {
@@ -3301,5 +3302,20 @@ message MaskRCNNDetectionParameter {
   optional uint32 detection_max_instances = 3[default = 100];
   optional float detection_min_confidence = 4[default = 0.7];
   optional float detection_nms_threshold = 5[default = 0.3];
+}
+
+
+message MaskRCNNProposalParameter {
+  repeated float rpn_bbox_std_dev = 1;
+  optional uint32 batch_size = 2[default = 1];
+  optional uint32 images_per_gpu = 3[default = 2];
+  optional uint32 pre_nms_limit = 4[default = 6000];
+  optional float  rpn_nms_threshold = 5[default = 0.7];
+  optional uint32 post_nms_rois_inference = 6[default = 1000];
+  optional uint32 height = 7[default = 1024];
+  optional uint32 width = 8[default = 1024];
+
+
+
 }
 
