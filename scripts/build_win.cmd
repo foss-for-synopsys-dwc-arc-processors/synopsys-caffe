@@ -47,7 +47,9 @@ if DEFINED APPVEYOR (
     conda config --add channels conda-forge
     conda config --add channels willyd
     :: Update conda
-    conda update conda -y
+    REM conda update conda -y
+    :: avoid python automatically upgrade to higher version
+    conda config --set auto_update_conda False
     :: Download other required packages
     if !PYTHON_VERSION! EQU 2 (
         conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
