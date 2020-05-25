@@ -34,14 +34,24 @@ class MaskRCNNProposalLayer : public Layer<Dtype> {
 	  
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);	  
+	  
+	  
+	  
+  virtual inline const char *type() const { return "MaskRCNNProposal"; }
+  virtual inline int ExactNumBottomBlobs() const { return 3; }
+  virtual inline int ExactNumTopBlobs() const { return 1; }	  
+	  
+	  
+	  
  protected:
  
  // virtual vector<int> argsort(vector<float> &v);
  
-  virtual vector<vector<Dtype>> apply_box_deltas_graph(vector<vector<Dtype>> boxes,vector<vector<Dtype>> deltas);
-  virtual vector<vector<Dtype>> clip_boxes_graph(vector<vector<Dtype>> boxes,vector<Dtype> window);
-  virtual vector<int> image_nms(vector<vector<Dtype>>& bounding_boxes, vector<int>& score, int topk, float threshold);
-  virtual Dtype* maskrcnnproposal(const Dtype* rpn_class,const Dtype* rpn_bbox,const Dtype* anchors);
+  inline vector<vector<Dtype>> apply_box_deltas_graph(vector<vector<Dtype>> boxes,vector<vector<Dtype>> deltas);
+  inline vector<vector<Dtype>> clip_boxes_graph(vector<vector<Dtype>> boxes,vector<Dtype> window);
+  inline vector<int> image_nms(vector<vector<Dtype>>& bounding_boxes, vector<int>& score, int topk, float threshold);
+  inline Dtype* maskrcnnproposal(const Dtype* rpn_class,const Dtype* rpn_bbox,const Dtype* anchors);
+  
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
 	  
