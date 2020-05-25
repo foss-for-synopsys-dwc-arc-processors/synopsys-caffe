@@ -114,8 +114,8 @@ saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingPar
 Mask RCNN related  
 -------------------  
 roi_align_layer  
-maskrcnn_detection_layer 
-maskrcnn_proposal_layer 
+maskrcnn_detection_layer  
+maskrcnn_proposal_layer  
 apply_box_deltas.py (customized Python layer)  
 generate_pyramid_anchors.py (customized Python layer)  
 maskrcnn_detection.py (customized Python layer)  
