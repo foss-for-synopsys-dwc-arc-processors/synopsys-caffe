@@ -1,4 +1,4 @@
- #ifndef CAFFE_MISH_LAYER_HPP_
+#ifndef CAFFE_MISH_LAYER_HPP_
 #define CAFFE_MISH_LAYER_HPP_
 
 #include <vector>
