@@ -15,15 +15,9 @@ void MaskRCNNProposalLayer<Dtype>::LayerSetUp(
   CHECK_EQ(bottom.size(), 3) << "Only input 3 Tensors at a time!";
   CHECK_EQ(top.size(), 1) << "Only output one Tensor at a time!";
 
-  int height = 1024;
-  if (this->layer_param_.maskrcnn_proposal_param().height() != NULL) {
-    height = this->layer_param_.maskrcnn_proposal_param().height();
-  }
-
-  int width = 1024;
-  if (this->layer_param_.maskrcnn_proposal_param().width() != NULL) {
-    width = this->layer_param_.maskrcnn_proposal_param().width();
-  }
+ // int height = this->layer_param_.maskrcnn_proposal_param().height();
+ // int width = this->layer_param_.maskrcnn_proposal_param().width();
+  
 
   rpn_bbox_std_dev.clear();
   std::copy(
