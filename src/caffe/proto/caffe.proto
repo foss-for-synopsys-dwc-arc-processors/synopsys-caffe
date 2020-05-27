@@ -3313,8 +3313,6 @@ message MaskRCNNProposalParameter {
   optional uint32 pre_nms_limit = 4[default = 6000];
   optional float  rpn_nms_threshold = 5[default = 0.7];
   optional uint32 post_nms_rois_inference = 6[default = 1000];
-  optional uint32 height = 7[default = 1024];
-  optional uint32 width = 8[default = 1024];
 }
 
 
