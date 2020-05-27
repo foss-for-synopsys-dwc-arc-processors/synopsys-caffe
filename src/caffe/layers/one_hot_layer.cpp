@@ -85,7 +85,7 @@ void OneHotLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
       vector<int> b_ind = indices(i, bottom_shape);
       int b_idx = offset(top, axis_ind, b_ind);
       if (bottom_data[i] >= 0 && bottom_data[i] < depth) {
-        int t_idx = b_idx + bottom_data[i] * top[0]->count(axis + 1);
+        int t_idx = b_idx + int(bottom_data[i]) * top[0]->count(axis + 1);
         top_data[t_idx] = on_value;
       }
     }
