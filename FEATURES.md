@@ -1,7 +1,7 @@
 A Short Summary of New Features in Synopsys Caffe
 =================================================
 
-Synopsys Caffe Version: 2020.03  
+Synopsys Caffe Version: 2020.06  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -27,12 +27,14 @@ gru_layer
 hard_sigmoid_layer  
 hard_swish_layer  
 hard_tanh_layer  
+log_softmax_layer  
 lp_normalization_layer  
 nms_gather_layer  
 matmul_layer  
 maximum_layer  
 minimum_layer  
 mirror_pad_layer  
+mish_layer  
 mul_layer  
 nms_layer  
 one_hot_layer  
@@ -41,7 +43,6 @@ peephole_lstm_layer
 piece_layer  
 pooling3d_layer  
 pow_layer  
-pyramid_roi_align_layer  
 range_layer  
 reduce_all_layer  
 reduce_any_layer  
@@ -84,7 +85,7 @@ pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingP
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
-faceboxes, box_width, box_height, tf and yx_order in PriorBoxParameter  
+faceboxes, box_width, box_height, keras, tf and yx_order in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
 eltwise.py (deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
@@ -113,12 +114,14 @@ saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingPar
       
 Mask RCNN related  
 -------------------  
-roi_align_layer  
 maskrcnn_detection_layer  
 maskrcnn_proposal_layer  
+pyramid_roi_align_layer  
+roi_align_layer  
 apply_box_deltas.py (customized Python layer)  
 generate_pyramid_anchors.py (customized Python layer)  
 maskrcnn_detection.py (customized Python layer)  
+maskrcnn_proposal.py (customized Python layer)  
 pre_roi_align.py (customized Python layer)  
   
 SNNs related  
@@ -218,4 +221,3 @@ weight_by_label_freqs in LossParameter
     
     
 For more details, please refer to [caffe.proto](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/src/caffe/proto/caffe.proto) and the corresponding source code.
-
