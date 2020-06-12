@@ -63,6 +63,7 @@ scaled_tanh_layer
 shape_layer  
 shuffle_channel_layer  
 sin_layer  
+softplus_layer  
 softsign_layer  
 space_to_batch_nd_layer  
 space_to_depth_layer  
