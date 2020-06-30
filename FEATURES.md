@@ -1,11 +1,9 @@
-A Short Summary of New Features in Synopsys Caffe
-=================================================
+# A Short Summary of New Features in Synopsys Caffe
 
 Synopsys Caffe Version: 2020.06  
 New added features are compared with the original BVLC Caffe 1.0.0
   
-evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
-----------------------------------------------------------
+## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
 atan_layer  
 batch_to_space_nd_layer  
 broadcast_to_layer  
@@ -62,6 +60,7 @@ round_layer
 scaled_tanh_layer  
 shape_layer  
 shuffle_channel_layer  
+simple_rnn_layer  
 sin_layer  
 softplus_layer  
 softsign_layer  
@@ -79,6 +78,7 @@ unstack_layer
 where4_gathernd_crop_layer  
 where4_gathernd_layer  
 where4_layer  
+
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)    
 min_first in ArgMaxParameter  
@@ -88,6 +88,7 @@ AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias 
 ceil_mode in PoolingParameter  
 faceboxes, box_width, box_height, keras, tf and yx_order in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
+
 eltwise.py (deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (deprecated, customized Python layer, implementation of tf.pad)  
@@ -100,52 +101,55 @@ stack.py (deprecated, customized Python layer, implementation of tf.stack)
 statistics.py (deprecated, customized Python layer, implementation of tf.reduce_mean, tf.reduce_prod, tf.reduce_sum, tf.reduce_max, tf.reduce_min)  
 stridedslice.py (deprecated, customized Python layer)  
   
-evprune (Network Pruning Tool) related  
---------------------------------------
+  
+## evprune (Network Pruning Tool) related  
 squeeze_conv_layer  
 squeeze_inner_product_layer  
 squeeze_deconv_layer  
   
-evquantize related (only valid for CUDA forwards implementation)  
-----------------------------------------------------------------------------------  
+  
+## evquantize related (only valid for CUDA forwards implementation)   
 input_scale and output_scale in ConvolutionParameter, SoftmaxParameter and LRNParameter  
 output_scale in EltwiseParameter and InnerProductParameter  
 output_shift_instead_division in PoolingParameter  
 saturate in ConvolutionParameter, EltwiseParameter, ReLUParameter and PoolingParameter   
       
-Mask RCNN related  
--------------------  
+      
+## Mask RCNN related  
 maskrcnn_detection_layer  
 maskrcnn_proposal_layer  
 pyramid_roi_align_layer  
 roi_align_layer  
+
 apply_box_deltas.py (customized Python layer)  
 generate_pyramid_anchors.py (customized Python layer)  
 maskrcnn_detection.py (customized Python layer)  
 maskrcnn_proposal.py (customized Python layer)  
 pre_roi_align.py (customized Python layer)  
   
-SNNs related  
-------------
+  
+## SNNs related  
 selu_dropout_layer  
 selu_layer  
   
-YOLO related  
---------------  
+  
+## YOLO related   
 reorg_layer  
 upsample_darknet_layer  
 yolo_v2_loss_layer  
 yolo_v3_loss_layer  
+
 add_eps_before_sqrt in BatchNormParameter, MVNParameter and NormalizeParameter  
 caffe_yolo in TransformationParameter  
 jitter in ResizeParameter  
 exposure_lower, exposure_upper in DistortionParameter  
 side and random in DataParameter  
+
 yolov2.py (customized Python layer, implementation of darknet_reorg)  
 darknet.py  
     
-ICNet (PSPNet) related  
----------------------  
+    
+## ICNet (PSPNet) related  
 adaptive_bias_channel_layer  
 bias_channel_layer  
 cudnn_bn_layer  
@@ -160,19 +164,21 @@ seg_accuracy_layer
 spatial_product_layer  
 unique_label_layer  
 bn_layer (slope_filler, bias_filler, momentum and icnet in BNParameter)  
+
 update_global_stats and icnet in BatchNormParameter  
 scale_factors, crop_width and crop_height in TransformationParameter  
       
-SRGAN related  
--------------
+      
+## SRGAN related  
 gan_loss_layer  
+
 gan_solver in SolverParameter  
 pixelshuffler in ReshapeParameter  
 dis_mode and gen_mode in ConvolutionParameter, InnerProductParameter and ScaleParameter  
 weight_fixed in ConvolutionParameter and InnerProductParameter  
   
-FlowNet2 related
-----------------
+  
+## FlowNet2 related
 accum_layer  
 augmentation_layer  
 black_augmentation_layer  
@@ -193,8 +199,8 @@ lpq_loss_layer
 mean_layer  
 resample_layer  
   
-SSD related
------------
+  
+## SSD related
 annotated_data_layer    
 detection_evaluate_layer  
 detection_output_layer  
@@ -205,20 +211,22 @@ prior_box_layer
 smooth_L1_loss_layer  
 video_data_layer  
   
-Faster RCNN related
--------------------
+  
+## Faster RCNN related
 proposal_layer  
 roi_pooling_layer  
 smooth_L1_loss_layer (sigma and abssum in SmoothL1LossParameter)  
+
 scale_train in DropoutParameter  
   
-SegNet related
---------------
+  
+## SegNet related
 bn_layer  
 dense_image_data_layer  
 upsample_layer  
+
 sample_weights_test in DropoutParameter  
 weight_by_label_freqs in LossParameter  
     
     
-For more details, please refer to [caffe.proto](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/src/caffe/proto/caffe.proto) and the corresponding source code.
+> For more details, please refer to [caffe.proto](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/src/caffe/proto/caffe.proto) and the corresponding source code.
