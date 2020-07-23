@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 270 (last added: MaskRCNNProposal)
+// LayerParameter next available layer-specific ID: 271 (last added: NonMaxSuppressionParameter)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -615,7 +615,6 @@ message LayerParameter {
   optional YoloV3LossParameter yolo_v3_loss_param = 199;
   optional UpsampleDarknetParameter upsample_darknet_param = 209; // Darknet layer used in yolov3
 
-
   //TensorFlow related
   optional DepthToSpaceParameter depth_to_space_param = 208;
   optional ResizeNearestNeighborParameter resize_nearest_neighbor_param = 210;
@@ -671,7 +670,10 @@ message LayerParameter {
   optional ScaledTanHParameter scaled_tanh_param = 265;
   optional MaskRCNNDetectionParameter maskrcnn_detection_param = 268;
   optional MaskRCNNProposalParameter maskrcnn_proposal_param = 269;
-}
+  
+  //ONNX related
+  optional NonMaxSuppressionParameter non_max_suppression_param = 270;
+}  
 
 message AccumParameter {
   optional uint32 top_height = 1 [default = 0]; // The output height
@@ -3032,6 +3034,14 @@ message NMSGatherParameter {
   optional int32 axis = 2 [default = 0];
   optional float iou_threshold = 3 [default = 0.7];
 }
+
+message NonMaxSuppressionParameter {
+  optional int32 max_output_boxes_per_class = 1 [default = 0];
+  optional float iou_threshold = 2 [default = 0];
+  optional float score_threshold = 3 [default = 0];
+  optional int32 center_point_box = 4 [default = 0];
+}
+
 
 message GatherNDParameter {
   repeated uint32 indices = 1;

@@ -8,6 +8,11 @@
 #include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
+/**
+ * @brief TensorFlow style implementation of NMS.
+ *
+ * ref: https://www.tensorflow.org/api_docs/python/tf/image/non_max_suppression
+ */
 
 template <typename Dtype>
 class NMSLayer : public Layer<Dtype> {
