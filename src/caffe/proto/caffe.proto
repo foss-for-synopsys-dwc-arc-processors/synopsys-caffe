@@ -3010,6 +3010,7 @@ message ResizeNearestNeighborParameter {
   optional float scale_height = 5 [default = 1];
   optional float scale_width = 6 [default = 1];
   optional bool half_pixel_centers = 7 [default = false];
+  optional bool half_pixel_onnx = 8 [default = false]; //ONNX style half_pixel, only implement nearest_mode=floor case now
 }
 
 message GatherParameter{
