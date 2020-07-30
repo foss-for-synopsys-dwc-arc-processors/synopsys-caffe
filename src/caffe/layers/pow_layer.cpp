@@ -7,6 +7,26 @@
 
 namespace caffe {
 template <typename Dtype>
+void PowLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top) {
+  // Add the fake initialization to avoid special case in evconvert for the moment when
+  // the prototxt is generated, the 2nd input is parameter to be fed into caffemodel, but the caffemodel is not generated yet
+  if (bottom.size() == 1 && this->blobs_.size() == 0)
+  {
+    LOG(WARNING) << "Note: Make fake parameter initialization to avoid segment fault!";
+    // initialize the 2nd input to avoid error in reshape stage
+    this->blobs_.resize(1);
+    const vector<int>::const_iterator& shape_start =
+        bottom[0]->shape().begin();
+    const vector<int>::const_iterator& shape_end = bottom[0]->shape().end();
+    vector<int> bias_shape(shape_start, shape_end);
+    this->blobs_[0].reset(new Blob<Dtype>(bias_shape));
+
+    this->param_propagate_down_.resize(this->blobs_.size(), true);
+  }
+}
+
+template <typename Dtype>
 void PowLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not allow in-place computation.";
