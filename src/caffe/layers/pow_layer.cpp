@@ -19,8 +19,10 @@ void PowLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     const vector<int>::const_iterator& shape_start =
         bottom[0]->shape().begin();
     const vector<int>::const_iterator& shape_end = bottom[0]->shape().end();
-    vector<int> bias_shape(shape_start, shape_end);
-    this->blobs_[0].reset(new Blob<Dtype>(bias_shape));
+    vector<int> second_shape(shape_start, shape_end);
+    this->blobs_[0].reset(new Blob<Dtype>(second_shape));
+    // Note: seems not to support broadcasting data value initialize when
+    // input1 shape < input2 shape in this special situation
 
     this->param_propagate_down_.resize(this->blobs_.size(), true);
   }
