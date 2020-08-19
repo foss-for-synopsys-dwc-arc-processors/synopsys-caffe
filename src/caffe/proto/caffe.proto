@@ -1350,10 +1350,10 @@ message ConvolutionParameter {
   optional uint32 pad_w = 10 [default = 0]; // The padding width (2D only)
   optional uint32 pad_type = 19 [default = 0]; //CUSTOMIZATION, =0 for original Caffe padding, =1 for TensorFLow "SAME" padding
   //DEPRECATED. Should specify pad_l/r/t/b instead.
-  optional uint32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
-  optional uint32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
-  optional uint32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
-  optional uint32 pad_b = 29 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1
+  optional int32 pad_l = 26 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1; could be negative for deconv
+  optional int32 pad_r = 27 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1; could be negative for deconv
+  optional int32 pad_t = 28 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1; could be negative for deconv
+  optional int32 pad_b = 29 [default = 0]; //CUSTOMIZATION, only work when pad_type is not set to 1; could be negative for deconv
   optional uint32 kernel_h = 11; // The kernel height (2D only)
   optional uint32 kernel_w = 12; // The kernel width (2D only)
   optional uint32 stride_h = 13; // The stride height (2D only)
