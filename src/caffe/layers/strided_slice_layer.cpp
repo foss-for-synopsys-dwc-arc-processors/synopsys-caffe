@@ -124,7 +124,7 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       if (strided_end_[i] >= 0) {
         strided_end_[i] = std::min(strided_end_[i], b_shape[i]);
       } else {
-        strided_end_[i] = std::max(strided_end_[i] + b_shape[i], 0);
+        strided_end_[i] = std::max(strided_end_[i] + b_shape[i], -1);
       }
     }
     // begin_mask and end_mask
@@ -188,7 +188,7 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       if (strided_end_[i] >= 0) {
         strided_end_[i] = std::min(strided_end_[i], b_shape[axes_[i]]);
       } else {
-        strided_end_[i] = std::max(strided_end_[i] + b_shape[axes_[i]], 0);
+        strided_end_[i] = std::max(strided_end_[i] + b_shape[axes_[i]], -1);
       }
       // caculate top shape
       if (strides_[i] > 0) {

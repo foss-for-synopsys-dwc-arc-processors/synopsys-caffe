@@ -49,6 +49,7 @@ class ResizeNearestNeighborLayer : public Layer<Dtype> {
   bool align_corners;
   string data_format;
   bool half_pixel_centers;
+  bool half_pixel_onnx;
 };
 
 }  // namespace caffe
