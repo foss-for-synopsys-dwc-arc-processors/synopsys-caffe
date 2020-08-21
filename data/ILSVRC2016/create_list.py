@@ -48,7 +48,7 @@ if redo or not os.path.exists(train_list_file):
                 img_files.append(img_file)
                 anno_files.append(anno_file)
     # Shuffle the images.
-    idx = [i for i in xrange(len(img_files))]
+    idx = [i for i in range(len(img_files))]
     shuffle(idx)
     with open(train_list_file, "w") as f:
         for i in idx:
@@ -71,7 +71,7 @@ if redo or not os.path.exists(val_list_file):
                 img_files.append(img_file)
                 anno_files.append(anno_file)
     with open(val_list_file, "w") as f:
-        for i in xrange(len(img_files)):
+        for i in range(len(img_files)):
             f.write("{} {}\n".format(img_files[i], anno_files[i]))
 
 if redo or not os.path.exists(val_name_size_file):
@@ -79,7 +79,7 @@ if redo or not os.path.exists(val_name_size_file):
     imgset_file = "{}/{}/{}.txt".format(data_dir, imgset_dir, dataset)
     cmd = "{}/../../build/tools/get_image_size --name_id_file={} {} {} {}".format(
             CURDIR, imgset_file, data_dir, val_list_file, val_name_size_file)
-    print cmd
+    print(cmd)
     process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]
 
@@ -96,7 +96,7 @@ if redo or not os.path.exists(test_list_file):
                 assert os.path.exists("{}/{}".format(data_dir, img_file))
                 img_files.append(img_file)
     with open(test_list_file, "w") as f:
-        for i in xrange(len(img_files)):
+        for i in range(len(img_files)):
             f.write("{} 0\n".format(img_files[i]))
 
 if redo or not os.path.exists(test_name_size_file):
@@ -104,6 +104,6 @@ if redo or not os.path.exists(test_name_size_file):
     imgset_file = "{}/{}/{}.txt".format(data_dir, imgset_dir, dataset)
     cmd = "{}/../../build/tools/get_image_size --name_id_file={} {} {} {}".format(
             CURDIR, imgset_file, data_dir, test_list_file, test_name_size_file)
-    print cmd
+    print(cmd)
     process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
     output = process.communicate()[0]

@@ -42,9 +42,9 @@ def get_supported_chart_types():
     field_index, fields = create_field_index()
     num_fields = len(fields)
     supported_chart_types = []
-    for i in xrange(num_fields):
+    for i in range(num_fields):
         if not is_x_axis_field(fields[i]):
-            for j in xrange(num_fields):
+            for j in range(num_fields):
                 if i != j and is_x_axis_field(fields[j]):
                     supported_chart_types.append('%s%s%s' % (
                         fields[i], get_chart_type_description_separator(),
@@ -138,7 +138,7 @@ def plot_chart(chart_type, path_to_png, path_to_log_list):
     plt.show()
 
 def print_help():
-    print """This script mainly serves as the basis of your customizations.
+    print("""This script mainly serves as the basis of your customizations.
 Customization is a must.
 You can copy, paste, edit them in whatever way you want.
 Be warned that the fields in the training log may change in the future.
@@ -150,11 +150,11 @@ Notes:
     1. Supporting multiple logs.
     2. Log file name must end with the lower-cased "%s".
 Supported chart types:""" % (len(get_supported_chart_types()) - 1,
-                             get_log_file_suffix())
+                             get_log_file_suffix()))
     supported_chart_types = get_supported_chart_types()
     num = len(supported_chart_types)
-    for i in xrange(num):
-        print '    %d: %s' % (i, supported_chart_types[i])
+    for i in range(num):
+        print('    %d: %s' % (i, supported_chart_types[i]))
     sys.exit()
 
 def is_valid_chart_type(chart_type):
@@ -166,19 +166,19 @@ if __name__ == '__main__':
     else:
         chart_type = int(sys.argv[1])
         if not is_valid_chart_type(chart_type):
-            print '%s is not a valid chart type.' % chart_type
+            print('%s is not a valid chart type.' % chart_type)
             print_help()
         path_to_png = sys.argv[2]
         if not path_to_png.endswith('.png'):
-            print 'Path must ends with png' % path_to_png
+            print('Path must ends with png' % path_to_png)
             sys.exit()
         path_to_logs = sys.argv[3:]
         for path_to_log in path_to_logs:
             if not os.path.exists(path_to_log):
-                print 'Path does not exist: %s' % path_to_log
+                print('Path does not exist: %s' % path_to_log)
                 sys.exit()
             if not path_to_log.endswith(get_log_file_suffix()):
-                print 'Log file must end in %s.' % get_log_file_suffix()
+                print('Log file must end in %s.' % get_log_file_suffix())
                 print_help()
         ## plot_chart accpets multiple path_to_logs
         plot_chart(chart_type, path_to_png, path_to_logs)

@@ -320,7 +320,7 @@ def dump_model(operation='create', redo=False):
 
     # inceptions with 1x1, 3x3, 5x5 convolutions
     from_layer = 'pool_1'
-    for inception_id in xrange(0, 3):
+    for inception_id in range(0, 3):
         if inception_id == 0:
             out_layer = 'mixed'
         else:
@@ -350,7 +350,7 @@ def dump_model(operation='create', redo=False):
     from_layer = '{}/join'.format(out_layer)
 
     # inceptions with 1x1, 7x1, 1x7 convolutions
-    for inception_id in xrange(4, 8):
+    for inception_id in range(4, 8):
         out_layer = 'mixed_{}'.format(inception_id)
         dump_tower(sess, net, from_layer, out_layer,
                 ['conv'], operation)
@@ -376,7 +376,7 @@ def dump_model(operation='create', redo=False):
             ['tower/conv_1', 'tower_1/conv_3', 'pool'], operation)
     from_layer = '{}/join'.format(out_layer)
 
-    for inception_id in xrange(9, 11):
+    for inception_id in range(9, 11):
         out_layer = 'mixed_{}'.format(inception_id)
         dump_tower(sess, net, from_layer, out_layer,
                 ['conv'], operation)
