@@ -670,9 +670,10 @@ message LayerParameter {
   optional ScaledTanHParameter scaled_tanh_param = 265;
   optional MaskRCNNDetectionParameter maskrcnn_detection_param = 268;
   optional MaskRCNNProposalParameter maskrcnn_proposal_param = 269;
+  optional AttentionParameter attention_param = 270;
   
   //ONNX related
-  optional NonMaxSuppressionParameter non_max_suppression_param = 270;
+  optional NonMaxSuppressionParameter non_max_suppression_param = 271;
 }  
 
 message AccumParameter {
@@ -3326,4 +3327,17 @@ message MaskRCNNProposalParameter {
   optional uint32 post_nms_rois_inference = 6[default = 1000];
 }
 
+message AttentionParameter {
 
+  optional uint32 batch_size = 1[default = 2];
+  optional uint32 query_depth = 2[default = 1000];
+  optional uint32 alignments_size = 3[default = 500];
+  optional bool scale = 4[default = false];
+  optional bool normalize = 5[default = false];
+  optional string attention_option = 6[default = "normed_bahdanau"];
+  
+  
+  
+  
+  
+}
