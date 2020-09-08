@@ -157,6 +157,7 @@ namespace caffe {
 	Dtype* AttentionLayer<Dtype>::calculate_attention(const Dtype *query,const Dtype *state) {
 		
 		Dtype* alignment = (Dtype *)malloc(batch_size * alignments_size * sizeof(Dtype));
+		
 		Dtype* _memory=transpose(this->keys);
 
 
@@ -174,9 +175,13 @@ namespace caffe {
 		for(int i=0;i<query_depth;i++)
 		attention_v[i] = this->attention_v[i];
 
-		 static const int array_size = query_depth;
+
 		Dtype attention_g  = sqrt(1.0/query_depth);
-		Dtype attention_b[array_size] = {0};
+		Dtype* attention_b = new Dtype[query_depth];
+        for(int i=0;i<query_depth;i++)
+			attention_b[i]=0.0;
+		
+	
 		
 		//alignment = bahdanau_score(query, _memory,attention_v, NULL, NULL);
 
