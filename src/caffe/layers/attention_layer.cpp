@@ -174,9 +174,9 @@ namespace caffe {
 		for(int i=0;i<query_depth;i++)
 		attention_v[i] = this->attention_v[i];
 
-		
+		 static const int array_size = query_depth;
 		Dtype attention_g  = sqrt(1.0/query_depth);
-		Dtype attention_b[query_depth] = {0};
+		Dtype attention_b[array_size] = {0};
 		
 		//alignment = bahdanau_score(query, _memory,attention_v, NULL, NULL);
 
