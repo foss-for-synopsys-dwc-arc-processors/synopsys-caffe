@@ -5,6 +5,7 @@ New added features are compared with the original BVLC Caffe 1.0.0
   
 ## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
 atan_layer  
+attention_layer  
 batch_to_space_nd_layer  
 broadcast_to_layer  
 crop_and_resize_layer  
@@ -27,6 +28,7 @@ hard_swish_layer
 hard_tanh_layer  
 log_softmax_layer  
 lp_normalization_layer  
+luong_attention_layer  
 nms_gather_layer  
 matmul_layer  
 maximum_layer  
