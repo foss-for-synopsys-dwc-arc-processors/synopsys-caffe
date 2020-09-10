@@ -3179,7 +3179,7 @@ message SqueezeParameter {
 }
 
 message BroadcastToParameter {
-	//The shape of the desired output.
+  //The shape of the desired output.
   repeated uint32 shape = 1;
 }
 
@@ -3317,7 +3317,6 @@ message MaskRCNNDetectionParameter {
   optional float detection_nms_threshold = 5[default = 0.3];
 }
 
-
 message MaskRCNNProposalParameter {
   repeated float rpn_bbox_std_dev = 1;
   optional uint32 batch_size = 2[default = 1];
@@ -3328,16 +3327,10 @@ message MaskRCNNProposalParameter {
 }
 
 message AttentionParameter {
-
   optional uint32 batch_size = 1[default = 2];
   optional uint32 query_depth = 2[default = 1000];
   optional uint32 alignments_size = 3[default = 500];
   optional bool scale = 4[default = false];
   optional bool normalize = 5[default = false];
   optional string attention_option = 6[default = "normed_bahdanau"];
-  
-  
-  
-  
-  
 }
