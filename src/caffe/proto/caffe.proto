@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 271 (last added: NonMaxSuppressionParameter)
+// LayerParameter next available layer-specific ID: 272 (last added: RNNv2)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -671,6 +671,7 @@ message LayerParameter {
   optional MaskRCNNDetectionParameter maskrcnn_detection_param = 268;
   optional MaskRCNNProposalParameter maskrcnn_proposal_param = 269;
   optional AttentionParameter attention_param = 270;
+  optional RNNv2Parameter rnn_v2_param = 272;
   
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
@@ -3333,4 +3334,41 @@ message AttentionParameter {
   optional bool scale = 4[default = false];
   optional bool normalize = 5[default = false];
   optional string attention_option = 6[default = "normed_bahdanau"];
+}
+
+
+// Message that stores parameters used by RNNv2
+message RNNv2Parameter {
+  // The layer count of the RNN.
+  optional uint32 num_layers = 1 [default = 1];
+  // The dimension of the output (and usually hidden state) representation --
+  // must be explicitly set to non-zero.
+  required uint32 hidden_size = 2;
+  // operation name, possible names: SimpleRNN, GRU, LSTM, PeepholeLSTM
+  optional string op = 3 [default = "LSTM"];
+
+  // Specify if the RNNv2 is forward, reverse, or bidirectional.
+  // Must be one of forward (default), reverse, or bidirectional.
+  optional string direction = 4 [default = "forward"];
+  // A list of activation functions for gates. The activation
+  // functions must be one of the activation functions recognized by EV
+  repeated string activations = 5;
+  // Optional scaling values used by some activation functions. The
+  // values are consumed in the order of activation functions, for
+  // example (f, g, h) in LSTM. Default values are the same as of
+  // corresponding operators. 
+  repeated float activation_alpha = 6;
+  // Optional scaling values used by some activation functions. The
+  // values are consumed in the order of activation functions, for
+  // example (f, g, h) in LSTM.
+  repeated float activation_beta = 7;
+  // Mode by which outputs of the forward and backward RNNs will be
+  // combined. One of {'sum', 'mul', 'concat', 'ave', None}. If None,
+  // the outputs will not be combined, they will be returned as a
+  // list. Default value is 'concat'.
+  optional string merge_mode = 8 [default = "concat"];
+  // Only for GRU layer: When computing the output of the hidden gate,
+  // apply the linear transformation before multiplying by the output
+  // of the reset gate.
+  optional uint32 linear_before_reset = 9 [default = 0];
 }
