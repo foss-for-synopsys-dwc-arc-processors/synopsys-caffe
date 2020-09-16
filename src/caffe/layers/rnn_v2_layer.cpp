@@ -478,21 +478,6 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
     }
   }
 
-  // Add "pseudo-losses" to all outputs to force backpropagation.
-  // (Setting force_backward is too aggressive as we may not need to backprop to
-  // all inputs, e.g., the sequence continuation indicators.)
-  vector<string> pseudo_losses(output_names.size());
-  for (int i = 0; i < output_names.size(); ++i) {
-    LayerParameter* layer = net_param.add_layer();
-    pseudo_losses[i] = output_names[i] + "_pseudoloss";
-    layer->set_name(pseudo_losses[i]);
-    layer->set_type("Reduction");
-    layer->add_bottom(output_names[i]);
-    layer->add_top(pseudo_losses[i]);
-    layer->add_loss_weight(1);
-  }
-
-
   // Create the unrolled net.
   unrolled_net_.reset(new Net<Dtype>(net_param));
 
@@ -530,31 +515,6 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                 << unrolled_net_->param_display_names()[i];
       this->blobs_.push_back(unrolled_net_->params()[i]);
     }
-  }
-  // Check that param_propagate_down is set for all of the parameters in the
-  // unrolled net; set param_propagate_down to true in this layer.
-  for (int i = 0; i < unrolled_net_->layers().size(); ++i) {
-    for (int j = 0; j < unrolled_net_->layers()[i]->blobs().size(); ++j) {
-      CHECK(unrolled_net_->layers()[i]->param_propagate_down(j))
-          << "param_propagate_down not set for layer " << i << ", param " << j;
-    }
-  }
-  this->param_propagate_down_.clear();
-  this->param_propagate_down_.resize(this->blobs_.size(), true);
-
-  // Set the diffs of recurrent outputs to 0 -- we can't backpropagate across
-  // batches.
-  for (int i = 0; i < recur_output_blobs_.size(); ++i) {
-    caffe_set(recur_output_blobs_[i]->count(), Dtype(0),
-              recur_output_blobs_[i]->mutable_cpu_diff());
-  }
-
-  // Check that the last output_names.size() layers are the pseudo-losses;
-  // set last_layer_index so that we don't actually run these layers.
-  const vector<string> &layer_names = unrolled_net_->layer_names();
-  last_layer_index_ = layer_names.size() - 1 - pseudo_losses.size();
-  for (int i = last_layer_index_ + 1, j = 0; i < layer_names.size(); ++i, ++j) {
-    CHECK_EQ(layer_names[i], pseudo_losses[j]);
   }
 }
 
@@ -622,7 +582,7 @@ void RNNv2Layer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
 
   DCHECK_EQ(recur_input_blobs_.size(), recur_output_blobs_.size());
 
-  unrolled_net_->ForwardTo(last_layer_index_);
+  unrolled_net_->ForwardTo(unrolled_net_->layers().size()-1);
 
   const int top_offset = output_blobs_.size();
   for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {

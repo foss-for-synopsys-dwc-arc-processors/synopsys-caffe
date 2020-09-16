@@ -137,12 +137,6 @@ class RNNv2Layer : public Layer<Dtype> {
    */
   int T_;
 
-  /**
-   * @brief The last layer to run in the network. (Any later layers are losses
-   *        added to force the recurrent net to do backprop.)
-   */
-  int last_layer_index_;
-
   vector<Blob<Dtype>* > recur_input_blobs_;
   vector<Blob<Dtype>* > recur_output_blobs_;
   vector<Blob<Dtype>* > output_blobs_;
