@@ -14,18 +14,16 @@
 
 namespace caffe {
 
-template <typename Dtype>
-class RNNv2Layer : public Layer<Dtype> {
- public:
-  explicit RNNv2Layer(const LayerParameter& param)
-      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+template <typename Dtype> class RNNv2Layer : public Layer<Dtype> {
+public:
+  explicit RNNv2Layer(const LayerParameter &param) : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
+                          const vector<Blob<Dtype> *> &top);
+  virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
+                       const vector<Blob<Dtype> *> &top);
   virtual void Reset();
 
-  virtual inline const char* type() const { return "RNNv2"; }
+  virtual inline const char *type() const { return "RNNv2"; }
   virtual inline int MinBottomBlobs() const {
     int min_bottoms = 2;
     vector<string> inputs;
@@ -42,40 +40,37 @@ class RNNv2Layer : public Layer<Dtype> {
     return num_tops;
   }
 
- protected:
+protected:
   /**
    * @brief Fills net_param with the recurrent network architecture.  Subclasses
    *        should define this -- see RNNLayer for examples.
    */
-  void FillUnrolledNet(
-    NetParameter *net_param,
-    string x_name,
-    string cont_name,
-    vector<string> recur_input_names,
-    vector<string> output_names,
-    vector<string> recur_output_names,
-    const string &name_prefix);
+  void FillUnrolledNet(NetParameter *net_param, string x_name, string cont_name,
+                       vector<string> recur_input_names,
+                       vector<string> output_names,
+                       vector<string> recur_output_names,
+                       const string &name_prefix);
 
   /**
    * @brief Fills names with the names of the 0th timestep recurrent input
    *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  void RecurrentInputBlobNames(vector<string>* names) const;
+  void RecurrentInputBlobNames(vector<string> *names) const;
 
   /**
    * @brief Fills shapes with the shapes of the recurrent input Blob&s.
    *        Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  void RecurrentInputShapes(vector<BlobShape>* shapes) const;
+  void RecurrentInputShapes(vector<BlobShape> *shapes) const;
 
   /**
    * @brief Fills names with the names of the Tth timestep recurrent output
    *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  void RecurrentOutputBlobNames(vector<string>* names) const;
+  void RecurrentOutputBlobNames(vector<string> *names) const;
 
   /**
    * @brief Fills names with the names of the output blobs, concatenated across
@@ -83,7 +78,7 @@ class RNNv2Layer : public Layer<Dtype> {
    *        Subclasses should define this -- see RNNLayer and LSTMLayer for
    *        examples.
    */
-  void OutputBlobNames(vector<string>* names) const;
+  void OutputBlobNames(vector<string> *names) const;
 
   /**
    * @param bottom input Blob vector (length 2-3)
@@ -116,8 +111,8 @@ class RNNv2Layer : public Layer<Dtype> {
    *      Refer to documentation for particular RNNv2Layer implementations
    *      (such as RNNLayer and LSTMLayer) for the definition of @f$ y @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  virtual void Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+                           const vector<Blob<Dtype> *> &top);
   /// @brief Not implemented
   virtual void Backward_cpu(const vector<Blob<Dtype> *> &top,
                             const vector<bool> &propagate_down,
@@ -137,17 +132,18 @@ class RNNv2Layer : public Layer<Dtype> {
    */
   int T_;
 
-  vector<Blob<Dtype>* > recur_input_blobs_;
-  vector<Blob<Dtype>* > recur_output_blobs_;
-  vector<Blob<Dtype>* > output_blobs_;
-  Blob<Dtype>* x_input_blob_;
-  Blob<Dtype>* cont_input_blob_;
+  vector<Blob<Dtype> *> recur_input_blobs_;
+  vector<Blob<Dtype> *> recur_output_blobs_;
+  vector<Blob<Dtype> *> output_blobs_;
+  Blob<Dtype> *x_input_blob_;
+  Blob<Dtype> *cont_input_blob_;
 
   vector<string> activations_;
   vector<float> activation_alpha_;
   vector<float> activation_beta_;
+  string direction_;
 };
 
-}  // namespace caffe
+} // namespace caffe
 
-#endif  // CAFFE_RNN_V2_LAYER_HPP_
+#endif // CAFFE_RNN_V2_LAYER_HPP_

@@ -1,3 +1,4 @@
+#include <cstring>
 #include <vector>
 
 #include "caffe/blob.hpp"
@@ -26,11 +27,10 @@ template <typename Dtype>
 void RNNv2Layer<Dtype>::RecurrentInputShapes(vector<BlobShape> *shapes) const {
   const int hidden_size = this->layer_param_.rnn_v2_param().hidden_size();
   const int num_blobs = 2;
-  string direction = this->layer_param_.rnn_v2_param().direction();
   shapes->resize(num_blobs);
   for (int i = 0; i < num_blobs; ++i) {
     (*shapes)[i].Clear();
-    if(direction == "bidirectional")
+    if (direction_ == "bidirectional")
       (*shapes)[i].add_dim(2);
     else
       (*shapes)[i].add_dim(1);
@@ -46,14 +46,12 @@ void RNNv2Layer<Dtype>::OutputBlobNames(vector<string> *names) const {
 }
 
 template <typename Dtype>
-void RNNv2Layer<Dtype>::FillUnrolledNet(
-    NetParameter *net_param,
-    string x_name,
-    string cont_name,
-    vector<string> recur_input_names,
-    vector<string> output_names,
-    vector<string> recur_output_names,
-    const string &name_prefix) {
+void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
+                                        string cont_name,
+                                        vector<string> recur_input_names,
+                                        vector<string> output_names,
+                                        vector<string> recur_output_names,
+                                        const string &name_prefix) {
   const int hidden_size = this->layer_param_.rnn_v2_param().hidden_size();
   CHECK_GT(hidden_size, 0) << "hidden_size must be positive";
 
@@ -341,6 +339,8 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
             this->layer_param_.recurrent_param().activation_beta().end(),
             std::back_inserter(activation_beta_));
 
+  direction_ = this->layer_param_.rnn_v2_param().direction();
+
   // Get (recurrent) input/output names.
   vector<string> output_names;
   OutputBlobNames(&output_names);
@@ -374,12 +374,11 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
 
   // Call the child's FillUnrolledNet implementation to specify the unrolled
   // recurrent architecture.
-  string direction = this->layer_param_.rnn_v2_param().direction();
 
-  if(direction == "forward"){
-    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names, output_names, recur_output_names, "");
-  }
-  else if (direction == "reverse"){
+  if (direction_ == "forward") {
+    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names,
+                          output_names, recur_output_names, "");
+  } else if (direction_ == "reverse") {
     {
       // reverse x
       LayerParameter *reverse_x_layer_param = net_param.add_layer();
@@ -389,7 +388,8 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       reverse_x_layer_param->add_top("x_rev");
       reverse_x_layer_param->set_name("x_rev");
     }
-    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names, output_names, recur_output_names, "bw_");
+    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names,
+                          output_names, recur_output_names, "bw_");
     {
       // reverse output back
       LayerParameter *reverse_output_layer_param = net_param.add_layer();
@@ -404,7 +404,7 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       LayerParameter split_param;
       split_param.set_type("Split");
       LayerParameter *recur_output_copy_param;
-      for(int i=0; i<num_recur_blobs; ++i){
+      for (int i = 0; i < num_recur_blobs; ++i) {
         recur_output_copy_param = net_param.add_layer();
         recur_output_copy_param->CopyFrom(split_param);
         recur_output_copy_param->add_bottom("bw_" + recur_output_names[i]);
@@ -412,8 +412,9 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       }
     }
 
-  } else if (direction == "bidirectional"){
-    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names, output_names, recur_output_names, "fw_");
+  } else if (direction_ == "bidirectional") {
+    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names,
+                          output_names, recur_output_names, "fw_");
     {
       // reverse x
       LayerParameter *reverse_x_layer_param = net_param.add_layer();
@@ -423,20 +424,21 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       reverse_x_layer_param->add_top("x_rev");
       reverse_x_layer_param->set_name("x_rev");
     }
-    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names, output_names, recur_output_names, "bw_");
+    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names,
+                          output_names, recur_output_names, "bw_");
     {
       // reverse back the output of reverse direction
       LayerParameter *reverse_output_layer_param = net_param.add_layer();
       reverse_output_layer_param->set_type("Reverse");
       reverse_output_layer_param->add_bottom("bw_" + output_names[0]);
       reverse_output_layer_param->mutable_reverse_param()->add_axis(0);
-      reverse_output_layer_param->add_top("bw_rev_"+output_names[0]);
-      reverse_output_layer_param->set_name("bw_rev_"+output_names[0]);
+      reverse_output_layer_param->add_top("bw_rev_" + output_names[0]);
+      reverse_output_layer_param->set_name("bw_rev_" + output_names[0]);
     }
     // merge the outputs of forward and reverse
     {
       string merge_mode = this->layer_param_.rnn_v2_param().merge_mode();
-      if (merge_mode == "concat"){
+      if (merge_mode == "concat") {
         LayerParameter output_concat_layer;
         output_concat_layer.set_name(output_names[0]);
         output_concat_layer.set_type("Concat");
@@ -444,8 +446,10 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
         output_concat_layer.add_bottom("bw_rev_" + output_names[0]);
         output_concat_layer.add_top(output_names[0]);
         output_concat_layer.mutable_concat_param()->set_axis(-1);
-      } else{
-        LOG(ERROR) << "The value of merge_mode of RNNv2 layer is not supported: " << merge_mode;
+      } else {
+        LOG(ERROR)
+            << "The value of merge_mode of RNNv2 layer is not supported: "
+            << merge_mode;
         exit(-1);
       }
     }
@@ -455,7 +459,7 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       concat_param.set_type("Concat");
       concat_param.mutable_concat_param()->set_axis(0);
       LayerParameter *recur_output_param;
-      for(int i=0; i<num_recur_blobs; ++i){
+      for (int i = 0; i < num_recur_blobs; ++i) {
         recur_output_param = net_param.add_layer();
         recur_output_param->CopyFrom(concat_param);
         recur_output_param->add_bottom("fw_" + recur_output_names[i]);
@@ -509,12 +513,28 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   // net. We only want one copy of each parameter, so check that the parameter
   // is "owned" by the layer, rather than shared with another.
   this->blobs_.clear();
-  for (int i = 0; i < unrolled_net_->params().size(); ++i) {
-    if (unrolled_net_->param_owners()[i] == -1) {
-      LOG(INFO) << "Adding parameter " << i << ": "
-                << unrolled_net_->param_display_names()[i];
-      this->blobs_.push_back(unrolled_net_->params()[i]);
+  if (direction_ != "bidirectional") {
+    for (int i = 0; i < unrolled_net_->params().size(); ++i) {
+      if (unrolled_net_->param_owners()[i] == -1) {
+        LOG(INFO) << "Adding parameter " << i << ": "
+                  << unrolled_net_->param_display_names()[i];
+        this->blobs_.push_back(unrolled_net_->params()[i]);
+      }
     }
+  } else {
+    const int hidden_size = this->layer_param_.rnn_v2_param().hidden_size();
+    const int input_size = bottom[0]->shape(2);
+
+    // FIXME(haifeng): lstm:3, peepholelstm:4, simplernn:3, gru:3
+    this->blobs_.resize(3);
+    // W
+    this->blobs_[0].reset(
+        new Blob<Dtype>(vector<int>({2, 4 * hidden_size, input_size})));
+    // B
+    this->blobs_[1].reset(new Blob<Dtype>(vector<int>({2, 4 * hidden_size})));
+    // R
+    this->blobs_[2].reset(
+        new Blob<Dtype>(vector<int>({2, 4 * hidden_size, hidden_size})));
   }
 }
 
@@ -572,17 +592,28 @@ template <typename Dtype> void RNNv2Layer<Dtype>::Reset() {
 template <typename Dtype>
 void RNNv2Layer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
                                     const vector<Blob<Dtype> *> &top) {
-  // Hacky fix for test time: reshare all the internal shared blobs, which may
-  // currently point to a stale owner blob that was dropped when Solver::Test
-  // called test_net->ShareTrainedLayersWith(net_.get()).
-  // TODO: somehow make this work non-hackily.
-  if (this->phase_ == TEST) {
-    unrolled_net_->ShareWeights();
+  // for bidirectional rnn, split the weights into two parts: forward
+  // and reverse
+  if (direction_ == "bidirectional") {
+    const int blobs_size = this->blobs_.size();
+    for (int i = 0; i < blobs_size; ++i) {
+      if (this->blobs_[i]->count() % 2 != 0)
+        LOG(FATAL) << "The total number of the weight blobs[" << i
+                   << "] cannot be divided by 2";
+      // weight blob for forward
+      Dtype *f = unrolled_net_->params()[i]->mutable_cpu_data();
+      // weight blob for backward
+      Dtype *b = unrolled_net_->params()[i + blobs_size]->mutable_cpu_data();
+      std::memcpy(f, this->blobs_[i]->cpu_data(),
+                  sizeof(Dtype) * this->blobs_[i]->count() / 2);
+      std::memcpy(b, this->blobs_[i]->cpu_data() + this->blobs_[i]->count() / 2,
+                  sizeof(Dtype) * this->blobs_[i]->count() / 2);
+    }
   }
 
   DCHECK_EQ(recur_input_blobs_.size(), recur_output_blobs_.size());
 
-  unrolled_net_->ForwardTo(unrolled_net_->layers().size()-1);
+  unrolled_net_->ForwardTo(unrolled_net_->layers().size() - 1);
 
   const int top_offset = output_blobs_.size();
   for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
