@@ -81,6 +81,7 @@ unstack_layer
 where4_gathernd_crop_layer  
 where4_gathernd_layer  
 where4_layer  
+count_nonzero_layer  
 
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)    
