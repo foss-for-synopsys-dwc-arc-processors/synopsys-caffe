@@ -1,7 +1,6 @@
-#ifndef CAFFE_REVERSE_SEQUENCE_LAYER_HPP_
-#define CAFFE_REVERSE_SEQUENCE_LAYER_HPP_
+#ifndef CAFFE_COUNT_NONZERO_LAYER_HPP_
+#define CAFFE_COUNT_NONZERO_LAYER_HPP_
 
-#include <string>
 #include <vector>
 
 #include "caffe/blob.hpp"
@@ -10,21 +9,20 @@
 
 namespace caffe {
 /*
- * Note: implementation of tf.reverse_sequence
- * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/reverse_sequence
- */
+* Note: implementation of tf.math.count_nonzero, but only supports input with int type
+* https://www.tensorflow.org/api_docs/python/tf/math/count_nonzero
+*/
 
-template <typename Dtype> class ReverseSequenceLayer : public Layer<Dtype> {
+template <typename Dtype> class CountNonzeroLayer : public Layer<Dtype> {
 public:
-  explicit ReverseSequenceLayer(const LayerParameter &param)
-      : Layer<Dtype>(param) {}
+  explicit CountNonzeroLayer(const LayerParameter &param) : Layer<Dtype>(param) {}
   virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                           const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
 
-  virtual inline const char *type() const { return "ReverseSequence"; }
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline const char *type() const { return "CountNonzero"; }
+  virtual inline int ExactNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
 protected:
@@ -36,14 +34,18 @@ protected:
                             const vector<Blob<Dtype> *> &bottom) {
     NOT_IMPLEMENTED;
   }
+
   inline vector<int> indices(int offset, const vector<int> &shape) const;
   inline int offset(const vector<Blob<Dtype> *> &bottom,
                     const vector<int> &axis_ind,
                     const vector<int> &indices) const;
-  int seq_axis_;
-  int batch_axis_;
+
+  vector<int> count_nonzero_axis_;
+  bool count_nonzero_keepdims_;
+  int axis_dim_;
 };
 
 } // namespace caffe
 
-#endif // CAFFE_REVERSE_SEQUENCE_LAYER_HPP_
+#endif // CAFFE_REDUCESUM_LAYER_HPP_
+

@@ -672,6 +672,7 @@ message LayerParameter {
   optional MaskRCNNProposalParameter maskrcnn_proposal_param = 269;
   optional AttentionParameter attention_param = 270;
   optional RNNv2Parameter rnn_v2_param = 272;
+  optional CountNonzeroParameter count_nonzero_param = 273;
   
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
@@ -3266,9 +3267,8 @@ message ReduceAnyParameter {
 }
 
 message ReverseSequenceParameter {
-  repeated uint32 seq_lengths = 1;
-  required uint32 seq_axis = 2;
-  optional uint32 batch_axis = 3[default = 0];
+  required uint32 seq_axis = 1;
+  optional uint32 batch_axis = 2[default = 0];
 }
 
 message HardSigmoidParameter {
@@ -3371,4 +3371,9 @@ message RNNv2Parameter {
   // apply the linear transformation before multiplying by the output
   // of the reset gate.
   optional uint32 linear_before_reset = 9 [default = 0];
+}
+
+message CountNonzeroParameter {
+  repeated int32 axis = 1;
+  optional bool keepdims = 2[default = false];
 }
