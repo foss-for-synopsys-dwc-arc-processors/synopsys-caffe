@@ -8,8 +8,9 @@ atan_layer
 attention_layer  
 batch_to_space_nd_layer  
 broadcast_to_layer  
-crop_and_resize_layer  
 ceil_layer  
+count_nonzero_layer  
+crop_and_resize_layer  
 depth_to_space_layer  
 div_layer  
 embedding_lookup_layer  
@@ -59,6 +60,7 @@ resize_bilinear_layer
 resize_nearest_neighbor_layer  
 reverse_layer  
 reverse_sequence_layer  
+rnn_v2_layer  
 round_layer  
 scaled_tanh_layer  
 shape_layer  
@@ -81,7 +83,6 @@ unstack_layer
 where4_gathernd_crop_layer  
 where4_gathernd_layer  
 where4_layer  
-count_nonzero_layer  
 
 DIV and MIN in EltwiseOp  
 axis in EltwiseParameter (broadcasting support for 2nd bottom blob in eltwise_layer)    
