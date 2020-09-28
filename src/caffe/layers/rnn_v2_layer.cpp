@@ -405,7 +405,7 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       }
     }
     //
-    this->FillUnrolledNet(&net_param, "x_rev", "cont", output_names, recur_name_prefix, "bw_");
+    this->FillUnrolledNet(&net_param, "x_rev", "cont_rev", output_names, recur_name_prefix, "bw_");
     {
       // reverse output back
       LayerParameter *reverse_output_layer_param = net_param.add_layer();
