@@ -552,9 +552,9 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   // Setup pointers to paired recurrent inputs/outputs.
   recur_input_blobs_.resize(num_recur_blobs);
   recur_output_blobs_.resize(num_recur_blobs);
-  for (int i = 0; i < recur_name_prefix.size(); ++i) {
+  for (int i = 0; i < recur_input_names.size(); ++i) {
     recur_input_blobs_[i] =
-        CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_name_prefix[i]).get());
+        CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_input_names[i]).get());
     recur_output_blobs_[i] =
         CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_output_names[i]).get());
   }
