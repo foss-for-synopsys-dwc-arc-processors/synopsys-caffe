@@ -10,17 +10,10 @@
 namespace caffe {
 
 template <typename Dtype>
-void RNNv2Layer<Dtype>::RecurrentInputBlobNames(vector<string> *names) const {
+void RNNv2Layer<Dtype>::RecurrentBlobNamePrefix(vector<string> *names) const {
   names->resize(2);
-  (*names)[0] = "h_0";
-  (*names)[1] = "c_0";
-}
-
-template <typename Dtype>
-void RNNv2Layer<Dtype>::RecurrentOutputBlobNames(vector<string> *names) const {
-  names->resize(2);
-  (*names)[0] = "h_" + format_int(this->T_);
-  (*names)[1] = "c_T";
+  (*names)[0] = "h_";
+  (*names)[1] = "c_";
 }
 
 template <typename Dtype>
@@ -46,12 +39,10 @@ void RNNv2Layer<Dtype>::OutputBlobNames(vector<string> *names) const {
 }
 
 template <typename Dtype>
-void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
-                                        string cont_name,
-                                        vector<string> recur_input_names,
-                                        vector<string> output_names,
-                                        vector<string> recur_output_names,
-                                        const string &name_prefix) {
+void RNNv2Layer<Dtype>::FillUnrolledNet(
+    NetParameter *net_param, const string x_name, const string cont_name,
+    vector<string> output_names, vector<string> recur_name_prefix,
+    const string &layer_name_prefix) {
   const int hidden_size = this->layer_param_.rnn_v2_param().hidden_size();
   CHECK_GT(hidden_size, 0) << "hidden_size must be positive";
 
@@ -105,24 +96,10 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
   LayerParameter split_param;
   split_param.set_type("Split");
 
-  vector<BlobShape> input_shapes;
-  RecurrentInputShapes(&input_shapes);
-  CHECK_EQ(2, input_shapes.size());
-
-  LayerParameter *input_layer_param = net_param->add_layer();
-  input_layer_param->set_type("Input");
-  InputParameter *input_param = input_layer_param->mutable_input_param();
-
-  input_layer_param->add_top(name_prefix + recur_input_names[0]);
-  input_param->add_shape()->CopyFrom(input_shapes[0]);
-
-  input_layer_param->add_top(name_prefix + recur_input_names[1]);
-  input_param->add_shape()->CopyFrom(input_shapes[1]);
-
   LayerParameter *cont_slice_param = net_param->add_layer();
   cont_slice_param->CopyFrom(slice_param);
-  cont_slice_param->set_name(name_prefix + "cont_slice");
-  cont_slice_param->add_bottom(name_prefix + cont_name);
+  cont_slice_param->set_name(layer_name_prefix + "cont_slice");
+  cont_slice_param->add_bottom(layer_name_prefix + cont_name);
   cont_slice_param->mutable_slice_param()->set_axis(0);
 
   // Add layer to transform all timesteps of x to the hidden state dimension.
@@ -130,31 +107,31 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
   {
     LayerParameter *x_transform_param = net_param->add_layer();
     x_transform_param->CopyFrom(biased_hidden_param);
-    x_transform_param->set_name(name_prefix + "x_transform");
-    x_transform_param->add_param()->set_name(name_prefix + "W_xc");
-    x_transform_param->add_param()->set_name(name_prefix + "b_c");
-    x_transform_param->add_bottom(name_prefix + x_name);
-    x_transform_param->add_top(name_prefix + "W_xc_x");
+    x_transform_param->set_name(layer_name_prefix + "x_transform");
+    x_transform_param->add_param()->set_name(layer_name_prefix + "W_xc");
+    x_transform_param->add_param()->set_name(layer_name_prefix + "b_c");
+    x_transform_param->add_bottom(layer_name_prefix + x_name);
+    x_transform_param->add_top(layer_name_prefix + "W_xc_x");
     x_transform_param->add_propagate_down(true);
   }
 
   LayerParameter *x_slice_param = net_param->add_layer();
   x_slice_param->CopyFrom(slice_param);
-  x_slice_param->add_bottom(name_prefix + "W_xc_x");
-  x_slice_param->set_name(name_prefix + "W_xc_x_slice");
+  x_slice_param->add_bottom(layer_name_prefix + "W_xc_x");
+  x_slice_param->set_name(layer_name_prefix + "W_xc_x_slice");
 
   LayerParameter output_concat_layer;
-  output_concat_layer.set_name(name_prefix + "h_concat");
+  output_concat_layer.set_name(layer_name_prefix + "h_concat");
   output_concat_layer.set_type("Concat");
-  output_concat_layer.add_top(name_prefix + output_names[0]);
+  output_concat_layer.add_top(layer_name_prefix + output_names[0]);
   output_concat_layer.mutable_concat_param()->set_axis(0);
 
   for (int t = 1; t <= this->T_; ++t) {
     string tm1s = format_int(t - 1);
     string ts = format_int(t);
 
-    cont_slice_param->add_top(name_prefix + "cont_" + ts);
-    x_slice_param->add_top(name_prefix + "W_xc_x_" + ts);
+    cont_slice_param->add_top(layer_name_prefix + "cont_" + ts);
+    x_slice_param->add_top(layer_name_prefix + "W_xc_x_" + ts);
 
     // Add layers to flush the hidden state when beginning a new
     // sequence, as indicated by cont_t.
@@ -166,10 +143,10 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
     {
       LayerParameter *cont_h_param = net_param->add_layer();
       cont_h_param->CopyFrom(scale_param);
-      cont_h_param->set_name(name_prefix + "h_conted_" + tm1s);
-      cont_h_param->add_bottom(name_prefix + "h_" + tm1s);
-      cont_h_param->add_bottom(name_prefix + "cont_" + ts);
-      cont_h_param->add_top(name_prefix + "h_conted_" + tm1s);
+      cont_h_param->set_name(layer_name_prefix + "h_conted_" + tm1s);
+      cont_h_param->add_bottom(layer_name_prefix + recur_name_prefix[0] + tm1s);
+      cont_h_param->add_bottom(layer_name_prefix + "cont_" + ts);
+      cont_h_param->add_top(layer_name_prefix + "h_conted_" + tm1s);
     }
 
     // Add layer to compute
@@ -177,10 +154,10 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
     {
       LayerParameter *w_param = net_param->add_layer();
       w_param->CopyFrom(hidden_param);
-      w_param->set_name(name_prefix + "transform_" + ts);
-      w_param->add_param()->set_name(name_prefix + "R");
-      w_param->add_bottom(name_prefix + "h_conted_" + tm1s);
-      w_param->add_top(name_prefix + "R_h_" + tm1s);
+      w_param->set_name(layer_name_prefix + "transform_" + ts);
+      w_param->add_param()->set_name(layer_name_prefix + "R");
+      w_param->add_bottom(layer_name_prefix + "h_conted_" + tm1s);
+      w_param->add_top(layer_name_prefix + "R_h_" + tm1s);
       w_param->mutable_inner_product_param()->set_axis(2);
     }
 
@@ -190,10 +167,10 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
     {
       LayerParameter *input_sum_layer = net_param->add_layer();
       input_sum_layer->CopyFrom(sum_param);
-      input_sum_layer->set_name(name_prefix + "gate_input_" + ts);
-      input_sum_layer->add_bottom(name_prefix + "R_h_" + tm1s);
-      input_sum_layer->add_bottom(name_prefix + "W_xc_x_" + ts);
-      input_sum_layer->add_top(name_prefix + "gate_input_" + ts);
+      input_sum_layer->set_name(layer_name_prefix + "gate_input_" + ts);
+      input_sum_layer->add_bottom(layer_name_prefix + "R_h_" + tm1s);
+      input_sum_layer->add_bottom(layer_name_prefix + "W_xc_x_" + ts);
+      input_sum_layer->add_top(layer_name_prefix + "gate_input_" + ts);
     }
     //     [ i_t' ]
     //     [ o_t' ] := gate_input_t
@@ -208,41 +185,41 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
     {
       LayerParameter *inner_non_c_slice_param = net_param->add_layer();
       inner_non_c_slice_param->CopyFrom(slice_param);
-      inner_non_c_slice_param->set_name(name_prefix + "gate_input_slice_" + ts);
-      inner_non_c_slice_param->add_bottom(name_prefix + "gate_input_" + ts);
-      inner_non_c_slice_param->add_top(name_prefix + "gate_input_i_" + ts);
-      inner_non_c_slice_param->add_top(name_prefix + "gate_input_o_" + ts);
-      inner_non_c_slice_param->add_top(name_prefix + "gate_input_f_" + ts);
-      inner_non_c_slice_param->add_top(name_prefix + "gate_input_g_" + ts);
+      inner_non_c_slice_param->set_name(layer_name_prefix + "gate_input_slice_" + ts);
+      inner_non_c_slice_param->add_bottom(layer_name_prefix + "gate_input_" + ts);
+      inner_non_c_slice_param->add_top(layer_name_prefix + "gate_input_i_" + ts);
+      inner_non_c_slice_param->add_top(layer_name_prefix + "gate_input_o_" + ts);
+      inner_non_c_slice_param->add_top(layer_name_prefix + "gate_input_f_" + ts);
+      inner_non_c_slice_param->add_top(layer_name_prefix + "gate_input_g_" + ts);
       inner_non_c_slice_param->mutable_slice_param()->set_axis(2);
     }
     {
       LayerParameter *i_t_param = net_param->add_layer();
       i_t_param->CopyFrom(F_activation_param);
-      i_t_param->add_bottom(name_prefix + "gate_input_i_" + ts);
-      i_t_param->add_top(name_prefix + "i_" + ts);
-      i_t_param->set_name(name_prefix + "i_" + ts);
+      i_t_param->add_bottom(layer_name_prefix + "gate_input_i_" + ts);
+      i_t_param->add_top(layer_name_prefix + "i_" + ts);
+      i_t_param->set_name(layer_name_prefix + "i_" + ts);
     }
     {
       LayerParameter *o_t_param = net_param->add_layer();
       o_t_param->CopyFrom(F_activation_param);
-      o_t_param->add_bottom(name_prefix + "gate_input_o_" + ts);
-      o_t_param->add_top(name_prefix + "o_" + ts);
-      o_t_param->set_name(name_prefix + "o_" + ts);
+      o_t_param->add_bottom(layer_name_prefix + "gate_input_o_" + ts);
+      o_t_param->add_top(layer_name_prefix + "o_" + ts);
+      o_t_param->set_name(layer_name_prefix + "o_" + ts);
     }
     {
       LayerParameter *f_t_param = net_param->add_layer();
       f_t_param->CopyFrom(F_activation_param);
-      f_t_param->add_bottom(name_prefix + "gate_input_f_" + ts);
-      f_t_param->add_top(name_prefix + "f_" + ts);
-      f_t_param->set_name(name_prefix + "f_" + ts);
+      f_t_param->add_bottom(layer_name_prefix + "gate_input_f_" + ts);
+      f_t_param->add_top(layer_name_prefix + "f_" + ts);
+      f_t_param->set_name(layer_name_prefix + "f_" + ts);
     }
     {
       LayerParameter *g_t_param = net_param->add_layer();
       g_t_param->CopyFrom(G_activation_param);
-      g_t_param->add_bottom(name_prefix + "gate_input_g_" + ts);
-      g_t_param->add_top(name_prefix + "g_" + ts);
-      g_t_param->set_name(name_prefix + "g_" + ts);
+      g_t_param->add_bottom(layer_name_prefix + "gate_input_g_" + ts);
+      g_t_param->add_top(layer_name_prefix + "g_" + ts);
+      g_t_param->set_name(layer_name_prefix + "g_" + ts);
     }
     // Normally, cont_t is binary (i.e., 0 or 1), so:
     //     c_conted_{t-1} := cont_t * c_{t-1}
@@ -251,60 +228,66 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(NetParameter *net_param, string x_name,
     {
       LayerParameter *cont_c_param = net_param->add_layer();
       cont_c_param->CopyFrom(scale_param);
-      cont_c_param->set_name(name_prefix + "c_conted_" + tm1s);
-      cont_c_param->add_bottom(name_prefix + "c_" + tm1s);
-      cont_c_param->add_bottom(name_prefix + "cont_" + ts);
-      cont_c_param->add_top(name_prefix + "c_conted_" + tm1s);
+      cont_c_param->set_name(layer_name_prefix + "c_conted_" + tm1s);
+      cont_c_param->add_bottom(layer_name_prefix + recur_name_prefix[1] + tm1s);
+      cont_c_param->add_bottom(layer_name_prefix + "cont_" + ts);
+      cont_c_param->add_top(layer_name_prefix + "c_conted_" + tm1s);
     }
     // f_t (.) c_{t-1}
     {
       LayerParameter *f_c_tm1s_prod_parm = net_param->add_layer();
       f_c_tm1s_prod_parm->CopyFrom(prod_param);
-      f_c_tm1s_prod_parm->set_name(name_prefix + "f_c_tm1s_prod_" + ts);
-      f_c_tm1s_prod_parm->add_bottom(name_prefix + "f_" + ts);
-      f_c_tm1s_prod_parm->add_bottom(name_prefix + "c_conted_" + tm1s);
-      f_c_tm1s_prod_parm->add_top(name_prefix + "f_c_tm1s_prod_" + ts);
+      f_c_tm1s_prod_parm->set_name(layer_name_prefix + "f_c_tm1s_prod_" + ts);
+      f_c_tm1s_prod_parm->add_bottom(layer_name_prefix + "f_" + ts);
+      f_c_tm1s_prod_parm->add_bottom(layer_name_prefix + "c_conted_" + tm1s);
+      f_c_tm1s_prod_parm->add_top(layer_name_prefix + "f_c_tm1s_prod_" + ts);
     }
     // i_t (.) g_t
     {
       LayerParameter *i_g_prod_parm = net_param->add_layer();
       i_g_prod_parm->CopyFrom(prod_param);
-      i_g_prod_parm->set_name(name_prefix + "i_g_prod_" + ts);
-      i_g_prod_parm->add_bottom(name_prefix + "i_" + ts);
-      i_g_prod_parm->add_bottom(name_prefix + "g_" + ts);
-      i_g_prod_parm->add_top(name_prefix + "i_g_prod_" + ts);
+      i_g_prod_parm->set_name(layer_name_prefix + "i_g_prod_" + ts);
+      i_g_prod_parm->add_bottom(layer_name_prefix + "i_" + ts);
+      i_g_prod_parm->add_bottom(layer_name_prefix + "g_" + ts);
+      i_g_prod_parm->add_top(layer_name_prefix + "i_g_prod_" + ts);
     }
     {
       LayerParameter *c_sum_layer = net_param->add_layer();
       c_sum_layer->CopyFrom(sum_param);
-      c_sum_layer->set_name(name_prefix + "c_" + ts);
-      c_sum_layer->add_bottom(name_prefix + "f_c_tm1s_prod_" + ts);
-      c_sum_layer->add_bottom(name_prefix + "i_g_prod_" + ts);
-      c_sum_layer->add_top(name_prefix + "c_" + ts);
+      c_sum_layer->set_name(layer_name_prefix + recur_name_prefix[1] + ts);
+      c_sum_layer->add_bottom(layer_name_prefix + "f_c_tm1s_prod_" + ts);
+      c_sum_layer->add_bottom(layer_name_prefix + "i_g_prod_" + ts);
+      c_sum_layer->add_top(layer_name_prefix + recur_name_prefix[1] + ts);
     }
     {
       LayerParameter *H_c_param = net_param->add_layer();
       H_c_param->CopyFrom(H_activation_param);
-      H_c_param->add_bottom(name_prefix + "c_" + ts);
-      H_c_param->add_top(name_prefix + "H_c_" + ts);
-      H_c_param->set_name(name_prefix + "H_c_" + ts);
+      H_c_param->add_bottom(layer_name_prefix + recur_name_prefix[1] + ts);
+      H_c_param->add_top(layer_name_prefix + "H_c_" + ts);
+      H_c_param->set_name(layer_name_prefix + "H_c_" + ts);
     }
     {
       LayerParameter *h_parm = net_param->add_layer();
       h_parm->CopyFrom(prod_param);
-      h_parm->set_name(name_prefix + "h_" + ts);
-      h_parm->add_bottom(name_prefix + "o_" + ts);
-      h_parm->add_bottom(name_prefix + "H_c_" + ts);
-      h_parm->add_top(name_prefix + "h_" + ts);
+      h_parm->set_name(layer_name_prefix + recur_name_prefix[0] + ts);
+      h_parm->add_bottom(layer_name_prefix + "o_" + ts);
+      h_parm->add_bottom(layer_name_prefix + "H_c_" + ts);
+      h_parm->add_top(layer_name_prefix + recur_name_prefix[0] + ts);
     }
-    output_concat_layer.add_bottom(name_prefix + "h_" + ts);
+    output_concat_layer.add_bottom(layer_name_prefix + recur_name_prefix[0] + ts);
   } // for (int t = 1; t <= this->T_; ++t)
 
   {
+    LayerParameter *h_T_copy_param = net_param->add_layer();
+    h_T_copy_param->CopyFrom(split_param);
+    h_T_copy_param->add_bottom(layer_name_prefix + recur_name_prefix[0] + format_int(this->T_));
+    h_T_copy_param->add_top(layer_name_prefix + recur_name_prefix[0] + "T");
+  }
+  {
     LayerParameter *c_T_copy_param = net_param->add_layer();
     c_T_copy_param->CopyFrom(split_param);
-    c_T_copy_param->add_bottom(name_prefix + "c_" + format_int(this->T_));
-    c_T_copy_param->add_top(name_prefix + "c_T");
+    c_T_copy_param->add_bottom(layer_name_prefix + recur_name_prefix[1] + format_int(this->T_));
+    c_T_copy_param->add_top(layer_name_prefix + recur_name_prefix[1] + "T");
   }
   net_param->add_layer()->CopyFrom(output_concat_layer);
 }
@@ -344,12 +327,17 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   // Get (recurrent) input/output names.
   vector<string> output_names;
   OutputBlobNames(&output_names);
-  vector<string> recur_input_names;
-  RecurrentInputBlobNames(&recur_input_names);
-  vector<string> recur_output_names;
-  RecurrentOutputBlobNames(&recur_output_names);
-  const int num_recur_blobs = recur_input_names.size();
-  CHECK_EQ(num_recur_blobs, recur_output_names.size());
+  vector<string> recur_name_prefix;
+  RecurrentBlobNamePrefix(&recur_name_prefix);
+  // recut_input_names = recur_name_prefix + "0"
+  vector<string> recur_input_names(recur_name_prefix);
+  for(int i = 0; i < recur_input_names.size(); i++)
+    recur_input_names[i] = recur_input_names[i] + "0";
+  // recut_output_names = recur_name_prefix + "T"
+  vector<string> recur_output_names(recur_name_prefix);
+  for(int i = 0; i < recur_output_names.size(); i++)
+    recur_output_names[i] = recur_output_names[i] + "T";
+  const int num_recur_blobs = recur_name_prefix.size();
 
   // Create a NetParameter; setup the inputs that aren't unique to particular
   // recurrent architectures.
@@ -372,12 +360,18 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   input_layer_param->add_top("cont");
   input_param->add_shape()->CopyFrom(input_shape);
 
-  // Call the child's FillUnrolledNet implementation to specify the unrolled
-  // recurrent architecture.
+  vector<BlobShape> recur_input_shapes;
+  RecurrentInputShapes(&recur_input_shapes);
+
+  // Add recurrent inputs
+  for (int i = 0; i < recur_input_names.size(); i++) {
+    input_layer_param->add_top(recur_input_names[i]);
+    input_param->add_shape()->CopyFrom(recur_input_shapes[i]);
+  }
 
   if (direction_ == "forward") {
-    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names,
-                          output_names, recur_output_names, "");
+    this->FillUnrolledNet(&net_param, "x", "cont", output_names, recur_name_prefix, "");
+    // end of forward direction
   } else if (direction_ == "reverse") {
     {
       // reverse x
@@ -385,11 +379,33 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       reverse_x_layer_param->set_type("Reverse");
       reverse_x_layer_param->add_bottom("x");
       reverse_x_layer_param->mutable_reverse_param()->add_axis(0);
-      reverse_x_layer_param->add_top("x_rev");
-      reverse_x_layer_param->set_name("x_rev");
+      reverse_x_layer_param->add_top("bw_x_rev");
+      reverse_x_layer_param->set_name("bw_x_rev");
     }
-    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names,
-                          output_names, recur_output_names, "bw_");
+    {
+      // reverse cont
+      LayerParameter *reverse_cont_layer_param = net_param.add_layer();
+      reverse_cont_layer_param->set_type("Reverse");
+      reverse_cont_layer_param->add_bottom("cont");
+      reverse_cont_layer_param->mutable_reverse_param()->add_axis(0);
+      reverse_cont_layer_param->add_top("bw_cont_rev");
+      reverse_cont_layer_param->set_name("bw_cont_rev");
+    }
+    // copy and rename the recur_inputs
+    {
+      LayerParameter split_param;
+      split_param.set_type("Split");
+      LayerParameter *recur_input_copy_param;
+      for (int i = 0; i < num_recur_blobs; ++i) {
+        recur_input_copy_param = net_param.add_layer();
+        recur_input_copy_param->CopyFrom(split_param);
+        recur_input_copy_param->add_bottom(recur_input_names[i]);
+        recur_input_copy_param->add_top("bw_" + recur_input_names[i]);
+        recur_input_copy_param->set_name("bw_" + recur_input_names[i]);
+      }
+    }
+    //
+    this->FillUnrolledNet(&net_param, "x_rev", "cont", output_names, recur_name_prefix, "bw_");
     {
       // reverse output back
       LayerParameter *reverse_output_layer_param = net_param.add_layer();
@@ -409,23 +425,65 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
         recur_output_copy_param->CopyFrom(split_param);
         recur_output_copy_param->add_bottom("bw_" + recur_output_names[i]);
         recur_output_copy_param->add_top(recur_output_names[i]);
+        recur_output_copy_param->set_name(recur_output_names[i]);
       }
     }
-
+    // end of reverse direction
   } else if (direction_ == "bidirectional") {
-    this->FillUnrolledNet(&net_param, "x", "cont", recur_input_names,
-                          output_names, recur_output_names, "fw_");
+    // copy and rename the recur_inputs
+    {
+      LayerParameter slice_param;
+      slice_param.set_type("Slice");
+      LayerParameter *recur_input_copy_param;
+      for (int i = 0; i < num_recur_blobs; ++i) {
+        recur_input_copy_param = net_param.add_layer();
+        recur_input_copy_param->CopyFrom(slice_param);
+        recur_input_copy_param->add_bottom(recur_input_names[i]);
+        recur_input_copy_param->add_top("fw_" + recur_input_names[i]);
+        recur_input_copy_param->add_top("bw_" + recur_input_names[i]);
+        recur_input_copy_param->set_name("bi_" + recur_input_names[i]);
+      }
+    }
+    {
+      LayerParameter split_param;
+      split_param.set_type("Split");
+      LayerParameter *x_or_cont_copy_param;
+      // copy and rename x for forward
+      x_or_cont_copy_param = net_param.add_layer();
+      x_or_cont_copy_param->CopyFrom(split_param);
+      x_or_cont_copy_param->add_bottom("x");
+      x_or_cont_copy_param->add_top("fw_x");
+      x_or_cont_copy_param->set_name("fw_x");
+      // copy and rename cont for forward
+      x_or_cont_copy_param = net_param.add_layer();
+      x_or_cont_copy_param->CopyFrom(split_param);
+      x_or_cont_copy_param->add_bottom("cont");
+      x_or_cont_copy_param->add_top("fw_cont");
+      x_or_cont_copy_param->set_name("fw_cont");
+    }
+
+    this->FillUnrolledNet(&net_param, "x", "cont", output_names, recur_name_prefix, "fw_");
+
     {
       // reverse x
       LayerParameter *reverse_x_layer_param = net_param.add_layer();
       reverse_x_layer_param->set_type("Reverse");
       reverse_x_layer_param->add_bottom("x");
       reverse_x_layer_param->mutable_reverse_param()->add_axis(0);
-      reverse_x_layer_param->add_top("x_rev");
-      reverse_x_layer_param->set_name("x_rev");
+      reverse_x_layer_param->add_top("bw_x_rev");
+      reverse_x_layer_param->set_name("bw_x_rev");
     }
-    this->FillUnrolledNet(&net_param, "x_rev", "cont", recur_input_names,
-                          output_names, recur_output_names, "bw_");
+    {
+      // reverse cont
+      LayerParameter *reverse_cont_layer_param = net_param.add_layer();
+      reverse_cont_layer_param->set_type("Reverse");
+      reverse_cont_layer_param->add_bottom("cont");
+      reverse_cont_layer_param->mutable_reverse_param()->add_axis(0);
+      reverse_cont_layer_param->add_top("bw_cont_rev");
+      reverse_cont_layer_param->set_name("bw_cont_rev");
+    }
+
+    this->FillUnrolledNet(&net_param, "x_rev", "cont_rev", output_names, recur_name_prefix, "bw_");
     {
       // reverse back the output of reverse direction
       LayerParameter *reverse_output_layer_param = net_param.add_layer();
@@ -435,37 +493,39 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       reverse_output_layer_param->add_top("bw_rev_" + output_names[0]);
       reverse_output_layer_param->set_name("bw_rev_" + output_names[0]);
     }
+    // concat recur_outputs
+    {
+      LayerParameter output_concat_layer;
+      output_concat_layer.set_type("Concat");
+      output_concat_layer.mutable_concat_param()->set_axis(0);
+
+      LayerParameter *recur_output_concat_param;
+      for (int i = 0; i < num_recur_blobs; ++i) {
+        recur_output_concat_param = net_param.add_layer();
+        recur_output_concat_param->CopyFrom(output_concat_layer);
+        recur_output_concat_param->add_bottom("fw_" + recur_output_names[i]);
+        recur_output_concat_param->add_bottom("bw_" + recur_output_names[i]);
+        recur_output_concat_param->add_top(recur_output_names[i]);
+        recur_output_concat_param->set_name(recur_output_names[i]);
+      }
+    }
     // merge the outputs of forward and reverse
     {
       string merge_mode = this->layer_param_.rnn_v2_param().merge_mode();
+      // https://github.com/tensorflow/tensorflow/blob/v2.3.0/tensorflow/python/keras/layers/wrappers.py#L506
       if (merge_mode == "concat") {
         LayerParameter output_concat_layer;
-        output_concat_layer.set_name(output_names[0]);
         output_concat_layer.set_type("Concat");
         output_concat_layer.add_bottom("fw_" + output_names[0]);
         output_concat_layer.add_bottom("bw_rev_" + output_names[0]);
         output_concat_layer.add_top(output_names[0]);
+        output_concat_layer.set_name(output_names[0]);
         output_concat_layer.mutable_concat_param()->set_axis(-1);
       } else {
         LOG(ERROR)
             << "The value of merge_mode of RNNv2 layer is not supported: "
             << merge_mode;
         exit(-1);
-      }
-    }
-    // concat on recur_outputs
-    {
-      LayerParameter concat_param;
-      concat_param.set_type("Concat");
-      concat_param.mutable_concat_param()->set_axis(0);
-      LayerParameter *recur_output_param;
-      for (int i = 0; i < num_recur_blobs; ++i) {
-        recur_output_param = net_param.add_layer();
-        recur_output_param->CopyFrom(concat_param);
-        recur_output_param->add_bottom("fw_" + recur_output_names[i]);
-        recur_output_param->add_bottom("bw_" + recur_output_names[i]);
-        recur_output_param->add_top(recur_output_names[i]);
-        recur_output_param->set_name(recur_output_names[i]);
       }
     }
   } else {
@@ -492,9 +552,9 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   // Setup pointers to paired recurrent inputs/outputs.
   recur_input_blobs_.resize(num_recur_blobs);
   recur_output_blobs_.resize(num_recur_blobs);
-  for (int i = 0; i < recur_input_names.size(); ++i) {
+  for (int i = 0; i < recur_name_prefix.size(); ++i) {
     recur_input_blobs_[i] =
-        CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_input_names[i]).get());
+        CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_name_prefix[i]).get());
     recur_output_blobs_[i] =
         CHECK_NOTNULL(unrolled_net_->blob_by_name(recur_output_names[i]).get());
   }

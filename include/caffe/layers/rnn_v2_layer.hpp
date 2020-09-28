@@ -27,7 +27,7 @@ public:
   virtual inline int MinBottomBlobs() const {
     int min_bottoms = 2;
     vector<string> inputs;
-    this->RecurrentInputBlobNames(&inputs);
+    this->RecurrentBlobNamePrefix(&inputs);
     min_bottoms += inputs.size();
     return min_bottoms;
   }
@@ -35,7 +35,7 @@ public:
   virtual inline int ExactNumTopBlobs() const {
     int num_tops = 1;
     vector<string> outputs;
-    this->RecurrentOutputBlobNames(&outputs);
+    this->RecurrentBlobNamePrefix(&outputs);
     num_tops += outputs.size();
     return num_tops;
   }
@@ -45,18 +45,19 @@ protected:
    * @brief Fills net_param with the recurrent network architecture.  Subclasses
    *        should define this -- see RNNLayer for examples.
    */
-  void FillUnrolledNet(NetParameter *net_param, string x_name, string cont_name,
-                       vector<string> recur_input_names,
+  void FillUnrolledNet(NetParameter *net_param,
+                       const string x_name,
+                       const string cont_name,
                        vector<string> output_names,
-                       vector<string> recur_output_names,
-                       const string &name_prefix);
+                       vector<string> recur_name_prefix,
+                       const string &layer_name_prefix);
 
   /**
    * @brief Fills names with the names of the 0th timestep recurrent input
    *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  void RecurrentInputBlobNames(vector<string> *names) const;
+  void RecurrentBlobNamePrefix(vector<string> *names) const;
 
   /**
    * @brief Fills shapes with the shapes of the recurrent input Blob&s.
@@ -64,13 +65,6 @@ protected:
    *        for examples.
    */
   void RecurrentInputShapes(vector<BlobShape> *shapes) const;
-
-  /**
-   * @brief Fills names with the names of the Tth timestep recurrent output
-   *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
-   *        for examples.
-   */
-  void RecurrentOutputBlobNames(vector<string> *names) const;
 
   /**
    * @brief Fills names with the names of the output blobs, concatenated across
