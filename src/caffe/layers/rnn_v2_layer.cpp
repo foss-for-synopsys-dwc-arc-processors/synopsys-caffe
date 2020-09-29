@@ -282,12 +282,14 @@ void RNNv2Layer<Dtype>::FillUnrolledNet(
     h_T_copy_param->CopyFrom(split_param);
     h_T_copy_param->add_bottom(layer_name_prefix + recur_name_prefix[0] + format_int(this->T_));
     h_T_copy_param->add_top(layer_name_prefix + recur_name_prefix[0] + "T");
+    h_T_copy_param->set_name(layer_name_prefix + recur_name_prefix[0] + "T");
   }
   {
     LayerParameter *c_T_copy_param = net_param->add_layer();
     c_T_copy_param->CopyFrom(split_param);
     c_T_copy_param->add_bottom(layer_name_prefix + recur_name_prefix[1] + format_int(this->T_));
     c_T_copy_param->add_top(layer_name_prefix + recur_name_prefix[1] + "T");
+    c_T_copy_param->set_name(layer_name_prefix + recur_name_prefix[1] + "T");
   }
   net_param->add_layer()->CopyFrom(output_concat_layer);
 }
@@ -345,6 +347,7 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
 
   LayerParameter *input_layer_param = net_param.add_layer();
   input_layer_param->set_type("Input");
+  input_layer_param->set_name("Input");
   InputParameter *input_param = input_layer_param->mutable_input_param();
   input_layer_param->add_top("x");
   BlobShape input_shape;
