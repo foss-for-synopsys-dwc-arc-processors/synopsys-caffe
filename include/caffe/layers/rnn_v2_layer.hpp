@@ -21,7 +21,6 @@ public:
                           const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype> *> &bottom,
                        const vector<Blob<Dtype> *> &top);
-  virtual void Reset();
 
   virtual inline const char *type() const { return "RNNv2"; }
   virtual inline int MinBottomBlobs() const {
