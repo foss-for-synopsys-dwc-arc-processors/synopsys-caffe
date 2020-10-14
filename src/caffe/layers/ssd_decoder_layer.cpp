@@ -122,7 +122,6 @@ void SSDDecoderLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   if (!share_location_) {
     bbox_permute_.ReshapeLike(*(bottom[0]));
   }
-  conf_permute_.ReshapeLike(*(bottom[1]));
 }
 
 template <typename Dtype>
