@@ -605,86 +605,86 @@ void RNNv2Layer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
   }
 }
 
-  template <typename Dtype>
-  void RNNv2Layer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
+template <typename Dtype>
+void RNNv2Layer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
                                   const vector<Blob<Dtype> *> &top) {
-    CHECK_GE(bottom[0]->num_axes(), 2)
-        << "bottom[0] must have at least 2 axes -- (#timesteps, #streams, ...)";
-    CHECK_EQ(T_, bottom[0]->shape(0)) << "input number of timesteps changed";
-    N_ = bottom[0]->shape(1);
-    CHECK_EQ(bottom[1]->num_axes(), 2)
-        << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
-    CHECK_EQ(T_, bottom[1]->shape(0));
-    CHECK_EQ(N_, bottom[1]->shape(1));
-    x_input_blob_->ReshapeLike(*bottom[0]);
-    vector<int> cont_shape = bottom[1]->shape();
-    cont_input_blob_->Reshape(cont_shape);
-    vector<BlobShape> recur_input_shapes;
-    RecurrentInputShapes(&recur_input_shapes);
-    CHECK_EQ(recur_input_shapes.size(), recur_input_blobs_.size());
-    for (int i = 0; i < recur_input_shapes.size(); ++i) {
-      recur_input_blobs_[i]->Reshape(recur_input_shapes[i]);
-    }
-    unrolled_net_->Reshape();
-    x_input_blob_->ShareData(*bottom[0]);
-    x_input_blob_->ShareDiff(*bottom[0]);
-    cont_input_blob_->ShareData(*bottom[1]);
-    const int bottom_offset = 2;
-    for (int i = bottom_offset, j = 0; i < bottom.size(); ++i, ++j) {
-      CHECK(recur_input_blobs_[j]->shape() == bottom[i]->shape())
-          << "shape mismatch - recur_input_blobs_[" << j
-          << "]: " << recur_input_blobs_[j]->shape_string() << " vs. bottom["
-          << i << "]: " << bottom[i]->shape_string();
-      recur_input_blobs_[j]->ShareData(*bottom[i]);
-    }
-    for (int i = 0; i < output_blobs_.size(); ++i) {
-      top[i]->ReshapeLike(*output_blobs_[i]);
-      top[i]->ShareData(*output_blobs_[i]);
-      top[i]->ShareDiff(*output_blobs_[i]);
-    }
-    const int top_offset = output_blobs_.size();
-    for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
-      top[i]->ReshapeLike(*recur_output_blobs_[j]);
+  CHECK_GE(bottom[0]->num_axes(), 2)
+    << "bottom[0] must have at least 2 axes -- (#timesteps, #streams, ...)";
+  CHECK_EQ(T_, bottom[0]->shape(0)) << "input number of timesteps changed";
+  N_ = bottom[0]->shape(1);
+  CHECK_EQ(bottom[1]->num_axes(), 2)
+    << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
+  CHECK_EQ(T_, bottom[1]->shape(0));
+  CHECK_EQ(N_, bottom[1]->shape(1));
+  x_input_blob_->ReshapeLike(*bottom[0]);
+  vector<int> cont_shape = bottom[1]->shape();
+  cont_input_blob_->Reshape(cont_shape);
+  vector<BlobShape> recur_input_shapes;
+  RecurrentInputShapes(&recur_input_shapes);
+  CHECK_EQ(recur_input_shapes.size(), recur_input_blobs_.size());
+  for (int i = 0; i < recur_input_shapes.size(); ++i) {
+    recur_input_blobs_[i]->Reshape(recur_input_shapes[i]);
+  }
+  unrolled_net_->Reshape();
+  x_input_blob_->ShareData(*bottom[0]);
+  x_input_blob_->ShareDiff(*bottom[0]);
+  cont_input_blob_->ShareData(*bottom[1]);
+  const int bottom_offset = 2;
+  for (int i = bottom_offset, j = 0; i < bottom.size(); ++i, ++j) {
+    CHECK(recur_input_blobs_[j]->shape() == bottom[i]->shape())
+      << "shape mismatch - recur_input_blobs_[" << j
+      << "]: " << recur_input_blobs_[j]->shape_string() << " vs. bottom["
+      << i << "]: " << bottom[i]->shape_string();
+    recur_input_blobs_[j]->ShareData(*bottom[i]);
+  }
+  for (int i = 0; i < output_blobs_.size(); ++i) {
+    top[i]->ReshapeLike(*output_blobs_[i]);
+    top[i]->ShareData(*output_blobs_[i]);
+    top[i]->ShareDiff(*output_blobs_[i]);
+  }
+  const int top_offset = output_blobs_.size();
+  for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
+    top[i]->ReshapeLike(*recur_output_blobs_[j]);
+  }
+}
+
+
+template <typename Dtype>
+void RNNv2Layer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
+                                    const vector<Blob<Dtype> *> &top) {
+  // for bidirectional rnn, split the weights into two parts: forward
+  // and reverse
+  if (direction_ == "bidirectional") {
+    const int blobs_size = this->blobs_.size();
+    CHECK_EQ(unrolled_net_->params().size() % 2, 0);
+    const int params_size = unrolled_net_->params().size() / 2;
+
+    for (int i = 0; i < blobs_size; ++i) {
+      if (this->blobs_[i]->count() % 2 != 0)
+        LOG(FATAL) << "The total number of the weight blobs[" << i
+                   << "] cannot be divided by 2";
+      // weight blob for forward
+      void *f = unrolled_net_->params()[i]->mutable_cpu_data();
+      // weight blob for backward
+      void *b = unrolled_net_->params()[i + params_size]->mutable_cpu_data();
+      std::memcpy(f, this->blobs_[i]->cpu_data(),
+                  sizeof(Dtype) * this->blobs_[i]->count() / 2);
+      std::memcpy(b,
+                  this->blobs_[i]->cpu_data() + this->blobs_[i]->count() / 2,
+                  sizeof(Dtype) * this->blobs_[i]->count() / 2);
     }
   }
 
+  DCHECK_EQ(recur_input_blobs_.size(), recur_output_blobs_.size());
 
-  template <typename Dtype>
-  void RNNv2Layer<Dtype>::Forward_cpu(const vector<Blob<Dtype> *> &bottom,
-                                      const vector<Blob<Dtype> *> &top) {
-    // for bidirectional rnn, split the weights into two parts: forward
-    // and reverse
-    if (direction_ == "bidirectional") {
-      const int blobs_size = this->blobs_.size();
-      CHECK_EQ(unrolled_net_->params().size() % 2, 0);
-      const int params_size = unrolled_net_->params().size() / 2;
+  unrolled_net_->ForwardTo(unrolled_net_->layers().size() - 1);
 
-      for (int i = 0; i < blobs_size; ++i) {
-        if (this->blobs_[i]->count() % 2 != 0)
-          LOG(FATAL) << "The total number of the weight blobs[" << i
-                     << "] cannot be divided by 2";
-        // weight blob for forward
-        void *f = unrolled_net_->params()[i]->mutable_cpu_data();
-        // weight blob for backward
-        void *b = unrolled_net_->params()[i + params_size]->mutable_cpu_data();
-        std::memcpy(f, this->blobs_[i]->cpu_data(),
-                    sizeof(Dtype) * this->blobs_[i]->count() / 2);
-        std::memcpy(b,
-                    this->blobs_[i]->cpu_data() + this->blobs_[i]->count() / 2,
-                    sizeof(Dtype) * this->blobs_[i]->count() / 2);
-      }
-    }
-
-    DCHECK_EQ(recur_input_blobs_.size(), recur_output_blobs_.size());
-
-    unrolled_net_->ForwardTo(unrolled_net_->layers().size() - 1);
-
-    const int top_offset = output_blobs_.size();
-    for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
-      top[i]->ShareData(*recur_output_blobs_[j]);
-    }
+  const int top_offset = output_blobs_.size();
+  for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
+    top[i]->ShareData(*recur_output_blobs_[j]);
   }
+}
 
-  INSTANTIATE_CLASS(RNNv2Layer);
-  REGISTER_LAYER_CLASS(RNNv2);
+INSTANTIATE_CLASS(RNNv2Layer);
+REGISTER_LAYER_CLASS(RNNv2);
 } // namespace caffe
