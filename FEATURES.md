@@ -39,6 +39,7 @@ mish_layer
 mul_layer  
 nms_layer  
 non_max_suppression_layer  
+not_equal_layer  
 one_hot_layer  
 pad_layer  
 peephole_lstm_layer  
