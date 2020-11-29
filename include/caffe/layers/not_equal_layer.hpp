@@ -16,6 +16,8 @@ template <typename Dtype> class NotEqualLayer : public Layer<Dtype> {
 public:
   explicit NotEqualLayer(const LayerParameter &param)
       : Layer<Dtype>(param) {}
+  virtual void LayerSetUp(const vector<Blob<Dtype> *> &bottom,
+	  const vector<Blob<Dtype> *> &top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
 	  const vector<Blob<Dtype>*>& top);
 
@@ -30,6 +32,9 @@ protected:
 	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
 	  NOT_IMPLEMENTED;
   };
+
+  float comparand_;
+  int const_flag_;
 };
 
 } // namespace caffe

@@ -673,6 +673,7 @@ message LayerParameter {
   optional AttentionParameter attention_param = 270;
   optional RNNv2Parameter rnn_v2_param = 272;
   optional CountNonzeroParameter count_nonzero_param = 273;
+  optional NotEqualParameter not_equal_param = 274;
   
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
@@ -3376,4 +3377,8 @@ message RNNv2Parameter {
 message CountNonzeroParameter {
   repeated int32 axis = 1;
   optional bool keepdims = 2[default = false];
+}
+
+message NotEqualParameter {
+  optional float comparand = 1;
 }
