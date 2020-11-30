@@ -101,9 +101,6 @@ void ConvolutionDepthwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& 
   }
 }
 
-#ifdef CPU_ONLY
-STUB_GPU(ConvolutionDepthwiseLayer);
-#endif
 
 INSTANTIATE_CLASS(ConvolutionDepthwiseLayer);
 REGISTER_LAYER_CLASS(ConvolutionDepthwise);
