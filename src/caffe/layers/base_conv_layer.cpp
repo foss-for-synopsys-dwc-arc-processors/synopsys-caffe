@@ -197,6 +197,14 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   CHECK_GT(num_output_, 0);
   //group_ = this->layer_param_.convolution_param().group();
   group_ = conv_param.group();
+  //<-- depthwise convolution layer
+  if(!strcmp(this->type(), "ConvolutionDepthwise")){
+    if(group_ != channels_){
+      LOG(INFO) << "DW_conv: group_(="<<group_<<") is set to be channels_(="<<channels_<<")";
+      group_ = channels_;
+    }
+  }
+  //--> depthwise convolution layer
   CHECK_EQ(channels_ % group_, 0);
   CHECK_EQ(num_output_ % group_, 0)
       << "Number of output should be multiples of group.";
