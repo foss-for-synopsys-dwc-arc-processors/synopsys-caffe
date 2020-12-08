@@ -674,6 +674,7 @@ message LayerParameter {
   optional RNNv2Parameter rnn_v2_param = 272;
   optional CountNonzeroParameter count_nonzero_param = 273;
   optional NotEqualParameter not_equal_param = 274;
+  optional PointNetParameter point_net_param = 275;
   
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
@@ -3110,6 +3111,7 @@ message ResizeBilinearParameter {
   optional float scale_height = 5 [default = 1];
   optional float scale_width = 6 [default = 1];
   optional bool half_pixel_centers = 7 [default = false];
+  optional bool pytorch_half_pixel = 8 [default = false];
 }
 
 message ReduceSumParameter {
@@ -3304,6 +3306,7 @@ message MatMulParameter {
 
 message GatherV2Parameter {
   optional int32 axis = 1[default = 0];
+  optional bool batch_flag = 2[default = false];
 }
 
 message ScaledTanHParameter {
@@ -3381,4 +3384,8 @@ message CountNonzeroParameter {
 
 message NotEqualParameter {
   optional float comparand = 1;
+}
+
+message PointNetParameter {
+  optional uint32 n_sample_point = 1;
 }

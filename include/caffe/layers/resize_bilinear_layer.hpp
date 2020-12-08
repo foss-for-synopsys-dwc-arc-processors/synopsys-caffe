@@ -51,6 +51,7 @@ class ResizeBilinearLayer : public Layer<Dtype> {
   bool align_corners_;
   string data_format_;
   bool half_pixel_centers_;
+  bool pytorch_half_pixel_;
 
   // Compute the interpolation indices only once.
   struct CachedInterpolation {

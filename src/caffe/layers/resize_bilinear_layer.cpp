@@ -18,6 +18,11 @@ void ResizeBilinearLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   half_pixel_centers_ = this->layer_param_.resize_bilinear_param().half_pixel_centers();
   CHECK(!(align_corners_ && half_pixel_centers_)) <<
         "If half_pixel_centers is True, align_corners must be False.";
+  pytorch_half_pixel_ = this->layer_param_.resize_bilinear_param().pytorch_half_pixel();
+  CHECK(!(align_corners_ && pytorch_half_pixel_)) <<
+        "If pytorch_half_pixel_ is True, align_corners must be False.";
+  CHECK(!(half_pixel_centers_ && pytorch_half_pixel_)) <<
+        "If pytorch_half_pixel_ is True, half_pixel_centers_ must be False.";
 }
 
 template <typename Dtype>
@@ -70,14 +75,21 @@ void ResizeBilinearLayer<Dtype>::compute_interpolation_weights(const int out_siz
   interpolation[out_size].upper = 0;
   for (int i = out_size - 1; i >= 0; --i) {
     float in;
-    if (!half_pixel_centers_)
+    if (align_corners_)
     {
       in = static_cast<float>(i) * scale;
     }
     else //if (half_pixel_centers_)
     {
-      in = (static_cast<float>(i) + 0.5f) * scale - 0.5f;
-      // ref: https://github.com/tensorflow/tensorflow/blob/r1.15/tensorflow/core/kernels/image_resizer_state.h#L50
+      if (half_pixel_centers_ || out_size > 1) {
+        in = (static_cast<float>(i) + 0.5f) * scale - 0.5f;
+        // ref: https://github.com/tensorflow/tensorflow/blob/r1.15/tensorflow/core/kernels/image_resizer_state.h#L50
+      }else {
+        // pytorch_half_pixel_ && out_size <= 1
+        in = -0.5f;
+        // ref: https://github.com/onnx/onnx/blob/master/docs/Operators.md#Resize
+        // https://github.com/onnx/onnx/blob/master/onnx/backend/test/case/node/resize.py#L132
+      }
     }
     const float in_f = std::floor(in);
     interpolation[i].lower =
