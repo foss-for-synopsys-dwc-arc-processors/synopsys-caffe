@@ -79,17 +79,22 @@ void ResizeBilinearLayer<Dtype>::compute_interpolation_weights(const int out_siz
     {
       in = static_cast<float>(i) * scale;
     }
-    else //if (half_pixel_centers_)
-    {
-      if (half_pixel_centers_ || out_size > 1) {
+    else if (pytorch_half_pixel_) {
+      // ref: https://github.com/onnx/onnx/blob/master/docs/Operators.md#Resize
+      // https://github.com/onnx/onnx/blob/master/onnx/backend/test/case/node/resize.py#L132
+      if (out_size > 1) {
         in = (static_cast<float>(i) + 0.5f) * scale - 0.5f;
-        // ref: https://github.com/tensorflow/tensorflow/blob/r1.15/tensorflow/core/kernels/image_resizer_state.h#L50
-      }else {
-        // pytorch_half_pixel_ && out_size <= 1
+      } else {
         in = -0.5f;
-        // ref: https://github.com/onnx/onnx/blob/master/docs/Operators.md#Resize
-        // https://github.com/onnx/onnx/blob/master/onnx/backend/test/case/node/resize.py#L132
       }
+    }
+    else if (half_pixel_centers_)
+    {
+      in = (static_cast<float>(i) + 0.5f) * scale - 0.5f;
+      // ref: https://github.com/tensorflow/tensorflow/blob/r1.15/tensorflow/core/kernels/image_resizer_state.h#L50
+    }
+    else { // no coordinate_transformation_mode required
+      in = static_cast<float>(i) * scale;
     }
     const float in_f = std::floor(in);
     interpolation[i].lower =
