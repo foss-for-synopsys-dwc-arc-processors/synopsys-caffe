@@ -54,9 +54,9 @@ if DEFINED APPVEYOR (
         conda install --yes ninja 
         conda install --yes numpy 
         conda install --yes scipy 
-        conda install --yes protobuf==3.7.1 
+        conda install --yes protobuf=3.7.1 
         conda install --yes six 
-        conda install --yes scikit-image 
+        conda install --yes scikit-image=0.14.3 
         conda install --yes pyyaml 
         conda install --yes pydotplus 
         conda install --yes graphviz
