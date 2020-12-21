@@ -67,16 +67,16 @@ if DEFINED APPVEYOR (
 
         :: Download other required packages
         if !PYTHON_VERSION! EQU 2 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 2.7 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 3 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 3.5 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
             pip install six
         )
     )
