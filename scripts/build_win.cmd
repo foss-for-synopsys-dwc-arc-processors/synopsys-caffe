@@ -50,16 +50,7 @@ if DEFINED APPVEYOR (
     if !PYTHON_VERSION! EQU 3.6 (
         :: avoid conda automatically updating python to higher version
         conda config --set auto_update_conda False
-        conda install --yes cmake 
-        conda install --yes ninja 
-        conda install --yes numpy 
-        conda install --yes scipy 
-        conda install --yes protobuf=3.7.1 
-        conda install --yes six 
-        conda install --yes scikit-image=0.14.3 
-        conda install --yes pyyaml 
-        conda install --yes pydotplus 
-        conda install --yes graphviz
+        conda install --yes cmake ninja numpy scipy protobuf=3.7.1 six scikit-image=0.14.3 pyyaml pydotplus graphviz
     )
     else (
         :: Update conda
