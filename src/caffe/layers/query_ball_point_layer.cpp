@@ -3,16 +3,6 @@
 
 #include "caffe/layers/query_ball_point_layer.hpp"
 
-template <typename Dtype>
-inline Dtype square_distance(const Dtype *p1, const Dtype *p2){
-  Dtype e[3];
-  for(int i=0;i<3;i++){
-    e[i] = p1[i] - p2[i];
-    e[i] *= e[i];
-  }
-  return e[0]+e[1]+e[2];
-}
-
 namespace caffe {
 
 template <typename Dtype>
@@ -64,17 +54,22 @@ void QueryBallPointLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   vector<Dtype> dist(N);
   for(int b = 0; b < B; ++b){
     for(int n = 0; n < n_point; ++n){
-      // the centroid is bottom[1][b, n]
-      const Dtype *centroid = bottom_data[1] + ((b * n_point + n) * D);
+      const Dtype *centroid = bottom_data[1] + n * D;
+      Dtype c_x = centroid[0], X;
+      Dtype c_y = centroid[1], Y;
+      Dtype c_z = centroid[2], Z;
       // calc distance w.r.t. bottom[0][b, :]
-      const Dtype *pt = bottom_data[0] + (b * N) * D;
-      for(int i = 0; i < N; ++i){
-        dist[i] = square_distance(centroid, pt);// bottom[1][b, n] v.s. bottom[0][b, i]
+      const Dtype *pt = bottom_data[0];
+      for(int i=0;i<N;++i){
+        X = c_x - pt[0];
+        Y = c_y - pt[1];
+        Z = c_z - pt[2];
+        dist[i] = X * X + Y * Y + Z * Z;
         pt += D;
       }
       // now dist has all the distance[centroid, all_point]
       int cnt = 0;
-      int idx_0 = (b * n_point + n) * n_sample_point_;
+      int idx_0 = n * n_sample_point_;
       top_data[idx_0] = 0;
       for(int i = 0;i < N; i++){
         if(dist[i] <= sqrRAD){
@@ -86,6 +81,10 @@ void QueryBallPointLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       // fill with the index of first sampled point; otherwise 0
       std::fill(top_data + idx_0 + cnt, top_data + idx_0 + n_sample_point_, top_data[idx_0]);
     }
+    // stride the batch dimension
+    bottom_data[0] += N * D;
+    bottom_data[1] += n_point * D;
+    top_data += n_point * n_sample_point_;
   }
 }
 

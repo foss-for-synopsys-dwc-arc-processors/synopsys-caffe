@@ -26,8 +26,6 @@ template <typename Dtype>
     // top shape = (batch_size, npoint_)
     vector<int> bottom_shape = bottom[0]->shape(), top_shape;
     CHECK_EQ(bottom_shape.size(), 3);
-    // the tf implementation will append index0 if n_sample_point>num_point
-    //CHECK_GE(bottom_shape[1], n_sample_point_);
     bottom_shape[1] = n_sample_point_;
     bottom_shape.pop_back();
   top[0]->Reshape(bottom_shape);
@@ -46,21 +44,21 @@ void FarthestPointSampleLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
   vector<Dtype> dist(N);
   for(int b = 0; b < B; ++b){
     fill(dist.begin(), dist.end(), 1e38);
-    const int bs = b * N; // the stride for batch-dimension
-    top_data[b * n_sample_point_] = 0;
+    top_data[0] = 0;
     int pre_far = 0; // the index of previous farthest point
     for(int k = 1; k < n_sample_point_; ++k){
-      int pre_far_i = (bs + pre_far) * D; // the index among inp
+      Dtype pre_x = bottom_data[pre_far * D];
+      Dtype pre_y = bottom_data[pre_far * D + 1];
+      Dtype pre_z = bottom_data[pre_far * D + 2];
       int max_i = -1;
       Dtype max_v = -1.0;
       for(int pt = 0; pt < N; ++pt){
-      // calculate the distance between (inp[b,pt], inp[])
-        Dtype d = 0.0, e[3];
-        for(int i = (bs+pt)*D, j = 0; j < 3; ++j, ++i){
-          e[j] = bottom_data[i] - bottom_data[pre_far_i+j] ;
-          e[j] *= e[j];
-        }
-        d = sqrt(e[0]+e[1]+e[2]);
+        Dtype pt_x = bottom_data[pt * D];
+        Dtype pt_y = bottom_data[pt * D + 1];
+        Dtype pt_z = bottom_data[pt * D + 2];
+        Dtype d = sqrt((pt_x-pre_x) * (pt_x-pre_x) \
+                     + (pt_y-pre_y) * (pt_y-pre_y) \
+                     + (pt_z-pre_z)*(pt_z-pre_z));
         if(d < dist[pt]){
           dist[pt] = d;
         }
@@ -77,9 +75,12 @@ void FarthestPointSampleLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bo
           }
         }
       }
-      top_data[b * n_sample_point_ + k] = max_i;
       pre_far = max_i;
+      top_data[k] = max_i;
     }
+    // stride the batch dimension
+    top_data += n_sample_point_;
+    bottom_data += N * D;
   }
 }
 
