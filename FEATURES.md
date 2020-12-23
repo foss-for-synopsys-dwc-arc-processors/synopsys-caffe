@@ -9,6 +9,7 @@ attention_layer
 batch_to_space_nd_layer  
 broadcast_to_layer  
 ceil_layer  
+conv_depthwise_layer  
 count_nonzero_layer  
 crop_and_resize_layer  
 depth_to_space_layer  

@@ -50,24 +50,23 @@ if DEFINED APPVEYOR (
     if !PYTHON_VERSION! EQU 3.6 (
         :: avoid conda automatically updating python to higher version
         conda config --set auto_update_conda False
-        conda install --yes cmake ninja numpy scipy protobuf==3.7.1 six scikit-image pyyaml pydotplus graphviz
-    )
-    else (
+        conda install --yes cmake ninja numpy scipy protobuf=3.7.1 six scikit-image=0.14.3 pyyaml pydotplus graphviz
+    ) else (
         :: Update conda
         conda update conda -y
 
         :: Download other required packages
         if !PYTHON_VERSION! EQU 2 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 2.7 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 3 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
         )
         if !PYTHON_VERSION! EQU 3.5 (
-            conda install --yes cmake ninja numpy scipy protobuf==3.1.0 six scikit-image pyyaml pydotplus graphviz
+            conda install --yes cmake ninja numpy scipy protobuf=3.1.0 six scikit-image pyyaml pydotplus graphviz
             pip install six
         )
     )
