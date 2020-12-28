@@ -125,6 +125,10 @@ void DetectionSubgraphLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& botto
   }
   conf_permute_.ReshapeLike(*(bottom[1]));
   */
+  if(bottom.size() <= 13)
+    priorbox_concat_ = true;
+  else
+    priorbox_concat_ = false;
 }
 
 template <typename Dtype>
@@ -169,8 +173,13 @@ void DetectionSubgraphLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
   */
   num_priors_ = 0;
-  for(int n=0;n<6;n++)
-    num_priors_ += bottom[n+12]->height()/4;
+  if(priorbox_concat_)
+    num_priors_ = bottom[12]->height()/4;
+  else
+  {
+    for(int n=0;n<6;n++)
+      num_priors_ += bottom[n+12]->height()/4;
+  }
   int sum_conf = 0;
   int sum_loc = 0;
   for(int n=0;n<6;n++)
@@ -260,34 +269,41 @@ void DetectionSubgraphLayer<Dtype>::Forward_cpu(
   // images in a batch are of same dimension.
   vector<NormalizedBBox> prior_bboxes;
   vector<vector<float> > prior_variances;
-  //GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
-  prior_bboxes.clear();
-  prior_variances.clear();
-  for(int n=0;n<6;n++)
+  if(priorbox_concat_)
   {
-    const Dtype* prior_data = bottom[n+12]->cpu_data();
-    for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
-      int start_idx = i * 4;
-      NormalizedBBox bbox;
-      bbox.set_xmin(prior_data[start_idx]);
-      bbox.set_ymin(prior_data[start_idx + 1]);
-      bbox.set_xmax(prior_data[start_idx + 2]);
-      bbox.set_ymax(prior_data[start_idx + 3]);
-      float bbox_size = BBoxSize(bbox);
-      bbox.set_size(bbox_size);
-      prior_bboxes.push_back(bbox);
-    }
-
-    for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
-      int start_idx = (bottom[n+12]->height()/4 + i) * 4;
-      vector<float> var;
-      for (int j = 0; j < 4; ++j) {
-        var.push_back(prior_data[start_idx + j]);
-        //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+    const Dtype* prior_data = bottom[12]->cpu_data();
+    GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+  }
+  else
+  {
+    prior_bboxes.clear();
+    prior_variances.clear();
+    for(int n=0;n<6;n++)
+    {
+      const Dtype* prior_data = bottom[n+12]->cpu_data();
+      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+        int start_idx = i * 4;
+        NormalizedBBox bbox;
+        bbox.set_xmin(prior_data[start_idx]);
+        bbox.set_ymin(prior_data[start_idx + 1]);
+        bbox.set_xmax(prior_data[start_idx + 2]);
+        bbox.set_ymax(prior_data[start_idx + 3]);
+        float bbox_size = BBoxSize(bbox);
+        bbox.set_size(bbox_size);
+        prior_bboxes.push_back(bbox);
       }
-      prior_variances.push_back(var);
+
+      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+        int start_idx = (bottom[n+12]->height()/4 + i) * 4;
+        vector<float> var;
+        for (int j = 0; j < 4; ++j) {
+          var.push_back(prior_data[start_idx + j]);
+          //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+        }
+        prior_variances.push_back(var);
+      }
+      //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
     }
-    //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
   }
 
   // Decode all loc predictions to bboxes.

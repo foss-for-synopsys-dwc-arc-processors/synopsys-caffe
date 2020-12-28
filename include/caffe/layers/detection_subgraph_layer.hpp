@@ -39,7 +39,8 @@ class DetectionSubgraphLayer : public Layer<Dtype> {
       const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "DetectionSubgraph"; }
-  virtual inline int ExactNumBottomBlobs() const { return 18; }
+  virtual inline int MaxBottomBlobs() const { return 18; }
+  virtual inline int MinBottomBlobs() const { return 13; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
@@ -47,7 +48,7 @@ class DetectionSubgraphLayer : public Layer<Dtype> {
    * @brief Do non maximum suppression (nms) on prediction results.
    *
    * @param bottom input Blob vector
-   * totally conf*6+loc*6+priorbox*6
+   * totally conf*6+loc*6+priorbox(*6)
    *   -# @f$ (N \times C2 \times 1 \times 1) @f$
    *      the confidence predictions with C2 predictions.
    *   -# @f$ (N \times C1 \times 1 \times 1) @f$
@@ -105,6 +106,8 @@ class DetectionSubgraphLayer : public Layer<Dtype> {
   Blob<Dtype> bbox_preds_;
   Blob<Dtype> bbox_permute_;
   Blob<Dtype> conf_permute_;
+
+  bool priorbox_concat_;
 };
 
 }  // namespace caffe
