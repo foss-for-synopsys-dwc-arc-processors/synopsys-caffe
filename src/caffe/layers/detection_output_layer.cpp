@@ -118,11 +118,39 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     data_transformer_->InitRand();
     save_file_ = detection_output_param.save_file();
   }
-  bbox_preds_.ReshapeLike(*(bottom[0]));
-  if (!share_location_) {
-    bbox_permute_.ReshapeLike(*(bottom[0]));
+  if(bottom.size() < 6)
+  {
+    conf_concat_ = true;
+    loc_concat_ = true;
+    priorbox_concat_ = true;
   }
-  conf_permute_.ReshapeLike(*(bottom[1]));
+  else if(bottom.size() >= 6 && bottom.size() < 13)
+  {
+    conf_concat_ = false;
+    loc_concat_ = true;
+    priorbox_concat_ = true;
+  }
+  else if(bottom.size() >= 13 && bottom.size() < 18)
+  {
+    conf_concat_ = false;
+    loc_concat_ = false;
+    priorbox_concat_ = true;
+  }
+  else // ==18
+  {
+    conf_concat_ = false;
+    loc_concat_ = false;
+    priorbox_concat_ = false;
+  }
+
+  if(conf_concat_ && loc_concat_)
+  {
+    bbox_preds_.ReshapeLike(*(bottom[0]));
+    if (!share_location_) {
+      bbox_permute_.ReshapeLike(*(bottom[0]));
+    }
+    conf_permute_.ReshapeLike(*(bottom[1]));
+  }
 }
 
 template <typename Dtype>
@@ -148,24 +176,57 @@ void DetectionOutputLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       }
     }
   }
-  CHECK_EQ(bottom[0]->num(), bottom[1]->num());
-  if (bbox_preds_.num() != bottom[0]->num() ||
-      bbox_preds_.count(1) != bottom[0]->count(1)) {
-    bbox_preds_.ReshapeLike(*(bottom[0]));
+
+  if(conf_concat_ && loc_concat_)
+  {
+    CHECK_EQ(bottom[0]->num(), bottom[1]->num());
+    if (bbox_preds_.num() != bottom[0]->num() ||
+        bbox_preds_.count(1) != bottom[0]->count(1)) {
+      bbox_preds_.ReshapeLike(*(bottom[0]));
+    }
+    if (!share_location_ && (bbox_permute_.num() != bottom[0]->num() ||
+        bbox_permute_.count(1) != bottom[0]->count(1))) {
+      bbox_permute_.ReshapeLike(*(bottom[0]));
+    }
+    if (conf_permute_.num() != bottom[1]->num() ||
+        conf_permute_.count(1) != bottom[1]->count(1)) {
+      conf_permute_.ReshapeLike(*(bottom[1]));
+    }
+
+    if(priorbox_concat_)
+      num_priors_ = bottom[2]->height() / 4;
+    CHECK_EQ(num_priors_ * num_loc_classes_ * 4, bottom[0]->channels())
+        << "Number of priors must match number of location predictions.";
+    CHECK_EQ(num_priors_ * num_classes_, bottom[1]->channels())
+        << "Number of priors must match number of confidence predictions.";
   }
-  if (!share_location_ && (bbox_permute_.num() != bottom[0]->num() ||
-      bbox_permute_.count(1) != bottom[0]->count(1))) {
-    bbox_permute_.ReshapeLike(*(bottom[0]));
+  // TODO: currently only consider the case when both are separate into 6 layers
+  else if(!conf_concat_ && !loc_concat_)
+  {
+    for(int n=0;n<6;n++)
+    {
+      CHECK_EQ(bottom[n]->num(), bottom[n+6]->num());
+    }
+    int sum_conf = 0;
+    int sum_loc = 0;
+    for(int n=0;n<6;n++)
+    {
+      sum_conf += bottom[n]->channels();
+      sum_loc += bottom[n+6]->channels();
+    }
+    if(priorbox_concat_)
+      num_priors_ = bottom[12]->height()/4;
+    else
+    {
+      num_priors_ = 0;
+      for(int n=0;n<6;n++)
+        num_priors_ += bottom[n+12]->height()/4;
+    }
+    CHECK_EQ(num_priors_ * num_loc_classes_ * 4, sum_loc)
+        << "Number of priors must match number of location predictions.";
+    CHECK_EQ(num_priors_ * num_classes_, sum_conf)
+        << "Number of priors must match number of confidence predictions.";
   }
-  if (conf_permute_.num() != bottom[1]->num() ||
-      conf_permute_.count(1) != bottom[1]->count(1)) {
-    conf_permute_.ReshapeLike(*(bottom[1]));
-  }
-  num_priors_ = bottom[2]->height() / 4;
-  CHECK_EQ(num_priors_ * num_loc_classes_ * 4, bottom[0]->channels())
-      << "Number of priors must match number of location predictions.";
-  CHECK_EQ(num_priors_ * num_classes_, bottom[1]->channels())
-      << "Number of priors must match number of confidence predictions.";
   // num() and channels() are 1.
   vector<int> top_shape(2, 1);
   // Since the number of bboxes to be kept is unknown before nms, we manually
@@ -180,17 +241,14 @@ void DetectionOutputLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void DetectionOutputLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const Dtype* loc_data = bottom[0]->cpu_data();
-  const Dtype* conf_data = bottom[1]->cpu_data();
-  const Dtype* prior_data = bottom[2]->cpu_data();
   const int num = bottom[0]->num();
   const Dtype* arm_conf_data = NULL;
   const Dtype* arm_loc_data = NULL;
   vector<LabelBBox> all_arm_loc_preds;
-  if (bottom.size() >= 4){
+  if (bottom.size() >= 4 && conf_concat_){
     arm_conf_data = bottom[3]->cpu_data();
   }
-  if (bottom.size() >= 5){
+  if (bottom.size() >= 5 && loc_concat_){
     arm_loc_data = bottom[4]->cpu_data();
     GetLocPredictions(arm_loc_data, num, num_priors_, num_loc_classes_,
                       share_location_, &all_arm_loc_preds);
@@ -198,30 +256,135 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
 
   // Retrieve all location predictions.
   vector<LabelBBox> all_loc_preds;
-  GetLocPredictions(loc_data, num, num_priors_, num_loc_classes_,
-                    share_location_, &all_loc_preds);
+  if(loc_concat_)
+  {
+    const Dtype* loc_data = bottom[0]->cpu_data();
+    GetLocPredictions(loc_data, num, num_priors_, num_loc_classes_,
+                      share_location_, &all_loc_preds);
+  }
+  else
+  {
+    all_loc_preds.clear();
+    all_loc_preds.resize(num);
+    if (share_location_) {
+      CHECK_EQ(num_loc_classes_, 1);
+    }
+
+    for (int i = 0; i < num; ++i) {
+      for(int n=0;n<6;n++)
+      {
+        const Dtype* loc_data = bottom[n+6]->cpu_data();
+        LabelBBox& label_bbox = all_loc_preds[i];
+        for (int p = 0; p < bottom[n+6]->channels()/num_loc_classes_/4; ++p) {
+          int start_idx = p * num_loc_classes_ * 4;
+          for (int c = 0; c < num_loc_classes_; ++c) {
+            int label = share_location_ ? -1 : c;
+            //if (label_bbox.find(label) == label_bbox.end()) {
+            //  label_bbox[label].resize(num_priors_);
+            //}
+            NormalizedBBox locbox;
+            locbox.set_xmin(loc_data[start_idx + c * 4]);
+            locbox.set_ymin(loc_data[start_idx + c * 4 + 1]);
+            locbox.set_xmax(loc_data[start_idx + c * 4 + 2]);
+            locbox.set_ymax(loc_data[start_idx + c * 4 + 3]);
+            float locbox_size = BBoxSize(locbox);
+            locbox.set_size(locbox_size);
+            label_bbox[label].push_back(locbox);
+          }
+        }
+        //LOG(INFO)<<"loc num: "<<all_loc_preds[0][-1].size()<<"\n";
+      }
+    }
+  }
 
   // Retrieve all confidences.
   vector<map<int, vector<float> > > all_conf_scores;
-
-  if (arm_conf_data != NULL) {
+  if (conf_concat_ && arm_conf_data != NULL) {
+    const Dtype* conf_data = bottom[1]->cpu_data();
     OSGetConfidenceScores(conf_data, arm_conf_data, num, num_priors_, num_classes_,
                     &all_conf_scores, objectness_score_);
   }
   else {
-    GetConfidenceScores(conf_data, num, num_priors_, num_classes_,
-                    &all_conf_scores);
+    if(conf_concat_)
+    {
+      const Dtype* conf_data = bottom[1]->cpu_data();
+      GetConfidenceScores(conf_data, num, num_priors_, num_classes_,
+                      &all_conf_scores);
+    }
+    else
+    {
+      all_conf_scores.clear();
+      all_conf_scores.resize(num);
+      for (int i = 0; i < num; ++i) {
+        for(int n=0;n<6;n++)
+        {
+          const Dtype* conf_data = bottom[n]->cpu_data();
+          map<int, vector<float> >& label_scores = all_conf_scores[i];
+          for (int p = 0; p < bottom[n]->channels()/num_classes_; ++p) {
+            int start_idx = p * num_classes_;
+            for (int c = 0; c < num_classes_; ++c) {
+              label_scores[c].push_back(conf_data[start_idx + c]);
+            }
+          }
+          //LOG(INFO)<<"conf num: "<<all_conf_scores[0][0].size()<<"\n";
+        }
+      }
+    }
   }
+
   // Retrieve all prior bboxes. It is same within a batch since we assume all
   // images in a batch are of same dimension.
   vector<NormalizedBBox> prior_bboxes;
   vector<vector<float> > prior_variances;
-  GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+  if(priorbox_concat_)
+  {
+    if(!conf_concat_ && !loc_concat_)
+    {
+      const Dtype* prior_data = bottom[12]->cpu_data();
+      GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+    }
+    else
+    {
+      const Dtype* prior_data = bottom[2]->cpu_data();
+      GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+    }
+  }
+  else
+  {
+    prior_bboxes.clear();
+    prior_variances.clear();
+    for(int n=0;n<6;n++)
+    {
+      const Dtype* prior_data = bottom[n+12]->cpu_data();
+      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+        int start_idx = i * 4;
+        NormalizedBBox bbox;
+        bbox.set_xmin(prior_data[start_idx]);
+        bbox.set_ymin(prior_data[start_idx + 1]);
+        bbox.set_xmax(prior_data[start_idx + 2]);
+        bbox.set_ymax(prior_data[start_idx + 3]);
+        float bbox_size = BBoxSize(bbox);
+        bbox.set_size(bbox_size);
+        prior_bboxes.push_back(bbox);
+      }
+
+      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+        int start_idx = (bottom[n+12]->height()/4 + i) * 4;
+        vector<float> var;
+        for (int j = 0; j < 4; ++j) {
+          var.push_back(prior_data[start_idx + j]);
+          //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+        }
+        prior_variances.push_back(var);
+      }
+      //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
+    }
+  }
 
   // Decode all loc predictions to bboxes.
   vector<LabelBBox> all_decode_bboxes;
   const bool clip_bbox = false;
-  if (bottom.size() >= 5) {
+  if (bottom.size() >= 5 && loc_concat_) {
     CasRegDecodeBBoxesAll(all_loc_preds, prior_bboxes, prior_variances, num,
           share_location_, num_loc_classes_, background_label_id_,
           code_type_, variance_encoded_in_target_, clip_bbox,
@@ -233,6 +396,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
                   code_type_, variance_encoded_in_target_, clip_bbox,
                   &all_decode_bboxes);
   }
+
   int num_kept = 0;
   vector<map<int, vector<int> > > all_indices;
   for (int i = 0; i < num; ++i) {

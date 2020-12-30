@@ -40,7 +40,9 @@ class DetectionOutputLayer : public Layer<Dtype> {
 
   virtual inline const char* type() const { return "DetectionOutput"; }
   virtual inline int MinBottomBlobs() const { return 3; }
-  virtual inline int MaxBottomBlobs() const { return 5; }
+  virtual inline int MaxBottomBlobs() const { return 18; }
+  // Note: for no concat cases, the input order is conf*6+loc*6+priorbox(*6)
+  // and only implement for CPU now
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
  protected:
@@ -110,8 +112,12 @@ class DetectionOutputLayer : public Layer<Dtype> {
   shared_ptr<DataTransformer<Dtype> > data_transformer_;
   string save_file_;
   Blob<Dtype> bbox_preds_;
-  Blob<Dtype> bbox_permute_;
+  Blob<Dtype> bbox_permute_; // for GPU usage
   Blob<Dtype> conf_permute_;
+
+  bool conf_concat_ = true;
+  bool loc_concat_ = true;
+  bool priorbox_concat_ = true;
 };
 
 }  // namespace caffe

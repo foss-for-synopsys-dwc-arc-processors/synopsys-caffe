@@ -23,7 +23,7 @@ void DetectionOutputLayer<Dtype>::Forward_gpu(
   const Dtype* prior_data = bottom[2]->gpu_data();
   const int num = bottom[0]->num();
   const Dtype* arm_loc_data = NULL;
-  if (bottom.size() >= 5){
+  if (bottom.size() >= 5 && loc_concat_){
     arm_loc_data = bottom[4]->gpu_data();
   }
 
@@ -31,7 +31,7 @@ void DetectionOutputLayer<Dtype>::Forward_gpu(
   Dtype* bbox_data = bbox_preds_.mutable_gpu_data();
   const int loc_count = bbox_preds_.count();
   const bool clip_bbox = false;
-  if (bottom.size() >= 5) {
+  if (bottom.size() >= 5 && loc_concat_) {
     CasRegDecodeBBoxesGPU<Dtype>(loc_count, loc_data, prior_data, code_type_,
         variance_encoded_in_target_, num_priors_, share_location_,
         num_loc_classes_, background_label_id_, clip_bbox, bbox_data, arm_loc_data);
@@ -54,7 +54,7 @@ void DetectionOutputLayer<Dtype>::Forward_gpu(
 
   // Retrieve all confidences.
   Dtype* conf_permute_data = conf_permute_.mutable_gpu_data();
-  if (bottom.size() >= 4) {
+  if (bottom.size() >= 4 && conf_concat_) {
     OSPermuteDataGPU<Dtype>(bottom[1]->count(), bottom[1]->gpu_data(), bottom[3]->gpu_data(),
         num_classes_, num_priors_, 1, conf_permute_data, objectness_score_);
   }
