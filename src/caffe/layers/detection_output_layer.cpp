@@ -385,7 +385,42 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
     if(!conf_concat_ && !loc_concat_)
     {
       const Dtype* prior_data = bottom[12]->cpu_data();
-      GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+      if(!ratio_permute_)
+        GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
+      else
+      {
+        prior_bboxes.clear();
+        prior_variances.clear();
+        int sum = 0;
+        for(int n=0;n<6;n++)
+        {
+          int count = bottom[n+6]->channels()/4; // use loc shape to separate the priorbox data
+          for (int i = sum; i < count+sum; ++i) {
+            int start_idx = i;
+            NormalizedBBox bbox;
+            bbox.set_xmin(prior_data[start_idx]);
+            bbox.set_ymin(prior_data[start_idx + 1 * count]);
+            bbox.set_xmax(prior_data[start_idx + 2 * count]);
+            bbox.set_ymax(prior_data[start_idx + 3 * count]);
+            float bbox_size = BBoxSize(bbox);
+            bbox.set_size(bbox_size);
+            prior_bboxes.push_back(bbox);
+            //LOG(INFO)<<"i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1 * count]<<
+            //    " ,xmax="<<prior_data[start_idx + 2 * count]<<" ,ymax="<<prior_data[start_idx + 3 * count]<<"\n";
+          }
+
+          for (int i = sum; i < count+sum; ++i) {
+            int start_idx = num_priors_ * 4 + i;
+            vector<float> var;
+            for (int j = 0; j < 4; ++j) {
+              var.push_back(prior_data[start_idx + j * count]);
+              //OG(INFO)<<prior_data[start_idx + j * count]<<" ";
+            }
+            prior_variances.push_back(var);
+          }
+          sum += count*4;
+        }
+      }
     }
     else
     {
