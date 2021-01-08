@@ -18,6 +18,7 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const DetectionOutputParameter& detection_output_param =
       this->layer_param_.detection_output_param();
   CHECK(detection_output_param.has_num_classes()) << "Must specify num_classes";
+  ratio_permute_ = detection_output_param.ratio_permute();
   objectness_score_ = detection_output_param.objectness_score();
   num_classes_ = detection_output_param.num_classes();
   share_location_ = detection_output_param.share_location();
@@ -275,24 +276,52 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
       {
         const Dtype* loc_data = bottom[n+6]->cpu_data();
         LabelBBox& label_bbox = all_loc_preds[i];
-        for (int p = 0; p < bottom[n+6]->channels()/num_loc_classes_/4; ++p) {
-          int start_idx = p * num_loc_classes_ * 4;
-          for (int c = 0; c < num_loc_classes_; ++c) {
-            int label = share_location_ ? -1 : c;
-            //if (label_bbox.find(label) == label_bbox.end()) {
-            //  label_bbox[label].resize(num_priors_);
-            //}
-            NormalizedBBox locbox;
-            locbox.set_xmin(loc_data[start_idx + c * 4]);
-            locbox.set_ymin(loc_data[start_idx + c * 4 + 1]);
-            locbox.set_xmax(loc_data[start_idx + c * 4 + 2]);
-            locbox.set_ymax(loc_data[start_idx + c * 4 + 3]);
-            float locbox_size = BBoxSize(locbox);
-            locbox.set_size(locbox_size);
-            label_bbox[label].push_back(locbox);
+        if(!ratio_permute_)
+        {
+          for (int p = 0; p < bottom[n+6]->channels()/num_loc_classes_/4; ++p) {
+            int start_idx = p * num_loc_classes_ * 4;
+            for (int c = 0; c < num_loc_classes_; ++c) {
+              int label = share_location_ ? -1 : c;
+              //if (label_bbox.find(label) == label_bbox.end()) {
+              //  label_bbox[label].resize(num_priors_);
+              //}
+              NormalizedBBox locbox;
+              locbox.set_xmin(loc_data[start_idx + c * 4]);
+              locbox.set_ymin(loc_data[start_idx + c * 4 + 1]);
+              locbox.set_xmax(loc_data[start_idx + c * 4 + 2]);
+              locbox.set_ymax(loc_data[start_idx + c * 4 + 3]);
+              float locbox_size = BBoxSize(locbox);
+              locbox.set_size(locbox_size);
+              label_bbox[label].push_back(locbox);
+              //LOG(INFO)<<"origin p="<<p<<" ,xmin="<<loc_data[start_idx + c * 4]<<" ,ymin="<<loc_data[start_idx + c * 4 + 1]<<
+              //    " ,xmax="<<loc_data[start_idx + c * 4 + 2]<<" ,ymax="<<loc_data[start_idx + c * 4 + 3]<<"\n";
+            }
+          }
+          //LOG(INFO)<<"loc num: "<<all_loc_preds[0][-1].size()<<"\n";
+        }
+        else
+        {
+          int count = bottom[n+6]->channels()/num_loc_classes_/4;
+          for (int p = 0; p < count; ++p) {
+            int start_idx = p * num_loc_classes_;
+            for (int c = 0; c < num_loc_classes_; ++c) {
+              int label = share_location_ ? -1 : c;
+              //if (label_bbox.find(label) == label_bbox.end()) {
+              //  label_bbox[label].resize(num_priors_);
+              //}
+              NormalizedBBox locbox;
+              locbox.set_xmin(loc_data[start_idx + c * count]);
+              locbox.set_ymin(loc_data[start_idx + c * count + 1 * count]);
+              locbox.set_xmax(loc_data[start_idx + c * count + 2 * count]);
+              locbox.set_ymax(loc_data[start_idx + c * count + 3 * count]);
+              float locbox_size = BBoxSize(locbox);
+              locbox.set_size(locbox_size);
+              label_bbox[label].push_back(locbox);
+              //LOG(INFO)<<"p="<<p<<" ,xmin="<<loc_data[start_idx + c * count]<<" ,ymin="<<loc_data[start_idx + c * count + 1 * count]<<
+              //                 " ,xmax="<<loc_data[start_idx + c * count + 2 * count]<<" ,ymax="<<loc_data[start_idx + c * count + 3 * count]<<"\n";
+            }
           }
         }
-        //LOG(INFO)<<"loc num: "<<all_loc_preds[0][-1].size()<<"\n";
       }
     }
   }
@@ -320,13 +349,28 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         {
           const Dtype* conf_data = bottom[n]->cpu_data();
           map<int, vector<float> >& label_scores = all_conf_scores[i];
-          for (int p = 0; p < bottom[n]->channels()/num_classes_; ++p) {
-            int start_idx = p * num_classes_;
-            for (int c = 0; c < num_classes_; ++c) {
-              label_scores[c].push_back(conf_data[start_idx + c]);
+          if(!ratio_permute_)
+          {
+            for (int p = 0; p < bottom[n]->channels()/num_classes_; ++p) {
+              int start_idx = p * num_classes_;
+              for (int c = 0; c < num_classes_; ++c) {
+                label_scores[c].push_back(conf_data[start_idx + c]);
+                //LOG(INFO)<<"origin p="<<p<<" ,c="<<c<<" ,score="<<conf_data[start_idx + c]<<"\n";
+              }
+            }
+            //LOG(INFO)<<"conf num: "<<all_conf_scores[0][0].size()<<"\n";
+          }
+          else
+          {
+            int count = bottom[n]->channels()/num_classes_;
+            for (int p = 0; p < count; ++p) {
+              int start_idx = p;
+              for (int c = 0; c < num_classes_; ++c) {
+                label_scores[c].push_back(conf_data[start_idx + c * count]);
+                //LOG(INFO)<<"p="<<p<<" ,c="<<c<<" ,score="<<conf_data[start_idx + c * count]<<"\n";
+              }
             }
           }
-          //LOG(INFO)<<"conf num: "<<all_conf_scores[0][0].size()<<"\n";
         }
       }
     }
@@ -356,28 +400,60 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
     for(int n=0;n<6;n++)
     {
       const Dtype* prior_data = bottom[n+12]->cpu_data();
-      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
-        int start_idx = i * 4;
-        NormalizedBBox bbox;
-        bbox.set_xmin(prior_data[start_idx]);
-        bbox.set_ymin(prior_data[start_idx + 1]);
-        bbox.set_xmax(prior_data[start_idx + 2]);
-        bbox.set_ymax(prior_data[start_idx + 3]);
-        float bbox_size = BBoxSize(bbox);
-        bbox.set_size(bbox_size);
-        prior_bboxes.push_back(bbox);
-      }
-
-      for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
-        int start_idx = (bottom[n+12]->height()/4 + i) * 4;
-        vector<float> var;
-        for (int j = 0; j < 4; ++j) {
-          var.push_back(prior_data[start_idx + j]);
-          //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+      if(!ratio_permute_)
+      {
+        for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+          int start_idx = i * 4;
+          NormalizedBBox bbox;
+          bbox.set_xmin(prior_data[start_idx]);
+          bbox.set_ymin(prior_data[start_idx + 1]);
+          bbox.set_xmax(prior_data[start_idx + 2]);
+          bbox.set_ymax(prior_data[start_idx + 3]);
+          float bbox_size = BBoxSize(bbox);
+          bbox.set_size(bbox_size);
+          prior_bboxes.push_back(bbox);
+          //LOG(INFO)<<"origin i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1]<<
+          //    " ,xmax="<<prior_data[start_idx + 2]<<" ,ymax="<<prior_data[start_idx + 3]<<"\n";
         }
-        prior_variances.push_back(var);
+
+        for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+          int start_idx = (bottom[n+12]->height()/4 + i) * 4;
+          vector<float> var;
+          for (int j = 0; j < 4; ++j) {
+            var.push_back(prior_data[start_idx + j]);
+            //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+          }
+          prior_variances.push_back(var);
+        }
+        //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
       }
-      //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
+      else
+      {
+        int count = bottom[n+12]->height()/4;
+        for (int i = 0; i < count; ++i) {
+          int start_idx = i;
+          NormalizedBBox bbox;
+          bbox.set_xmin(prior_data[start_idx]);
+          bbox.set_ymin(prior_data[start_idx + 1 * count]);
+          bbox.set_xmax(prior_data[start_idx + 2 * count]);
+          bbox.set_ymax(prior_data[start_idx + 3 * count]);
+          float bbox_size = BBoxSize(bbox);
+          bbox.set_size(bbox_size);
+          prior_bboxes.push_back(bbox);
+          //LOG(INFO)<<"i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1 * count]<<
+          //    " ,xmax="<<prior_data[start_idx + 2 * count]<<" ,ymax="<<prior_data[start_idx + 3 * count]<<"\n";
+        }
+
+        for (int i = 0; i < count; ++i) {
+          int start_idx = count * 4 + i;
+          vector<float> var;
+          for (int j = 0; j < 4; ++j) {
+            var.push_back(prior_data[start_idx + j * count]);
+            //LOG(INFO)<<prior_data[start_idx + j * count]<<" ";
+          }
+          prior_variances.push_back(var);
+        }
+      }
     }
   }
 

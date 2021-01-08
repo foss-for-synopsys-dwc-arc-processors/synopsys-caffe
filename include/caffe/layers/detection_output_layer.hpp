@@ -118,6 +118,8 @@ class DetectionOutputLayer : public Layer<Dtype> {
   bool conf_concat_ = true;
   bool loc_concat_ = true;
   bool priorbox_concat_ = true;
+
+  bool ratio_permute_;
 };
 
 }  // namespace caffe

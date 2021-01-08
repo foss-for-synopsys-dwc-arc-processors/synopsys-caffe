@@ -1634,6 +1634,7 @@ message DetectionOutputParameter {
   optional string save_file = 12;
   //the objectness score is used for the anchor refinement module to filter easy negative anchor.
   optional float objectness_score = 24 [default = 0.01];
+  optional bool ratio_permute = 25 [default=false];
 }
 
 message DomainTransformParameter {
