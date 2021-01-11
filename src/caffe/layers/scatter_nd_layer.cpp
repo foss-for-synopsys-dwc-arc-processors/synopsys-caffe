@@ -8,19 +8,75 @@ namespace caffe {
 template <typename Dtype>
 void ScatterNDLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
     const vector<Blob<Dtype> *> &top) {
-  vector<int> data_shape = bottom[0]->shape();
-  vector<int> indices_shape = bottom[1]->shape();
-  vector<int> updates_shape = bottom[2]->shape();
-  const int K = bottom[1]->shape(-1);
-  const int data_dims = bottom[0]->num_axes();
-  CHECK_LE(K, data_dims);
+  const ScatterNDParameter& scatter_nd_param = this->layer_param_.scatter_nd_param();
+  is_data_param_ = scatter_nd_param.is_data_param();
+  is_indices_param_ = scatter_nd_param.is_indices_param();
+  is_updates_param_ = scatter_nd_param.is_updates_param();
+  int blob_idx = 0, bottom_idx = 0, dims;
+  vector<int> sz;
+  if (this->blobs_.size() > 0) {
+    LOG(INFO) << "Skipping parameter initialization";
+  } else{
+    this->blobs_.resize((int)is_data_param_ + is_indices_param_ + is_updates_param_);
+    if (is_data_param_) {
+      dims = scatter_nd_param.data_shape_size();
+      sz.resize(dims);
+      for (int i = 0; i < dims; ++i) {
+        sz[i] = scatter_nd_param.data_shape(i);
+      }
+      this->blobs_[blob_idx++].reset(new Blob<Dtype>(sz));
+    }
+    if (is_indices_param_) {
+      dims = scatter_nd_param.indices_shape_size();
+      sz.resize(dims);
+      for (int i = 0; i < dims; ++i) {
+        sz[i] = scatter_nd_param.indices_shape(i);
+      }
+      this->blobs_[blob_idx++].reset(new Blob<Dtype>(sz));
+    }
+    if (is_updates_param_) {
+      dims = scatter_nd_param.updates_shape_size();
+      sz.resize(dims);
+      for (int i = 0; i < dims; ++i) {
+        sz[i] = scatter_nd_param.updates_shape(i);
+      }
+      this->blobs_[blob_idx++].reset(new Blob<Dtype>(sz));
+    }
+    blob_idx = 0;
+  }
+  
+  vector<int> data_shape, indices_shape, updates_shape;
+  if (is_data_param_) {
+    data_shape = this->blobs_[blob_idx++]->shape();
+  } else {
+    data_shape = bottom[bottom_idx++]->shape();
+  }
+  if (is_indices_param_) {
+    indices_shape = this->blobs_[blob_idx++]->shape();
+  } else {
+    indices_shape = bottom[bottom_idx++]->shape();
+  }
+  if (is_updates_param_) {
+    updates_shape = this->blobs_[blob_idx++]->shape();
+  } else {
+    updates_shape = bottom[bottom_idx++]->shape();
+  }
+  
+  CHECK_EQ(bottom_idx, bottom.size());
+  CHECK_EQ(blob_idx, this->blobs_.size());
+  CHECK_EQ(3, bottom_idx + blob_idx);
+
+  Q_ = indices_shape.size(); // indices is rank Q, updates is rank (Q-1)+(R-K)
+  K_ = indices_shape.back(); // a K-tuple in indices denotes a partial index into data
+  const int R_ = data_shape.size();
+  CHECK_LE(K_, R_);
+
   // assert updates.shape == indices.shape[:-1] + data.shape[indices.shape[-1]:]
-  const int indices_dims = bottom[1]->num_axes();
   indices_shape.pop_back();
-  for (int i = K; i < data_dims; ++i){
+  for (int i = K_; i < R_; ++i) {
     indices_shape.push_back(data_shape[i]);
   }
-  printf("%d v.s. %d\n", updates_shape.size(), indices_shape.size());
+  CHECK_EQ(updates_shape.size(), indices_shape.size());  
   for (int i = 0; i < indices_shape.size(); ++i){
     CHECK_EQ(updates_shape[i], indices_shape[i]);
   }
@@ -29,27 +85,46 @@ void ScatterNDLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
 template <typename Dtype>
 void ScatterNDLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  // data, indices, updates
-  vector<int> bottom_shape = bottom[0]->shape();
-  top[0]->Reshape(bottom_shape);
+  // output.shape = data.shape
+  if (is_data_param_) top[0]->Reshape(this->blobs_[0]->shape());
+  else top[0]->Reshape(bottom[0]->shape());
 }
 
 template <typename Dtype>
 void ScatterNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const int num_update_ = bottom[1]->count(0,  bottom[1]->num_axes() - 1);
-  const vector<int> data_shape = bottom[0]->shape();
-  //const int R_ = bottom[0]->num_axes(); // data is rank R
-  const int Q_ = bottom[1]->num_axes(); // indices is rank Q, updates is rank (Q-1)+(R-K)
-  const int K_ = bottom[1]->shape(-1); // a K-tuple in indices denotes a partial index into data
-  const int update_stride_ = bottom[2]->count(Q_ - 1);
-  //const int update_size_ = bottom[2]->count(Q_);
-  const int data_stride_ = bottom[0]->count(K_);
-  const Dtype *bottom_data = bottom[0]->cpu_data();
-  const Dtype *indices = bottom[1]->cpu_data();
-  const Dtype *updates = bottom[2]->cpu_data();
+  int blob_idx = 0, bottom_idx = 0;
+  int num_update_, data_stride_, update_stride_, total_data_count_;
+  vector<int> data_shape;
+  const Dtype *bottom_data, *indices, *updates;
+  if (is_data_param_) {
+    data_shape = this->blobs_[blob_idx]->shape();
+    data_stride_ = this->blobs_[blob_idx]->count(K_);
+    total_data_count_ = this->blobs_[blob_idx]->count();
+    bottom_data = this->blobs_[blob_idx++]->cpu_data();
+  } else {
+    data_shape = bottom[bottom_idx]->shape();
+    data_stride_ = bottom[bottom_idx]->count(K_);
+    total_data_count_ = bottom[bottom_idx]->count();
+    bottom_data = bottom[bottom_idx++]->cpu_data();
+  }
+  if (is_indices_param_) {
+    num_update_ = this->blobs_[blob_idx]->count(0,  Q_ - 1);
+    indices = this->blobs_[blob_idx++]->cpu_data();
+  } else {
+    num_update_ = bottom[bottom_idx]->count(0,  Q_ - 1);
+    indices = bottom[bottom_idx++]->cpu_data();
+  }
+  if (is_updates_param_) {
+    update_stride_ = this->blobs_[blob_idx]->count(Q_ - 1);
+    updates = this->blobs_[blob_idx++]->cpu_data();
+  } else {
+    update_stride_ = bottom[bottom_idx]->count(Q_ - 1);
+    updates = bottom[bottom_idx++]->cpu_data();
+  }
+
   Dtype *top_data = top[0]->mutable_cpu_data();
-  caffe_copy(bottom[0]->count(), bottom_data, top_data);
+  caffe_copy(total_data_count_, bottom_data, top_data);
 
   int idx_ofs = 0;
   int upd_ofs = 0;
