@@ -19,6 +19,12 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       this->layer_param_.detection_output_param();
   CHECK(detection_output_param.has_num_classes()) << "Must specify num_classes";
   ratio_permute_ = detection_output_param.ratio_permute();
+  ratio0_ = detection_output_param.ratio0();
+  ratio1_ = detection_output_param.ratio1();
+  ratio2_ = detection_output_param.ratio2();
+  ratio3_ = detection_output_param.ratio3();
+  ratio4_ = detection_output_param.ratio4();
+  ratio5_ = detection_output_param.ratio5();
   objectness_score_ = detection_output_param.objectness_score();
   num_classes_ = detection_output_param.num_classes();
   share_location_ = detection_output_param.share_location();
@@ -318,7 +324,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
               locbox.set_size(locbox_size);
               label_bbox[label].push_back(locbox);
               //LOG(INFO)<<"p="<<p<<" ,xmin="<<loc_data[start_idx + c * count]<<" ,ymin="<<loc_data[start_idx + c * count + 1 * count]<<
-              //                 " ,xmax="<<loc_data[start_idx + c * count + 2 * count]<<" ,ymax="<<loc_data[start_idx + c * count + 3 * count]<<"\n";
+              //    " ,xmax="<<loc_data[start_idx + c * count + 2 * count]<<" ,ymax="<<loc_data[start_idx + c * count + 3 * count]<<"\n";
             }
           }
         }
@@ -391,6 +397,41 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
       {
         prior_bboxes.clear();
         prior_variances.clear();
+        int ratios[6] = {ratio0_, ratio1_, ratio2_, ratio3_, ratio4_, ratio5_}; //
+        int sum = 0;
+        for(int n=0;n<6;n++)
+        {
+          int count = bottom[n+6]->channels()/4; // use loc shape to separate the priorbox data
+          for (int i = sum; i < count+sum; ++i) {
+            // "merge" the permute operation by index transform
+            int xy_num = count / ratios[n];
+            int permute_index = (i-sum)%xy_num * ratios[n] + (i-sum)/xy_num;
+            int start_idx = (permute_index + sum) * 4; //i * 4;
+            NormalizedBBox bbox;
+            bbox.set_xmin(prior_data[start_idx]);
+            bbox.set_ymin(prior_data[start_idx + 1]);
+            bbox.set_xmax(prior_data[start_idx + 2]);
+            bbox.set_ymax(prior_data[start_idx + 3]);
+            float bbox_size = BBoxSize(bbox);
+            bbox.set_size(bbox_size);
+            prior_bboxes.push_back(bbox);
+            //LOG(INFO)<<"i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1]<<
+            //    " ,xmax="<<prior_data[start_idx + 2]<<" ,ymax="<<prior_data[start_idx + 3]<<"\n";
+          }
+
+          for (int i = sum; i < count+sum; ++i) {
+            int start_idx = (num_priors_ + i)* 4;
+            vector<float> var;
+            for (int j = 0; j < 4; ++j) {
+              var.push_back(prior_data[start_idx + j]);
+              //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+            }
+            prior_variances.push_back(var);
+          }
+          sum += count;
+        }
+        // for priorbox with extra pre-permute layer cases
+        /*
         int sum = 0;
         for(int n=0;n<6;n++)
         {
@@ -420,6 +461,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
           }
           sum += count*4;
         }
+        */
       }
     }
     else
@@ -475,7 +517,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
           float bbox_size = BBoxSize(bbox);
           bbox.set_size(bbox_size);
           prior_bboxes.push_back(bbox);
-          //LOG(INFO)<<"i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1 * count]<<
+          //LOG(INFO)<<"index i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1 * count]<<
           //    " ,xmax="<<prior_data[start_idx + 2 * count]<<" ,ymax="<<prior_data[start_idx + 3 * count]<<"\n";
         }
 

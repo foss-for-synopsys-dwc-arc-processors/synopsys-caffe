@@ -1635,6 +1635,12 @@ message DetectionOutputParameter {
   //the objectness score is used for the anchor refinement module to filter easy negative anchor.
   optional float objectness_score = 24 [default = 0.01];
   optional bool ratio_permute = 25 [default=false];
+  optional int32 ratio0 = 26 [default = 3];
+  optional int32 ratio1 = 27 [default = 6];
+  optional int32 ratio2 = 28 [default = 6];
+  optional int32 ratio3 = 29 [default = 6];
+  optional int32 ratio4 = 30 [default = 6];
+  optional int32 ratio5 = 31 [default = 6];
 }
 
 message DomainTransformParameter {

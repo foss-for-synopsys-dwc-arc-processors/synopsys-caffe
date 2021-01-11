@@ -120,6 +120,12 @@ class DetectionOutputLayer : public Layer<Dtype> {
   bool priorbox_concat_ = true;
 
   bool ratio_permute_;
+  int ratio0_;
+  int ratio1_;
+  int ratio2_;
+  int ratio3_;
+  int ratio4_;
+  int ratio5_;
 };
 
 }  // namespace caffe
