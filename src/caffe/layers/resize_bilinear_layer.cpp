@@ -15,6 +15,7 @@ void ResizeBilinearLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   data_format_ = this->layer_param_.resize_bilinear_param().data_format();
   output_height_ = this->layer_param_.resize_bilinear_param().output_height();
   output_width_ = this->layer_param_.resize_bilinear_param().output_width();
+  output_depth_ = this->layer_param_.resize_bilinear_param().output_depth();
   half_pixel_centers_ = this->layer_param_.resize_bilinear_param().half_pixel_centers();
   CHECK(!(align_corners_ && half_pixel_centers_)) <<
         "If half_pixel_centers is True, align_corners must be False.";
@@ -55,7 +56,18 @@ void ResizeBilinearLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       float scale_width = this->layer_param_.resize_bilinear_param().scale_width();
       output_width_ = floor(bottom_shape[3] * scale_width);
     }
-    top[0]->Reshape(batch_size, channels, output_height_, output_width_);
+    if (data_format_ ==  "NCHW") {
+      top[0]->Reshape(batch_size, channels, output_height_, output_width_);
+    } else { // NCHWD, 3D resize
+      if(!this->layer_param_.resize_bilinear_param().has_output_depth())
+      {
+        float scale_depth = this->layer_param_.resize_bilinear_param().scale_depth();
+        output_depth_ = floor(bottom_shape[4] * scale_depth);
+      }
+      vector<int> sz{batch_size, channels, output_height_, output_width_, output_depth_};
+      //top[0]->Reshape(batch_size, channels, output_height_, output_width_, output_depth_);
+      top[0]->Reshape(sz);
+    }
   }
 }
 
@@ -177,7 +189,7 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       bottom_data += in_batch_num_values;
     }
   }
-  else{  //NCHW
+  else if(data_format_ == "NCHW"){  //NCHW
     const int channels = bottom_shape[1];
     const int input_height = bottom_shape[2];
     const int input_width = bottom_shape[3];
@@ -225,6 +237,84 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           top_data += out_row_size;
         }
         bottom_data += in_channel_num_values;
+      }
+    }
+  }
+  else{ // NCHWD
+    CHECK_EQ(bottom[0]->num_axes(), 5) << "3D resize should have 5D data tensor";
+    const int channels = bottom_shape[1];
+    const int input_height = bottom_shape[2];
+    const int input_width = bottom_shape[3];
+    const int input_depth = bottom_shape[4];
+
+    std::vector<CachedInterpolation> zs(output_height_ + 1);
+    std::vector<CachedInterpolation> ys(output_width_ + 1);
+    std::vector<CachedInterpolation> xs(output_depth_ + 1);
+
+    const float height_scale =
+      CalculateResizeScale(output_height_, input_height, align_corners_);
+    const float width_scale =
+      CalculateResizeScale(output_width_, input_width, align_corners_);
+    const float depth_scale =
+      CalculateResizeScale(output_depth_, input_depth, align_corners_);
+
+    compute_interpolation_weights(output_height_, input_height,
+                                  height_scale, zs.data());
+    compute_interpolation_weights(output_width_, input_width,
+                                  width_scale, ys.data());
+    compute_interpolation_weights(output_depth_, input_depth,
+                                  depth_scale, xs.data());
+
+    const int in_D_size = input_depth; // input depth dimension
+    const int in_WD_size = input_width * in_D_size; // input width+depth dimensions
+    const int in_HWD_size = input_height * in_WD_size; // input spatial dimensions, used for striding bottom_data
+    const int out_D_size = output_depth_; // used for striding top_data
+
+    // interpolate the points: 
+    // (z_low, y_low, x_low), (z_low, y_low, x_up)
+    // (z_low, y_up, x_low), (z_low, y_up, x_up)
+    // split the above and below, merge them to two points; then interpolate the two points
+    // (z_up, y_low, x_low), (z_up, y_low, x_up)
+    // (z_up, y_up, x_low), (z_up, y_up, x_up)
+    for (int b = 0; b < batch_size; ++b) {
+      for (int c = 0; c < channels; ++c) {
+        for (int z = 0; z < output_height_; ++z) {
+          const Dtype* zs_input_lower_ptr = bottom_data + zs[z].lower * in_WD_size;
+          const Dtype* zs_input_upper_ptr = bottom_data + zs[z].upper * in_WD_size;
+          const float zs_lerp = zs[z].lerp;
+          for (int y = 0; y < output_width_; ++y) {
+            const Dtype* ys_input_lower_lower_ptr = zs_input_lower_ptr + ys[y].lower * in_D_size;
+            const Dtype* ys_input_lower_upper_ptr = zs_input_lower_ptr + ys[y].upper * in_D_size;
+            const Dtype* ys_input_upper_lower_ptr = zs_input_upper_ptr + ys[y].lower * in_D_size;
+            const Dtype* ys_input_upper_upper_ptr = zs_input_upper_ptr + ys[y].upper * in_D_size;
+            const float ys_lerp = ys[y].lerp;
+            for (int x = 0; x < output_depth_; ++x) {
+              int xs_lower = xs[x].lower;
+              int xs_upper = xs[x].upper;
+              float xs_lerp = xs[x].lerp;
+              // note that "top"_left is "lower"_lower, also refer to line 127
+              const float pt_low_top_left(ys_input_lower_lower_ptr[xs_lower]);
+              const float pt_low_top_right(ys_input_lower_lower_ptr[xs_upper]);
+              const float pt_low_bottom_left(ys_input_lower_upper_ptr[xs_lower]);
+              const float pt_low_bottom_right(ys_input_lower_upper_ptr[xs_upper]);
+              float interped_low =
+                  compute_lerp(pt_low_top_left, pt_low_top_right, pt_low_bottom_left, pt_low_bottom_right,
+                      xs_lerp, ys_lerp);
+
+              const float pt_up_top_left(ys_input_upper_lower_ptr[xs_lower]);
+              const float pt_up_top_right(ys_input_upper_lower_ptr[xs_upper]);
+              const float pt_up_bottom_left(ys_input_upper_upper_ptr[xs_lower]);
+              const float pt_up_bottom_right(ys_input_upper_upper_ptr[xs_upper]);
+              float interped_up =
+                  compute_lerp(pt_up_top_left, pt_up_top_right, pt_up_bottom_left, pt_up_bottom_right,
+                      xs_lerp, ys_lerp);
+              top_data[x] =
+                  interped_low + (interped_up - interped_low) * zs_lerp;
+            }
+          top_data += out_D_size;
+          }
+        }
+        bottom_data += in_HWD_size;
       }
     }
   }

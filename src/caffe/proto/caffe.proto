@@ -3120,6 +3120,8 @@ message ResizeBilinearParameter {
   optional float scale_width = 6 [default = 1];
   optional bool half_pixel_centers = 7 [default = false];
   optional bool pytorch_half_pixel = 8 [default = false];
+  optional int32 output_depth = 9;
+  optional float scale_depth = 10 [default = 1];
 }
 
 message ReduceSumParameter {

@@ -48,6 +48,7 @@ class ResizeBilinearLayer : public Layer<Dtype> {
 
   int output_height_;
   int output_width_;
+  int output_depth_;
   bool align_corners_;
   string data_format_;
   bool half_pixel_centers_;
