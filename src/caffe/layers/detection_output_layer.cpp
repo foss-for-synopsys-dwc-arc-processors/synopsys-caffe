@@ -19,6 +19,8 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       this->layer_param_.detection_output_param();
   CHECK(detection_output_param.has_num_classes()) << "Must specify num_classes";
   ratio_permute_ = detection_output_param.ratio_permute();
+  no_permute_ = detection_output_param.no_permute();
+  nbottom_ = detection_output_param.nbottom();
   ratio0_ = detection_output_param.ratio0();
   ratio1_ = detection_output_param.ratio1();
   ratio2_ = detection_output_param.ratio2();
@@ -125,25 +127,25 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     data_transformer_->InitRand();
     save_file_ = detection_output_param.save_file();
   }
-  if(bottom.size() < 6)
+  if(bottom.size() < nbottom_)
   {
     conf_concat_ = true;
     loc_concat_ = true;
     priorbox_concat_ = true;
   }
-  else if(bottom.size() >= 6 && bottom.size() < 13)
+  else if(bottom.size() >= nbottom_ && bottom.size() < 2*nbottom_+1)
   {
     conf_concat_ = false;
     loc_concat_ = true;
     priorbox_concat_ = true;
   }
-  else if(bottom.size() >= 13 && bottom.size() < 18)
+  else if(bottom.size() >= 2*nbottom_+1 && bottom.size() < 3*nbottom_)
   {
     conf_concat_ = false;
     loc_concat_ = false;
     priorbox_concat_ = true;
   }
-  else // ==18
+  else // ==3*nbottom_
   {
     conf_concat_ = false;
     loc_concat_ = false;
@@ -207,32 +209,42 @@ void DetectionOutputLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     CHECK_EQ(num_priors_ * num_classes_, bottom[1]->channels())
         << "Number of priors must match number of confidence predictions.";
   }
-  // TODO: currently only consider the case when both are separate into 6 layers
+  // TODO: currently only consider the case when both are separate into nbottom_ layers
   else if(!conf_concat_ && !loc_concat_)
   {
-    for(int n=0;n<6;n++)
+    for(int n=0;n<nbottom_;n++)
     {
-      CHECK_EQ(bottom[n]->num(), bottom[n+6]->num());
+      CHECK_EQ(bottom[n]->num(), bottom[n+nbottom_]->num());
+      if(no_permute_)
+      {
+        CHECK_EQ(bottom[n]->channels(), num_classes_);
+        CHECK_EQ(bottom[n]->height(), bottom[n+nbottom_]->channels()/4/num_loc_classes_);
+        CHECK_EQ(bottom[n]->width(), bottom[n+nbottom_]->height() * bottom[n+nbottom_]->width());
+        collect_ratios_.push_back(bottom[n+nbottom_]->channels()/4/num_loc_classes_);
+      }
     }
     int sum_conf = 0;
     int sum_loc = 0;
-    for(int n=0;n<6;n++)
+    for(int n=0;n<nbottom_;n++)
     {
       sum_conf += bottom[n]->channels();
-      sum_loc += bottom[n+6]->channels();
+      sum_loc += bottom[n+nbottom_]->channels();
     }
     if(priorbox_concat_)
-      num_priors_ = bottom[12]->height()/4;
+      num_priors_ = bottom[2*nbottom_]->height()/4;
     else
     {
       num_priors_ = 0;
-      for(int n=0;n<6;n++)
-        num_priors_ += bottom[n+12]->height()/4;
+      for(int n=0;n<nbottom_;n++)
+        num_priors_ += bottom[n+2*nbottom_]->height()/4;
     }
-    CHECK_EQ(num_priors_ * num_loc_classes_ * 4, sum_loc)
+    if(!no_permute_)
+    {
+      CHECK_EQ(num_priors_ * num_loc_classes_ * 4, sum_loc)
         << "Number of priors must match number of location predictions.";
-    CHECK_EQ(num_priors_ * num_classes_, sum_conf)
+      CHECK_EQ(num_priors_ * num_classes_, sum_conf)
         << "Number of priors must match number of confidence predictions.";
+    }
   }
   // num() and channels() are 1.
   vector<int> top_shape(2, 1);
@@ -278,13 +290,13 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
     }
 
     for (int i = 0; i < num; ++i) {
-      for(int n=0;n<6;n++)
+      for(int n=0;n<nbottom_;n++)
       {
-        const Dtype* loc_data = bottom[n+6]->cpu_data();
+        const Dtype* loc_data = bottom[n+nbottom_]->cpu_data();
         LabelBBox& label_bbox = all_loc_preds[i];
-        if(!ratio_permute_)
+        if(!ratio_permute_ && !no_permute_) // original caffe ssd
         {
-          for (int p = 0; p < bottom[n+6]->channels()/num_loc_classes_/4; ++p) {
+          for (int p = 0; p < bottom[n+nbottom_]->channels()/num_loc_classes_/4; ++p) {
             int start_idx = p * num_loc_classes_ * 4;
             for (int c = 0; c < num_loc_classes_; ++c) {
               int label = share_location_ ? -1 : c;
@@ -305,9 +317,9 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
           }
           //LOG(INFO)<<"loc num: "<<all_loc_preds[0][-1].size()<<"\n";
         }
-        else
+        else if (ratio_permute_)
         {
-          int count = bottom[n+6]->channels()/num_loc_classes_/4;
+          int count = bottom[n+nbottom_]->channels()/num_loc_classes_/4;
           for (int p = 0; p < count; ++p) {
             int start_idx = p * num_loc_classes_;
             for (int c = 0; c < num_loc_classes_; ++c) {
@@ -323,8 +335,35 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
               float locbox_size = BBoxSize(locbox);
               locbox.set_size(locbox_size);
               label_bbox[label].push_back(locbox);
-              //LOG(INFO)<<"p="<<p<<" ,xmin="<<loc_data[start_idx + c * count]<<" ,ymin="<<loc_data[start_idx + c * count + 1 * count]<<
+              //LOG(INFO)<<"ratio p="<<p<<" ,xmin="<<loc_data[start_idx + c * count]<<" ,ymin="<<loc_data[start_idx + c * count + 1 * count]<<
               //    " ,xmax="<<loc_data[start_idx + c * count + 2 * count]<<" ,ymax="<<loc_data[start_idx + c * count + 3 * count]<<"\n";
+            }
+          }
+        }
+        else if (no_permute_) // [ratio][4][y][x] -> [ratio][y][x] boxes
+        {
+          int count = bottom[n+nbottom_]->height() * bottom[n+nbottom_]->width();
+          for (int r = 0; r < bottom[n+nbottom_]->channels()/4/num_loc_classes_; ++r) {
+            int start_idx = r * num_loc_classes_ * 4 * count;
+            for (int p = 0; p < count; ++p) {
+              for (int c = 0; c < num_loc_classes_; ++c) {
+                int label = share_location_ ? -1 : c;
+                //if (label_bbox.find(label) == label_bbox.end()) {
+                //  label_bbox[label].resize(num_priors_);
+                //}
+                NormalizedBBox locbox;
+                locbox.set_xmin(loc_data[start_idx + c * 4 * count + p]);
+                locbox.set_ymin(loc_data[start_idx + c * 4 * count + p + count]);
+                locbox.set_xmax(loc_data[start_idx + c * 4 * count + p + 2 * count]);
+                locbox.set_ymax(loc_data[start_idx + c * 4 * count + p + 3 * count]);
+                float locbox_size = BBoxSize(locbox);
+                locbox.set_size(locbox_size);
+                label_bbox[label].push_back(locbox);
+                //LOG(INFO)<<"p="<<p<<", r="<<r<<" ,xmin="<<loc_data[start_idx + c * 4 * count + p]<<
+                //    " ,ymin="<<loc_data[start_idx + c * 4 * count + p + 1 * count]<<
+                //    " ,xmax="<<loc_data[start_idx + c * 4 * count + p + 2 * count]<<
+                //    " ,ymax="<<loc_data[start_idx + c * 4 * count + p + 3 * count]<<"\n";
+              }
             }
           }
         }
@@ -351,11 +390,11 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
       all_conf_scores.clear();
       all_conf_scores.resize(num);
       for (int i = 0; i < num; ++i) {
-        for(int n=0;n<6;n++)
+        for(int n=0;n<nbottom_;n++)
         {
           const Dtype* conf_data = bottom[n]->cpu_data();
           map<int, vector<float> >& label_scores = all_conf_scores[i];
-          if(!ratio_permute_)
+          if(!ratio_permute_ && !no_permute_) // original caffe ssd
           {
             for (int p = 0; p < bottom[n]->channels()/num_classes_; ++p) {
               int start_idx = p * num_classes_;
@@ -366,14 +405,26 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
             }
             //LOG(INFO)<<"conf num: "<<all_conf_scores[0][0].size()<<"\n";
           }
-          else
+          else if(ratio_permute_)
           {
             int count = bottom[n]->channels()/num_classes_;
             for (int p = 0; p < count; ++p) {
               int start_idx = p;
               for (int c = 0; c < num_classes_; ++c) {
                 label_scores[c].push_back(conf_data[start_idx + c * count]);
-                //LOG(INFO)<<"p="<<p<<" ,c="<<c<<" ,score="<<conf_data[start_idx + c * count]<<"\n";
+                //LOG(INFO)<<"ratio p="<<p<<" ,c="<<c<<" ,score="<<conf_data[start_idx + c * count]<<"\n";
+              }
+            }
+          }
+          else if(no_permute_) // [class][ratio][y][x]
+          {
+            for (int c = 0; c < num_classes_; ++c) {
+              int start_idx = c * bottom[n]->height() * bottom[n]->width();
+              for (int r = 0; r <  bottom[n]->height(); ++r) {
+                for (int p = 0; p <  bottom[n]->width(); ++p) {
+                  label_scores[c].push_back(conf_data[start_idx + r * bottom[n]->width() + p]);
+                  //LOG(INFO)<<"p="<<p<<" ,c="<<c<<" ,score="<<conf_data[start_idx + r * bottom[n]->width() + p]<<"\n";
+                }
               }
             }
           }
@@ -390,18 +441,18 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
   {
     if(!conf_concat_ && !loc_concat_)
     {
-      const Dtype* prior_data = bottom[12]->cpu_data();
-      if(!ratio_permute_)
+      const Dtype* prior_data = bottom[2*nbottom_]->cpu_data();
+      if(!ratio_permute_ && !no_permute_) // original caffe ssd
         GetPriorBBoxes(prior_data, num_priors_, &prior_bboxes, &prior_variances);
-      else
+      else if (ratio_permute_)
       {
         prior_bboxes.clear();
         prior_variances.clear();
         int ratios[6] = {ratio0_, ratio1_, ratio2_, ratio3_, ratio4_, ratio5_}; //
         int sum = 0;
-        for(int n=0;n<6;n++)
+        for(int n=0;n<nbottom_;n++)
         {
-          int count = bottom[n+6]->channels()/4; // use loc shape to separate the priorbox data
+          int count = bottom[n+nbottom_]->channels()/4; // use loc shape to separate the priorbox data
           for (int i = sum; i < count+sum; ++i) {
             // "merge" the permute operation by index transform
             int xy_num = count / ratios[n];
@@ -463,6 +514,43 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         }
         */
       }
+      else if (no_permute_) //  [y][x][ratio][4] -> [ratio][y][x] boxes
+     {
+       prior_bboxes.clear();
+       prior_variances.clear();
+       int sum = 0;
+       for(int n=0;n<nbottom_;n++)
+       {
+         int count = bottom[n+nbottom_]->channels()/4*bottom[n+nbottom_]->height()*bottom[n+nbottom_]->width(); // use loc shape to separate the priorbox data
+         for (int i = sum; i < count+sum; ++i) {
+           // "merge" the permute operation by index transform
+           int xy_num = count / collect_ratios_[n];
+           int permute_index = (i-sum)%xy_num * collect_ratios_[n] + (i-sum)/xy_num;
+           int start_idx = (permute_index + sum) * 4;
+           NormalizedBBox bbox;
+           bbox.set_xmin(prior_data[start_idx]);
+           bbox.set_ymin(prior_data[start_idx + 1]);
+           bbox.set_xmax(prior_data[start_idx + 2]);
+           bbox.set_ymax(prior_data[start_idx + 3]);
+           float bbox_size = BBoxSize(bbox);
+           bbox.set_size(bbox_size);
+           prior_bboxes.push_back(bbox);
+           //LOG(INFO)<<"i="<<i<<" ,xmin="<<prior_data[start_idx]<<" ,ymin="<<prior_data[start_idx + 1]<<
+           //    " ,xmax="<<prior_data[start_idx + 2]<<" ,ymax="<<prior_data[start_idx + 3]<<"\n";
+         }
+
+         for (int i = sum; i < count+sum; ++i) {
+           int start_idx = (num_priors_ + i)* 4;
+           vector<float> var;
+           for (int j = 0; j < 4; ++j) {
+             var.push_back(prior_data[start_idx + j]);
+             //LOG(INFO)<<prior_data[start_idx + j]<<" ";
+           }
+           prior_variances.push_back(var);
+         }
+         sum += count;
+       }
+     }
     }
     else
     {
@@ -474,12 +562,12 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
   {
     prior_bboxes.clear();
     prior_variances.clear();
-    for(int n=0;n<6;n++)
+    for(int n=0;n<nbottom_;n++)
     {
-      const Dtype* prior_data = bottom[n+12]->cpu_data();
-      if(!ratio_permute_)
+      const Dtype* prior_data = bottom[n+2*nbottom_]->cpu_data();
+      if(!ratio_permute_ && !no_permute_) // original caffe ssd
       {
-        for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
+        for (int i = 0; i < bottom[n+2*nbottom_]->height()/4; ++i) {
           int start_idx = i * 4;
           NormalizedBBox bbox;
           bbox.set_xmin(prior_data[start_idx]);
@@ -493,8 +581,8 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
           //    " ,xmax="<<prior_data[start_idx + 2]<<" ,ymax="<<prior_data[start_idx + 3]<<"\n";
         }
 
-        for (int i = 0; i < bottom[n+12]->height()/4; ++i) {
-          int start_idx = (bottom[n+12]->height()/4 + i) * 4;
+        for (int i = 0; i < bottom[n+2*nbottom_]->height()/4; ++i) {
+          int start_idx = (bottom[n+2*nbottom_]->height()/4 + i) * 4;
           vector<float> var;
           for (int j = 0; j < 4; ++j) {
             var.push_back(prior_data[start_idx + j]);
@@ -504,9 +592,9 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         }
         //LOG(INFO)<<"prior num: "<<prior_bboxes.size()<<"\n";
       }
-      else
+      else if (ratio_permute_)
       {
-        int count = bottom[n+12]->height()/4;
+        int count = bottom[n+2*nbottom_]->height()/4;
         for (int i = 0; i < count; ++i) {
           int start_idx = i;
           NormalizedBBox bbox;
