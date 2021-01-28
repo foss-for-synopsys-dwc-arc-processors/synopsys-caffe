@@ -340,7 +340,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
             }
           }
         }
-        else if (no_permute_) // [ratio][4][y][x] -> [ratio][y][x] boxes
+        else if (no_permute_) // [ratio][4][y][x] -> [ratio][y][x] boxes
         {
           int count = bottom[n+nbottom_]->height() * bottom[n+nbottom_]->width();
           for (int r = 0; r < bottom[n+nbottom_]->channels()/4/num_loc_classes_; ++r) {
@@ -416,7 +416,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
               }
             }
           }
-          else if(no_permute_) // [class][ratio][y][x]
+          else if(no_permute_) // [class][ratio][y][x]
           {
             for (int c = 0; c < num_classes_; ++c) {
               int start_idx = c * bottom[n]->height() * bottom[n]->width();
@@ -514,7 +514,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         }
         */
       }
-      else if (no_permute_) //  [y][x][ratio][4] -> [ratio][y][x] boxes
+      else if (no_permute_) // [y][x][ratio][4] -> [ratio][y][x] boxes
      {
        prior_bboxes.clear();
        prior_variances.clear();
