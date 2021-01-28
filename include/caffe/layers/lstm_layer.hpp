@@ -35,7 +35,7 @@ template <typename Dtype> class RecurrentLayer;
  * Notably, this implementation lacks the "diagonal" gates, as used in the
  * LSTM architectures described by Alex Graves [3] and others.
  *
- * [1] Hochreiter, Sepp, and Schmidhuber, Jürgen. "Long short-term memory."
+ * [1] Hochreiter, Sepp, and Schmidhuber, Juergen. "Long short-term memory."
  *     Neural Computation 9, no. 8 (1997): 1735-1780.
  *
  * [2] Zaremba, Wojciech, and Sutskever, Ilya. "Learning to execute."
