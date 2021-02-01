@@ -1,6 +1,6 @@
 # A Short Summary of New Features in Synopsys Caffe
 
-Synopsys Caffe Version: 2020.12  
+Synopsys Caffe Version: 2021.03  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 ## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -17,6 +17,7 @@ div_layer
 embedding_lookup_layer  
 embedding_lookup_sparse_layer  
 expand_dims_nd_layer  
+farthest_point_sample_layer  
 floor_div_layer  
 floor_layer  
 floor_mod_layer  
@@ -24,6 +25,7 @@ gather_layer
 gather_v2_layer  
 gather_nd_layer  
 gemm_layer  
+group_point_layer  
 gru_layer  
 hard_sigmoid_layer  
 hard_swish_layer  
@@ -48,6 +50,7 @@ peephole_lstm_layer
 piece_layer  
 pooling3d_layer  
 pow_layer  
+query_ball_point_layer  
 range_layer  
 reduce_all_layer  
 reduce_any_layer  
@@ -66,6 +69,7 @@ reverse_sequence_layer
 rnn_v2_layer  
 round_layer  
 scaled_tanh_layer  
+scatter_nd_layer  
 shape_layer  
 shuffle_channel_layer  
 simple_rnn_layer  
@@ -79,6 +83,8 @@ squeeze_layer
 stack_layer  
 strided_slice_layer  
 sub_layer  
+three_interpolate_layer  
+three_NN_layer  
 thresholded_relu_layer  
 tile_nd_layer  
 topk_gather_layer  
