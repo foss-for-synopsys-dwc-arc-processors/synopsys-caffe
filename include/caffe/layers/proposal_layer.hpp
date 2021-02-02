@@ -1,10 +1,3 @@
- // --------------------------------------------------------
- // Proposal Layer C++ Implement
- // Copyright (c) 2017 Lenovo
- // Written by Zou Jinyi
- // Modified by Synopsys Inc
- // --------------------------------------------------------
-
 #ifndef CAFFE_PROPOSAL_LAYER_HPP_
 #define CAFFE_PROPOSAL_LAYER_HPP_
 
@@ -19,9 +12,8 @@ namespace caffe {
 
 /**
  * @brief Provides ROIs by assigning tops directly.
- *
- * This data layer is to provide ROIs from the anchor;
- * backward, and reshape are all no-ops.
+ * should generate same results as the python version
+ * Ref: https://github.com/foss-for-synopsys-dwc-arc-processors/py-faster-rcnn
  */
 template <typename Dtype>
 class ProposalLayer : public Layer<Dtype> {
@@ -31,15 +23,15 @@ class ProposalLayer : public Layer<Dtype> {
   virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top);
   virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-	  const vector<Blob<Dtype>*>& top) {}
+	  const vector<Blob<Dtype>*>& top);
 
   virtual inline const char* type() const { return "Proposal"; }
   virtual inline int ExactNumBottomBlobs() const { return 3; }
-  virtual inline int MinBottomBlobs() const { return 3; }
-  virtual inline int MaxBottomBlobs() const { return 3; }
+  //virtual inline int MinBottomBlobs() const { return 3; }
+  //virtual inline int MaxBottomBlobs() const { return 3; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 1; }
+  //virtual inline int MinTopBlobs() const { return 1; }
+  //virtual inline int MaxTopBlobs() const { return 1; }
 
  protected:
 
@@ -65,6 +57,10 @@ class ProposalLayer : public Layer<Dtype> {
 
   virtual void apply_nms(vector<vector<float> > &pred_boxes, vector<float> &confidence);
 
+  virtual void filter_boxes(vector<vector<float> > &pred_boxes, vector<float> &confidence, float min_size);
+  virtual void applynmsfast(vector<vector<float> > &pred_boxes,vector<pair<Dtype, int> > &score_index_vec,
+      const float nms_threshold, const int top_k, vector<int> &indices);
+
   int feat_stride_; //resolution
   int anchor_base_size_;
   vector<float> anchor_scale_; //anchor scale
@@ -72,6 +68,9 @@ class ProposalLayer : public Layer<Dtype> {
 
   int max_rois_;
   vector<float> anchor_boxes_;
+  int pre_nms_topn_;
+  float rpn_min_size_;
+  float rpn_nms_thresh_;
 
 };
 

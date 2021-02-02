@@ -2189,9 +2189,12 @@ message PriorBoxParameter {
 message ProposalParameter {
   optional int32 feat_stride = 1 [default = 16];
   optional int32 anchor_base_size = 2 [default = 16];
-  optional int32 anchor_scale = 3 [default = 3];
-  optional int32 anchor_ratio = 4 [default = 3];
+  optional int32 anchor_scale = 3 [default = 3]; //
+  optional int32 anchor_ratio = 4 [default = 3]; //
   optional int32 max_rois = 5 [default = 300];
+  optional int32 pre_nms_topn = 6 [default = 6000];
+  optional float rpn_min_size = 7 [default = 16];
+  optional float rpn_nms_thresh = 8 [default = 0.7];
 }
 
 message PythonParameter {
