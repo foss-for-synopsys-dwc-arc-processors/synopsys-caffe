@@ -29,9 +29,9 @@ class ProposalLayer : public Layer<Dtype> {
   virtual inline int ExactNumBottomBlobs() const { return 3; }
   //virtual inline int MinBottomBlobs() const { return 3; }
   //virtual inline int MaxBottomBlobs() const { return 3; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
-  //virtual inline int MinTopBlobs() const { return 1; }
-  //virtual inline int MaxTopBlobs() const { return 1; }
+  //irtual inline int ExactNumTopBlobs() const { return 1; }
+  virtual inline int MinTopBlobs() const { return 1; } // output rois
+  virtual inline int MaxTopBlobs() const { return 2; } // optional, output scores
 
  protected:
 
@@ -55,7 +55,7 @@ class ProposalLayer : public Layer<Dtype> {
 
   virtual void bbox_transform_inv(int img_width, int img_height, vector<vector<float> > bbox, vector<vector<float> > select_anchor, vector<vector<float> > &pred);
 
-  virtual void apply_nms(vector<vector<float> > &pred_boxes, vector<float> &confidence);
+  //virtual void apply_nms(vector<vector<float> > &pred_boxes, vector<float> &confidence);
 
   virtual void filter_boxes(vector<vector<float> > &pred_boxes, vector<float> &confidence, float min_size);
   virtual void applynmsfast(vector<vector<float> > &pred_boxes,vector<pair<Dtype, int> > &score_index_vec,

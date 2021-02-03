@@ -47,14 +47,21 @@ void ProposalLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   top_shape.push_back(1);
   top_shape.push_back(5);
   top[0]->Reshape(top_shape);
+  if(top.size() > 1)
+  {
+    vector<int> top_shape1(2, 1);
+    top_shape1.push_back(1);
+    top_shape1.push_back(1);
+    top[1]->Reshape(top_shape1);
+  }
 }
 
 template <typename Dtype>
 void ProposalLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-	const Dtype* score = bottom[0]->cpu_data();
-	const Dtype* bbox_deltas = bottom[1]->cpu_data();
-	const Dtype* im_info = bottom[2]->cpu_data();
+	const Dtype* score = bottom[0]->cpu_data(); // data order [n,c,h,w]
+	const Dtype* bbox_deltas = bottom[1]->cpu_data(); // data order [n,c,h,w]
+	const Dtype* im_info = bottom[2]->cpu_data(); // data order [h,w,c]
 	int height = bottom[0]->height();
 	int width = bottom[0]->width();
 	//float thresh = 0.3; //
@@ -63,7 +70,7 @@ void ProposalLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 	vector<vector<float> > bbox;
 	int anchor_num = anchor_scale_.size()*anchor_ratio_.size();
 
-	// TODO: data order is different from python version, may need adjustment
+	// TODO: stored data order is different from python version, may need adjustment
 	for (int k = 0; k < anchor_num; k++)
 	{
 		float w = anchor_boxes_[4 * k + 2] - anchor_boxes_[4 * k] + 1;
@@ -131,6 +138,20 @@ void ProposalLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 		top_data[5 * i + 2] = pred_boxes[index][1];
 		top_data[5 * i + 3] = pred_boxes[index][2];
 		top_data[5 * i + 4] = pred_boxes[index][3];
+	}
+
+	if(top.size() > 1)
+	{
+	    vector<int> score_shape;
+	    score_shape.push_back(num);
+	    score_shape.push_back(1);
+	    top[1]->Reshape(score_shape);
+	    Dtype* top_data1 = top[1]->mutable_cpu_data();
+	    for (int i = 0; i < num; i++)
+	    {
+	        int index = indices[i];
+	        top_data1[i] = confidence[index];
+	    }
 	}
 }
 
@@ -302,6 +323,7 @@ void ProposalLayer<Dtype>::applynmsfast(vector<vector<float> > &pred_boxes, vect
     indices.resize(top_k);
 }
 
+/*
 template <typename Dtype>
 void ProposalLayer<Dtype>::apply_nms(vector<vector<float> > &pred_boxes, vector<float> &confidence)
 {
@@ -342,7 +364,7 @@ void ProposalLayer<Dtype>::apply_nms(vector<vector<float> > &pred_boxes, vector<
 		}
 	}
 }
-
+*/
 
 INSTANTIATE_CLASS(ProposalLayer);
 REGISTER_LAYER_CLASS(Proposal);
