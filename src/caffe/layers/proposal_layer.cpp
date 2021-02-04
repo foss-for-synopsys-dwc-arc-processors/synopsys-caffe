@@ -223,7 +223,7 @@ void ProposalLayer<Dtype>::_scale_enum(vector<float> anchors_ratio, vector<float
 			ctrs_in.push_back(hs);
 			ctrs_in.push_back(ctrs[2]);
 			ctrs_in.push_back(ctrs[3]);
-			_mkanchors(ctrs_in, anchor_boxes_);
+			_mkanchors(ctrs_in, anchor_boxes);
 		}
 	}
 }
