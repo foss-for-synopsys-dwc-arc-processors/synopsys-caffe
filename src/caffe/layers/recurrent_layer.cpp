@@ -20,10 +20,14 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   LOG(INFO) << "Initializing recurrent layer: assuming input batch contains "
             << T_ << " timesteps of " << N_ << " independent streams.";
 
-  CHECK_EQ(bottom[1]->num_axes(), 2)
-      << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
-  CHECK_EQ(T_, bottom[1]->shape(0));
-  CHECK_EQ(N_, bottom[1]->shape(1));
+  continue_recur_ = this->layer_param_.recurrent_param().continue_recur();
+  if(!continue_recur_)
+  {
+    CHECK_EQ(bottom[1]->num_axes(), 2)
+        << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
+    CHECK_EQ(T_, bottom[1]->shape(0));
+    CHECK_EQ(N_, bottom[1]->shape(1));
+  }
 
   // If expose_hidden is set, we take as input and produce as output
   // the hidden state blobs at the first and last timesteps.
@@ -81,8 +85,16 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   input_param->add_shape()->CopyFrom(input_shape);
 
   input_shape.Clear();
-  for (int i = 0; i < bottom[1]->num_axes(); ++i) {
-    input_shape.add_dim(bottom[1]->shape(i));
+  if(!continue_recur_)
+  {
+    for (int i = 0; i < bottom[1]->num_axes(); ++i) {
+      input_shape.add_dim(bottom[1]->shape(i));
+    }
+  }
+  else
+  {
+    input_shape.add_dim(T_);
+    input_shape.add_dim(N_);
   }
   input_layer_param->add_top("cont");
   input_param->add_shape()->CopyFrom(input_shape);
@@ -213,13 +225,24 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       << "bottom[0] must have at least 2 axes -- (#timesteps, #streams, ...)";
   CHECK_EQ(T_, bottom[0]->shape(0)) << "input number of timesteps changed";
   N_ = bottom[0]->shape(1);
-  CHECK_EQ(bottom[1]->num_axes(), 2)
-      << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
-  CHECK_EQ(T_, bottom[1]->shape(0));
-  CHECK_EQ(N_, bottom[1]->shape(1));
+  if(!continue_recur_)
+  {
+    CHECK_EQ(bottom[1]->num_axes(), 2)
+        << "bottom[1] must have exactly 2 axes -- (#timesteps, #streams)";
+    CHECK_EQ(T_, bottom[1]->shape(0));
+    CHECK_EQ(N_, bottom[1]->shape(1));
+  }
   x_input_blob_->ReshapeLike(*bottom[0]);
-  vector<int> cont_shape = bottom[1]->shape();
-  cont_input_blob_->Reshape(cont_shape);
+  if(!continue_recur_)
+  {
+    vector<int> cont_shape = bottom[1]->shape();
+    cont_input_blob_->Reshape(cont_shape);
+  }
+  else
+  {
+    vector<int> cont_shape = {T_, N_};
+    cont_input_blob_->Reshape(cont_shape);
+  }
   if (static_input_) {
     x_static_input_blob_->ReshapeLike(*bottom[2]);
   }
@@ -232,7 +255,9 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   unrolled_net_->Reshape();
   x_input_blob_->ShareData(*bottom[0]);
   x_input_blob_->ShareDiff(*bottom[0]);
-  cont_input_blob_->ShareData(*bottom[1]);
+  if(!continue_recur_)
+    cont_input_blob_->ShareData(*bottom[1]);
+  else caffe_set(int(T_*N_), Dtype(1),  cont_input_blob_->mutable_cpu_data());
   if (static_input_) {
     x_static_input_blob_->ShareData(*bottom[2]);
     x_static_input_blob_->ShareDiff(*bottom[2]);

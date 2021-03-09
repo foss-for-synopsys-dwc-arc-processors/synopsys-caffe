@@ -35,15 +35,25 @@ class RecurrentLayer : public Layer<Dtype> {
 
   virtual inline const char* type() const { return "Recurrent"; }
   virtual inline int MinBottomBlobs() const {
-    int min_bottoms = 2;
-    if (this->layer_param_.recurrent_param().expose_hidden()) {
-      vector<string> inputs;
-      this->RecurrentInputBlobNames(&inputs);
-      min_bottoms += inputs.size();
+    if(this->layer_param_.recurrent_param().continue_recur())
+      return 1;
+    else
+    {
+      int min_bottoms = 2;
+      if (this->layer_param_.recurrent_param().expose_hidden()) {
+        vector<string> inputs;
+        this->RecurrentInputBlobNames(&inputs);
+        min_bottoms += inputs.size();
+      }
+      return min_bottoms;
     }
-    return min_bottoms;
   }
-  virtual inline int MaxBottomBlobs() const { return MinBottomBlobs() + 1; }
+  virtual inline int MaxBottomBlobs() const {
+    if(this->layer_param_.recurrent_param().continue_recur())
+      return MinBottomBlobs() + 2;
+    else
+      return MinBottomBlobs() + 1;
+  }
   virtual inline int ExactNumTopBlobs() const {
     int num_tops = 1;
     if (this->layer_param_.recurrent_param().expose_hidden() ||
@@ -175,6 +185,8 @@ class RecurrentLayer : public Layer<Dtype> {
    */
   bool expose_hidden_;
   bool default_initial_;
+
+  bool continue_recur_; // indicate the cont_input_blob is all 1; can remove the original 2nd bottom when used
 
   /**
    * @brief Whether RNN output will use h_t concat instead of tanh(W_ho * h_t + b_o) concat
