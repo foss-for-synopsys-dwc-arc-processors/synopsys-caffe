@@ -2226,6 +2226,10 @@ message RecurrentParameter {
   // blobs.  The number of additional bottom/top blobs required depends on the
   // recurrent architecture -- e.g., 1 for RNNs, 2 for LSTMs.
   optional bool expose_hidden = 5 [default = false];
+  // Whether to add as additional outputs (tops) the final timestep hidden state
+  // blobs.  The number of additional bottom/top blobs required depends on the
+  // recurrent architecture.
+  optional bool default_initial = 13 [default = false];
 
   // If set to true, ot will be ht, not tanh(W_ho * h_t + b_o)
   // to match rnn implementation in Tensorflow, only available for RNN layer

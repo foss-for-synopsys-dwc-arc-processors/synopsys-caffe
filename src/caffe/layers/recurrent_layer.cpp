@@ -28,6 +28,9 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // If expose_hidden is set, we take as input and produce as output
   // the hidden state blobs at the first and last timesteps.
   expose_hidden_ = this->layer_param_.recurrent_param().expose_hidden();
+  // If default_initial is set, we produce as output
+  // the hidden state blobs at the last timesteps.
+  default_initial_ = this->layer_param_.recurrent_param().default_initial();
 
   activations_.clear();
   std::copy(this->layer_param_.recurrent_param().activations().begin(),
@@ -56,6 +59,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // If provided, bottom[2] is a static input to the recurrent net.
   const int num_hidden_exposed = expose_hidden_ * num_recur_blobs;
+  const int num_default_initial = default_initial_ * num_recur_blobs;
   static_input_ = (bottom.size() > 2 + num_hidden_exposed);
   if (static_input_) {
     CHECK_GE(bottom[2]->num_axes(), 1);
@@ -143,8 +147,16 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 
   // Setup pointers to outputs.
-  CHECK_EQ(top.size() - num_hidden_exposed, output_names.size())
-      << "OutputBlobNames must provide an output blob name for each top.";
+  if(default_initial_)
+  {
+    CHECK_EQ(top.size() - num_default_initial, output_names.size())
+        << "OutputBlobNames must provide an output blob name for each top.";
+  }
+  else
+  {
+    CHECK_EQ(top.size() - num_hidden_exposed, output_names.size())
+        << "OutputBlobNames must provide an output blob name for each top.";
+  }
   output_blobs_.resize(output_names.size());
   for (int i = 0; i < output_names.size(); ++i) {
     output_blobs_[i] =
@@ -240,7 +252,7 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top[i]->ShareData(*output_blobs_[i]);
     top[i]->ShareDiff(*output_blobs_[i]);
   }
-  if (expose_hidden_) {
+  if (expose_hidden_ || default_initial_) {
     const int top_offset = output_blobs_.size();
     for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
       top[i]->ReshapeLike(*recur_output_blobs_[j]);
@@ -272,7 +284,8 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   if (!expose_hidden_) {
     for (int i = 0; i < recur_input_blobs_.size(); ++i) {
       const int count = recur_input_blobs_[i]->count();
-      DCHECK_EQ(count, recur_output_blobs_[i]->count());
+      if(!default_initial_)
+        DCHECK_EQ(count, recur_output_blobs_[i]->count());
       const Dtype* timestep_T_data = recur_output_blobs_[i]->cpu_data();
       Dtype* timestep_0_data = recur_input_blobs_[i]->mutable_cpu_data();
       caffe_copy(count, timestep_T_data, timestep_0_data);
@@ -281,7 +294,7 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
   unrolled_net_->ForwardTo(last_layer_index_);
 
-  if (expose_hidden_) {
+  if (expose_hidden_ || default_initial_) {
     const int top_offset = output_blobs_.size();
     for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
       top[i]->ShareData(*recur_output_blobs_[j]);

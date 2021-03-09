@@ -46,7 +46,8 @@ class RecurrentLayer : public Layer<Dtype> {
   virtual inline int MaxBottomBlobs() const { return MinBottomBlobs() + 1; }
   virtual inline int ExactNumTopBlobs() const {
     int num_tops = 1;
-    if (this->layer_param_.recurrent_param().expose_hidden()) {
+    if (this->layer_param_.recurrent_param().expose_hidden() ||
+        this->layer_param_.recurrent_param().default_initial()) {
       vector<string> outputs;
       this->RecurrentOutputBlobNames(&outputs);
       num_tops += outputs.size();
@@ -173,6 +174,7 @@ class RecurrentLayer : public Layer<Dtype> {
    *        are layer inputs and outputs, respectively.
    */
   bool expose_hidden_;
+  bool default_initial_;
 
   /**
    * @brief Whether RNN output will use h_t concat instead of tanh(W_ho * h_t + b_o) concat
