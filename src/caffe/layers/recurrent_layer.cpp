@@ -64,10 +64,21 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // If provided, bottom[2] is a static input to the recurrent net.
   const int num_hidden_exposed = expose_hidden_ * num_recur_blobs;
   const int num_default_initial = default_initial_ * num_recur_blobs;
-  static_input_ = (bottom.size() > 2 + num_hidden_exposed);
+  if(!continue_recur_)
+    static_input_ = (bottom.size() > 2 + num_hidden_exposed) && (bottom.size() > 2 + num_default_initial) ;
+  else
+    static_input_ = (bottom.size() > 1 + num_hidden_exposed) && (bottom.size() > 1 + num_default_initial) ;
   if (static_input_) {
-    CHECK_GE(bottom[2]->num_axes(), 1);
-    CHECK_EQ(N_, bottom[2]->shape(0));
+    if(!continue_recur_)
+    {
+      CHECK_GE(bottom[2]->num_axes(), 1);
+      CHECK_EQ(N_, bottom[2]->shape(0));
+    }
+    else
+    {
+      CHECK_GE(bottom[1]->num_axes(), 1);
+      CHECK_EQ(N_, bottom[1]->shape(0));
+    }
   }
 
   // Create a NetParameter; setup the inputs that aren't unique to particular
@@ -101,8 +112,17 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   if (static_input_) {
     input_shape.Clear();
-    for (int i = 0; i < bottom[2]->num_axes(); ++i) {
-      input_shape.add_dim(bottom[2]->shape(i));
+    if(!continue_recur_)
+    {
+      for (int i = 0; i < bottom[2]->num_axes(); ++i) {
+        input_shape.add_dim(bottom[2]->shape(i));
+      }
+    }
+    else
+    {
+      for (int i = 0; i < bottom[1]->num_axes(); ++i) {
+        input_shape.add_dim(bottom[1]->shape(i));
+      }
     }
     input_layer_param->add_top("x_static");
     input_param->add_shape()->CopyFrom(input_shape);
@@ -177,8 +197,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // We should have 2 inputs (x and cont), plus a number of recurrent inputs,
   // plus maybe a static input.
-  CHECK_EQ(2 + num_recur_blobs + static_input_,
-           unrolled_net_->input_blobs().size());
+  CHECK_EQ(2 + num_recur_blobs + static_input_, unrolled_net_->input_blobs().size());
 
   // This layer's parameters are any parameters in the layers of the unrolled
   // net. We only want one copy of each parameter, so check that the parameter
@@ -244,7 +263,10 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     cont_input_blob_->Reshape(cont_shape);
   }
   if (static_input_) {
-    x_static_input_blob_->ReshapeLike(*bottom[2]);
+    if(!continue_recur_)
+      x_static_input_blob_->ReshapeLike(*bottom[2]);
+    else
+      x_static_input_blob_->ReshapeLike(*bottom[1]);
   }
   vector<BlobShape> recur_input_shapes;
   RecurrentInputShapes(&recur_input_shapes);
@@ -259,11 +281,23 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     cont_input_blob_->ShareData(*bottom[1]);
   else caffe_set(int(T_*N_), Dtype(1),  cont_input_blob_->mutable_cpu_data());
   if (static_input_) {
-    x_static_input_blob_->ShareData(*bottom[2]);
-    x_static_input_blob_->ShareDiff(*bottom[2]);
+    if(!continue_recur_)
+    {
+      x_static_input_blob_->ShareData(*bottom[2]);
+      x_static_input_blob_->ShareDiff(*bottom[2]);
+    }
+    else
+    {
+      x_static_input_blob_->ShareData(*bottom[1]);
+      x_static_input_blob_->ShareDiff(*bottom[1]);
+    }
   }
   if (expose_hidden_) {
-    const int bottom_offset = 2 + static_input_;
+    int bottom_offset;
+    if(!continue_recur_)
+      bottom_offset = 2 + static_input_;
+    else
+      bottom_offset = 1 + static_input_;
     for (int i = bottom_offset, j = 0; i < bottom.size(); ++i, ++j) {
       CHECK(recur_input_blobs_[j]->shape() == bottom[i]->shape())
           << "shape mismatch - recur_input_blobs_[" << j << "]: "
