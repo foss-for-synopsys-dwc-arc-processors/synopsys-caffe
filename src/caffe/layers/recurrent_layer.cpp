@@ -65,9 +65,9 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const int num_hidden_exposed = expose_hidden_ * num_recur_blobs;
   const int num_default_initial = default_initial_ * num_recur_blobs;
   if(!continue_recur_)
-    static_input_ = (bottom.size() > 2 + num_hidden_exposed) && (bottom.size() > 2 + num_default_initial) ;
+    static_input_ = (bottom.size() > 2 + num_hidden_exposed);
   else
-    static_input_ = (bottom.size() > 1 + num_hidden_exposed) && (bottom.size() > 1 + num_default_initial) ;
+    static_input_ = (bottom.size() > 1 + num_hidden_exposed);
   if (static_input_) {
     if(!continue_recur_)
     {
