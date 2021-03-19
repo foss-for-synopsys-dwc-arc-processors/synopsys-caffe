@@ -659,12 +659,15 @@ void RNNv2Layer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
   int bottom_offset = 2;
   if(continue_recur_)
     bottom_offset = 1;
-  for (int i = bottom_offset, j = 0; i < bottom.size(); ++i, ++j) {
-    CHECK(recur_input_blobs_[j]->shape() == bottom[i]->shape())
-      << "shape mismatch - recur_input_blobs_[" << j
-      << "]: " << recur_input_blobs_[j]->shape_string() << " vs. bottom["
-      << i << "]: " << bottom[i]->shape_string();
-    recur_input_blobs_[j]->ShareData(*bottom[i]);
+  if(!default_initial_)
+  {
+    for (int i = bottom_offset, j = 0; i < bottom.size(); ++i, ++j) {
+      CHECK(recur_input_blobs_[j]->shape() == bottom[i]->shape())
+          << "shape mismatch - recur_input_blobs_[" << j
+          << "]: " << recur_input_blobs_[j]->shape_string() << " vs. bottom["
+          << i << "]: " << bottom[i]->shape_string();
+      recur_input_blobs_[j]->ShareData(*bottom[i]);
+    }
   }
   for (int i = 0; i < output_blobs_.size(); ++i) {
     top[i]->ReshapeLike(*output_blobs_[i]);
