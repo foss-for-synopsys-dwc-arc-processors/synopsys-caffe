@@ -3396,6 +3396,10 @@ message RNNv2Parameter {
   // apply the linear transformation before multiplying by the output
   // of the reset gate.
   optional uint32 linear_before_reset = 9 [default = 0];
+
+  optional bool default_initial = 13 [default = false];
+  // indicate the cont_input_blob is all 1; can remove the original 2nd bottom when used
+  optional bool continue_recur = 14 [default = false];
 }
 
 message CountNonzeroParameter {

@@ -25,9 +25,14 @@ public:
   virtual inline const char *type() const { return "RNNv2"; }
   virtual inline int MinBottomBlobs() const {
     int min_bottoms = 2;
-    vector<string> inputs;
-    this->RecurrentBlobNamePrefix(&inputs);
-    min_bottoms += inputs.size();
+    if(this->layer_param_.rnn_v2_param().continue_recur())
+        min_bottoms = 1;
+    if(!this->layer_param_.rnn_v2_param().default_initial())
+    {
+      vector<string> inputs;
+      this->RecurrentBlobNamePrefix(&inputs);
+      min_bottoms += inputs.size();
+    }
     return min_bottoms;
   }
   virtual inline int MaxBottomBlobs() const { return MinBottomBlobs() + 1; }
@@ -135,6 +140,9 @@ protected:
   vector<float> activation_alpha_;
   vector<float> activation_beta_;
   string direction_;
+
+  bool default_initial_;
+  bool continue_recur_; // indicate the cont_input_blob is all 1; can remove the original 2nd bottom when used
 };
 
 } // namespace caffe
