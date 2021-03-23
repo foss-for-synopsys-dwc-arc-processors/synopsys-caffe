@@ -1369,6 +1369,8 @@ message ConvolutionParameter {
 
   optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional int32 input_zero_point = 33 [default = 0]; //CUSTOMIZATION
+  optional int32 output_zero_point = 34 [default = 0]; //CUSTOMIZATION
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
@@ -1697,6 +1699,9 @@ message EltwiseParameter {
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION, only valid for SUM
+  optional int32 output_zero_point = 7; //CUSTOMIZATION, track it blob-wise for quantization
+  repeated int32 input_zero_point = 8; //CUSTOMIZATION, use coeff as input_scale
+
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;

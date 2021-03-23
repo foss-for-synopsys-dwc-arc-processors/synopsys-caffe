@@ -27,8 +27,15 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       coeffs_[i] = this->layer_param().eltwise_param().coeff(i);
     }
   }
+  input_zero_point_ = vector<int>(bottom.size(), 0);
+  if (this->layer_param().eltwise_param().coeff_size()) {
+    for (int i = 0; i < bottom.size(); ++i) {
+      input_zero_point_[i] = this->layer_param().eltwise_param().input_zero_point(i);
+    }
+  }
   stable_prod_grad_ = this->layer_param_.eltwise_param().stable_prod_grad();
   output_scale_ = this->layer_param_.eltwise_param().output_scale();
+  output_zero_point_ = this->layer_param_.eltwise_param().output_zero_point();
   saturate_ = this->layer_param_.eltwise_param().saturate();
 
   //<--CUSTOMIZATION, for broadcasting
