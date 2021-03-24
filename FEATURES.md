@@ -31,6 +31,7 @@ hard_sigmoid_layer
 hard_swish_layer  
 hard_tanh_layer  
 icnet_subgraph_layer  
+layer_norm_layer  
 log_softmax_layer  
 lp_normalization_layer  
 luong_attention_layer  
