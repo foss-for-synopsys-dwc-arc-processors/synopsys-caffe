@@ -1699,8 +1699,8 @@ message EltwiseParameter {
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION, only valid for SUM
-  optional int32 output_zero_point = 7; //CUSTOMIZATION, track it blob-wise for quantization
-  repeated int32 input_zero_point = 8; //CUSTOMIZATION, use coeff as input_scale
+  optional int32 output_zero_point = 7 [default = 0]; //CUSTOMIZATION
+  repeated int32 input_zero_point = 8; //CUSTOMIZATION, use coeff as input_scale, track them blob-wise for quantization
 
   //<--CUSTOMIZATION
   enum SaturateMethod {

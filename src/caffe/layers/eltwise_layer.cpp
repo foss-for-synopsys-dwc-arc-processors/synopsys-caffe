@@ -28,7 +28,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     }
   }
   input_zero_point_ = vector<int>(bottom.size(), 0);
-  if (this->layer_param().eltwise_param().coeff_size()) {
+  if (this->layer_param().eltwise_param().input_zero_point_size()) {
     for (int i = 0; i < bottom.size(); ++i) {
       input_zero_point_[i] = this->layer_param().eltwise_param().input_zero_point(i);
     }
