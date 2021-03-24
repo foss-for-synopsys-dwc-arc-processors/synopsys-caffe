@@ -679,6 +679,7 @@ message LayerParameter {
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
   optional ScatterNDParameter scatter_nd_param = 276;
+  optional LayerNormParameter layer_norm_param = 277;
 }  
 
 message AccumParameter {
@@ -3428,4 +3429,9 @@ message ScatterNDParameter {
   repeated uint32 data_shape = 4;
   repeated uint32 indices_shape = 5;
   repeated uint32 updates_shape = 6;
+}
+
+message LayerNormParameter {
+  optional float eps = 1 [default = 1e-5];
+  optional bool elementwise_affine = 2 [default = true];
 }
