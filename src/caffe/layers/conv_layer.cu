@@ -11,11 +11,23 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* weight = this->blobs_[0]->gpu_data();
   Dtype input_scale = this->input_scale_; //CUSTOMIZATION
   Dtype output_scale = this->output_scale_; //CUSTOMIZATION
+  int input_zero_point = this->input_zero_point_; //CUSTOMIZATION
+  int output_zero_point = this->output_zero_point_; //CUSTOMIZATION
   Dtype saturate = this->saturate_; //CUSTOMIZATION
   for (int i = 0; i < bottom.size(); ++i) {
     Dtype* bottom_data = bottom[i]->mutable_gpu_data();
     //<--CUSTOMIZATION
     const int count_b = bottom[i]->count();
+    /*** Denote input_scale=s0,input_zero_point=z0,input_blob=x0;
+                output_scale=s1,output_zero_point=z1;
+                Weight=W0, Bias=B0, X=Convolution
+        ( (x0-z0)*s0 X W0 + B0 ) / s1 + z1
+      = ( (x0-z0) X W0 + B0/S0)) * s0/s1 + z1
+      Tried both computation, neither achieve bit-wise precision referring to Caffe2
+    ***/
+    if (input_zero_point != 0) {
+      caffe_gpu_add_scalar(count_b, Dtype(-input_zero_point), bottom_data);
+    }
     if (input_scale != Dtype(1)) {
       caffe_gpu_scal(count_b, input_scale, bottom_data);
     }
@@ -35,6 +47,9 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_scal(count_t, output_scale, top_data);
       caffe_gpu_round(count_t, top_data);
     }
+    if (output_zero_point != 0) {
+      caffe_gpu_add_scalar(count_t, Dtype(output_zero_point), top_data);
+    }
     if(saturate ==  ConvolutionParameter_SaturateMethod_Signed)
       caffe_gpu_signed_saturate(count_t, top_data);
     if(saturate ==  ConvolutionParameter_SaturateMethod_Unsigned)
@@ -43,6 +58,17 @@ void ConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_signed_8bit_saturate(count_t, top_data);
     if(saturate ==  ConvolutionParameter_SaturateMethod_Unsigned_8bit)
       caffe_gpu_unsigned_8bit_saturate(count_t, top_data);
+
+    // retrieve the quantized bottom blobs
+    // in case some other layer consumes the same input blob
+    if (input_scale != Dtype(1)) {
+      caffe_gpu_scal(count_b, Dtype(1.0) / input_scale, bottom_data);
+      caffe_gpu_round(count_b, bottom_data);
+    }
+    if (input_zero_point != 0) {
+      caffe_gpu_add_scalar(count_b, Dtype(input_zero_point), bottom_data);
+    }
+    //caffe_gpu_unsigned_8bit_saturate(count_b, bottom_data);
     //CUSTOMIZATION-->
   }
 }

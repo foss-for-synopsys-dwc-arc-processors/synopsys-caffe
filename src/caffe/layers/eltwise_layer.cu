@@ -73,7 +73,15 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_mul(count, top_data, bottom[i]->gpu_data(), top_data);
     }
     break;
-  case EltwiseParameter_EltwiseOp_SUM:
+    case EltwiseParameter_EltwiseOp_SUM:
+    //<--CUSTOMIZATION
+    for (int i = 0; i < bottom.size(); ++i) {
+      // input = (bottom - ZeroPoint) * scale; scale is given as coeffs_
+      if (input_zero_point_[i] != 0) {
+        caffe_gpu_add_scalar(count, Dtype(-input_zero_point_[i]), bottom[i]->mutable_gpu_data());
+      }
+    }
+    //CUSTOMIZATION-->
     caffe_gpu_set(count, Dtype(0.), top_data);
     // TODO(shelhamer) does cuBLAS optimize to sum for coeff = 1?
     for (int i = 0; i < bottom.size(); ++i) {
@@ -84,6 +92,10 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_scal(count, output_scale_, top_data);
       caffe_gpu_round(count, top_data);
     }
+    // output =  top/scale + ZeroPoint
+    if (output_zero_point_ != 0) {
+      caffe_gpu_add_scalar(count, Dtype(output_zero_point_), top_data);
+    }
     if(saturate_ ==  EltwiseParameter_SaturateMethod_Signed)
       caffe_gpu_signed_saturate(count, top_data);
     if(saturate_ ==  EltwiseParameter_SaturateMethod_Unsigned)
@@ -92,6 +104,12 @@ void EltwiseLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
       caffe_gpu_signed_8bit_saturate(count, top_data);
     if(saturate_ ==  EltwiseParameter_SaturateMethod_Unsigned_8bit)
       caffe_gpu_unsigned_8bit_saturate(count, top_data);
+    // shift the bottom blob back, in case they are input of some other residual connection
+    for (int i = 0; i < bottom.size(); ++i) {
+      if (input_zero_point_[i] != 0) {
+        caffe_gpu_add_scalar(count, Dtype(input_zero_point_[i]), bottom[i]->mutable_gpu_data());
+      }
+    }
     //CUSTOMIZATION-->
     break;
   case EltwiseParameter_EltwiseOp_MAX:

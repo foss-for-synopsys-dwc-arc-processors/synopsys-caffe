@@ -101,6 +101,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   int pad_t_; //CUSTOMIZATION
   int pad_b_; //CUSTOMIZATION
 
+  int input_zero_point_; //CUSTOMIZATION
+  int output_zero_point_; //CUSTOMIZATION
   Dtype input_scale_; //CUSTOMIZATION
   Dtype output_scale_; //CUSTOMIZATION
   Dtype saturate_; //CUSTOMIZATION

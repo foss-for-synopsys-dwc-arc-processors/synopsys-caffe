@@ -315,7 +315,7 @@ __global__ void AvePoolForward_TF(const int nthreads,
       }
       else if(saturate ==  PoolingParameter_SaturateMethod_Unsigned_8bit)
       {
-      	top_data[index] = aveval;
+      	top_data[index] = rint(aveval / pool_size);
         if(top_data[index] > UNSIGNED_8BIT_SATURATE_MAX)
           top_data[index] = UNSIGNED_8BIT_SATURATE_MAX;
         if(top_data[index] < 0)

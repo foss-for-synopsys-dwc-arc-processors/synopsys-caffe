@@ -2583,6 +2583,8 @@ message SqueezeConvolutionParameter {
 
   optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional int32 input_zero_point = 49 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional int32 output_zero_point = 50 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
