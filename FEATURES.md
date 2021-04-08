@@ -124,9 +124,15 @@ squeeze_deconv_layer
   
 
 ## Custom Quantization related  
-input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, bias_scale, bias_zero_point in ConvolutionParameter and InnerProductParameter  
-input_scale, input_zero_point, output_scale, output_zero_point in SoftmaxParameter and SqueezeConvolutionParameter  
-input_zero_point, output_scale, output_zero_point in EltwiseParameter  
++ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, bias_scale, bias_zero_point in  
+ConvolutionParameter  
+InnerProductParameter  
++ input_scale, input_zero_point, output_scale, output_zero_point in  
+ConcatParameter  
+EltwiseParameter  
+PoolingParameter  
+SigmoidParameter  
+SoftmaxParameter  
 
 
 ## evquantize related (only valid for CUDA forwards implementation)   
