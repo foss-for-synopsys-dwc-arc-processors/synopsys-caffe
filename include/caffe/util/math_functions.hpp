@@ -148,6 +148,27 @@ DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]))
 template <typename Dtype>
 void caffe_cpu_scale(const int n, const Dtype alpha, const Dtype *x, Dtype* y);
 
+template <typename Dtype>
+void caffe_cpu_signed_saturate(const int n, Dtype* x);
+
+template <typename Dtype>
+void caffe_cpu_unsigned_saturate(const int n, Dtype* x);
+
+template <typename Dtype>
+void caffe_cpu_signed_8bit_saturate(const int n, Dtype* x);
+
+template <typename Dtype>
+void caffe_cpu_unsigned_8bit_saturate(const int n, Dtype* x);
+
+template <typename Dtype>
+void caffe_cpu_round(const int n, Dtype* x);
+
+template <typename Dtype>
+void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero_point);
+
+template <typename Dtype>
+void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int zero_point);
+
 #ifndef CPU_ONLY  // GPU
 
 // Decaf gpu gemm provides an interface that is almost the same as the cpu

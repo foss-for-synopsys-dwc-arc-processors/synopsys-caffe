@@ -7,6 +7,13 @@
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
 
+#define SIGNED_SATURATE_MAX 2047
+#define SIGNED_SATURATE_MIN -2048
+#define UNSIGNED_SATURATE_MAX 4095
+#define SIGNED_8BIT_SATURATE_MAX 127
+#define SIGNED_8BIT_SATURATE_MIN -128
+#define UNSIGNED_8BIT_SATURATE_MAX 255
+
 namespace caffe {
 
 template<>
@@ -396,5 +403,96 @@ void caffe_cpu_scale<double>(const int n, const double alpha, const double *x,
   cblas_dcopy(n, x, 1, y, 1);
   cblas_dscal(n, alpha, y, 1);
 }
+
+template <typename Dtype>
+void caffe_cpu_universal_saturate(const int n, Dtype* x, Dtype SATURATE_MAX, Dtype SATURATE_MIN) {
+  for (int i = 0; i < n; ++i) {
+    if (x[i] > SATURATE_MAX) {
+      x[i] = SATURATE_MAX;
+    }
+    if (x[i] < SATURATE_MIN) {
+      x[i] = SATURATE_MIN;
+    }
+  }
+}
+
+template <>
+void caffe_cpu_signed_saturate<float>(const int n, float* x) {
+  caffe_cpu_universal_saturate<float>(n, x, SIGNED_SATURATE_MAX, SIGNED_SATURATE_MIN);
+}
+
+template <>
+void caffe_cpu_signed_saturate<double>(const int n, double* x) {
+  caffe_cpu_universal_saturate<double>(n, x, SIGNED_SATURATE_MAX, SIGNED_SATURATE_MIN);
+}
+
+template <>
+void caffe_cpu_unsigned_saturate<float>(const int n, float* x) {
+  caffe_cpu_universal_saturate<float>(n, x, UNSIGNED_SATURATE_MAX, 0);
+}
+
+template <>
+void caffe_cpu_unsigned_saturate<double>(const int n, double* x) {
+  caffe_cpu_universal_saturate<double>(n, x, UNSIGNED_SATURATE_MAX, 0);
+}
+
+template <>
+void caffe_cpu_signed_8bit_saturate<float>(const int n, float* x) {
+  caffe_cpu_universal_saturate<float>(n, x, SIGNED_8BIT_SATURATE_MAX, SIGNED_8BIT_SATURATE_MIN);
+}
+
+template <>
+void caffe_cpu_signed_8bit_saturate<double>(const int n, double* x) {
+  caffe_cpu_universal_saturate<double>(n, x, SIGNED_8BIT_SATURATE_MAX, SIGNED_8BIT_SATURATE_MIN);
+}
+
+template <>
+void caffe_cpu_unsigned_8bit_saturate<float>(const int n, float* x) {
+  caffe_cpu_universal_saturate<float>(n, x, UNSIGNED_8BIT_SATURATE_MAX, 0);
+}
+template <>
+void caffe_cpu_unsigned_8bit_saturate<double>(const int n, double* x) {
+  caffe_cpu_universal_saturate<double>(n, x, UNSIGNED_8BIT_SATURATE_MAX, 0);
+}
+
+template <typename Dtype>
+void caffe_cpu_round(const int n, Dtype *x) {
+  for (int i = 0; i < n; ++i) {
+    x[i] = std::rint(x[i]);
+  }
+}
+
+template void caffe_cpu_round<float>(const int n, float* x);
+
+template void caffe_cpu_round<double>(const int n, double* x);
+
+template <typename Dtype>
+void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero_point){
+  if (scale != Dtype(1.0)) {
+    caffe_div_scalar<Dtype>(n, scale, x);
+    caffe_cpu_round<Dtype>(n, x);
+  }
+  if (zero_point != 0) {
+    caffe_add_scalar<Dtype>(n, Dtype(zero_point), x);
+  }
+}
+
+template void caffe_cpu_quantize<float>(const int n, float* x, const float scale, const int zero_point);
+
+template void caffe_cpu_quantize<double>(const int n, double* x, const double scale, const int zero_point);
+
+template <typename Dtype>
+void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int zero_point){
+  if (zero_point != 0) {
+    caffe_add_scalar<Dtype>(n, Dtype(-zero_point), x);
+  }
+  if (scale != Dtype(1.0)) {
+    caffe_scal<Dtype>(n, scale, x);
+  }
+}
+
+template void caffe_cpu_dequantize<float>(const int n, float* x, const float scale, const int zero_point);
+
+template void caffe_cpu_dequantize<double>(const int n, double* x, const double scale, const int zero_point);
 
 }  // namespace caffe
