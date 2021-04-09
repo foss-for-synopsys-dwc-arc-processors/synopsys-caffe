@@ -77,27 +77,14 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   }
 
   //<--CUSTOMIZATION
-  if (conv_param.has_input_scale()) {
-    input_scale_ = conv_param.input_scale();
-  } else {
-    input_scale_ = 1;
-  }
-  if (conv_param.has_input_zero_point()) {
-    input_zero_point_ = conv_param.input_zero_point();
-  } else {
-    input_zero_point_ = 0;
-  }
-  if (conv_param.has_output_scale()){
-    output_scale_ = conv_param.output_scale();
-  } else{
-    output_scale_ = 1;
-  }
-  if (conv_param.has_output_zero_point()) {
-    output_zero_point_ = conv_param.output_zero_point();
-  } else {
-    output_zero_point_ = 0;
-  }
-
+  input_scale_ = conv_param.input_scale();
+  input_zero_point_ = conv_param.input_zero_point();
+  output_scale_ = conv_param.output_scale();
+  output_zero_point_ = conv_param.output_zero_point();
+  weight_scale_ = conv_param.weight_scale();
+  weight_zero_point_ = conv_param.weight_zero_point();
+  bias_scale_ = conv_param.bias_scale();
+  bias_zero_point_ = conv_param.bias_zero_point();
   saturate_ = conv_param.saturate();
   //CUSTOMIZATION-->
 

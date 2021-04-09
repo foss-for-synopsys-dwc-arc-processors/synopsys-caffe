@@ -2608,8 +2608,12 @@ message SqueezeConvolutionParameter {
 
   optional float input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional float output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional int32 input_zero_point = 49 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional int32 output_zero_point = 50 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional float weight_scale = 49 [default = 1]; //CUSTOMIZATION
+  optional float bias_scale = 50 [default = 1]; //CUSTOMIZATION
+  optional int32 input_zero_point = 51 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional int32 output_zero_point = 52 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional int32 weight_zero_point = 53 [default = 0]; //CUSTOMIZATION
+  optional int32 bias_zero_point = 54 [default = 0]; //CUSTOMIZATION
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;

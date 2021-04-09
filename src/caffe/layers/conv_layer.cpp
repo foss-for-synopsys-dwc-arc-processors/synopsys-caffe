@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "caffe/layers/conv_layer.hpp"
+#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 
@@ -51,10 +52,39 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
 template <typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
+  // set up quantization parameters: scale + zero_point
+  const Dtype input_scale = this->input_scale_;
+  const Dtype output_scale = this->output_scale_;
+  const Dtype weight_scale = this->weight_scale_;
+  const Dtype bias_scale = this->bias_scale_;
+  const int input_zero_point = this->input_zero_point_;
+  const int output_zero_point = this->output_zero_point_;
+  const int weight_zero_point = this->weight_zero_point_;
+  const int bias_zero_point = this->bias_zero_point_;
+  const Dtype saturate = this->saturate_;
+  const bool quant_in = (input_scale != Dtype(1.0) || input_zero_point != 0);
+  const bool quant_out = (output_scale != Dtype(1.0) || output_zero_point != 0);
+  const bool quant_w = (weight_scale != Dtype(1.0) || weight_zero_point != 0);
+  const bool quant_b = (this->bias_term_&& (bias_scale != Dtype(1.0) || bias_zero_point != 0));
+  if (quant_w) {
+    Dtype *qw = this->blobs_[0]->mutable_cpu_data();
+    caffe_cpu_dequantize<Dtype>(this->blobs_[0]->count(), qw, weight_scale, weight_zero_point);
+  }
+  if (quant_b) {
+    Dtype *qb = this->blobs_[1]->mutable_cpu_data();
+    caffe_cpu_dequantize<Dtype>(this->blobs_[1]->count(), qb, bias_scale, bias_zero_point);
+  }
+
   const Dtype* weight = this->blobs_[0]->cpu_data();
   for (int i = 0; i < bottom.size(); ++i) {
+    if (quant_in) {
+      Dtype* qin = bottom[i]->mutable_cpu_data();
+      caffe_cpu_dequantize<Dtype>(bottom[i]->count(), qin, input_scale, input_zero_point);
+    }
+
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* top_data = top[i]->mutable_cpu_data();
+
     for (int n = 0; n < this->num_; ++n) {
       this->forward_cpu_gemm(bottom_data + n * this->bottom_dim_, weight,
           top_data + n * this->top_dim_);
@@ -63,6 +93,33 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         this->forward_cpu_bias(top_data + n * this->top_dim_, bias);
       }
     }
+
+    const int count_t = top[i]->count();
+    if (quant_out) {
+      caffe_cpu_quantize<Dtype>(count_t, top_data, output_scale, output_zero_point);
+    }
+    if (saturate == ConvolutionParameter_SaturateMethod_Signed)
+      caffe_cpu_signed_saturate(count_t, top_data);
+    if (saturate == ConvolutionParameter_SaturateMethod_Unsigned)
+      caffe_cpu_unsigned_saturate(count_t, top_data);
+    if (saturate == ConvolutionParameter_SaturateMethod_Signed_8bit)
+      caffe_cpu_signed_8bit_saturate(count_t, top_data);
+    if (saturate == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
+      caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
+
+    if (quant_in) { // restore the quantized input blob
+      Dtype* qin = bottom[i]->mutable_cpu_data();
+      caffe_cpu_quantize<Dtype>(bottom[i]->count(), qin, input_scale, input_zero_point);
+    }
+  }
+  // restore quantized weight/bias
+  if (quant_w) {
+    Dtype *qw = this->blobs_[0]->mutable_cpu_data();
+    caffe_cpu_quantize<Dtype>(this->blobs_[0]->count(), qw, weight_scale, weight_zero_point);
+  }
+  if (quant_b) {
+    Dtype *qb = this->blobs_[1]->mutable_cpu_data();
+    caffe_cpu_quantize<Dtype>(this->blobs_[1]->count(), qb, bias_scale, bias_zero_point);
   }
 }
 
