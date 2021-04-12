@@ -41,6 +41,7 @@ class EltwiseLayer : public Layer<Dtype> {
 
   EltwiseParameter_EltwiseOp op_;
   vector<Dtype> coeffs_;
+  vector<Dtype> input_scale_; //CUSTOMIZATION
   vector<int> input_zero_point_; //CUSTOMIZATION
   Blob<int> max_idx_;
   Blob<int> min_idx_; //CUSTOMIZATION

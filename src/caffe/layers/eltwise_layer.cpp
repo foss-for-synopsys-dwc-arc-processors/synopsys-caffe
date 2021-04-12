@@ -27,6 +27,12 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       coeffs_[i] = this->layer_param().eltwise_param().coeff(i);
     }
   }
+  input_scale_ = vector<Dtype>(bottom.size(), 0);
+  if (this->layer_param().eltwise_param().input_scale_size()) {
+    for (int i = 0; i < bottom.size(); ++i) {
+      input_scale_[i] = this->layer_param().eltwise_param().input_scale(i);
+    }
+  }
   input_zero_point_ = vector<int>(bottom.size(), 0);
   if (this->layer_param().eltwise_param().input_zero_point_size()) {
     for (int i = 0; i < bottom.size(); ++i) {
@@ -97,6 +103,14 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+  std::vector<bool> quant_in(bottom.size(), false);
+  for (int i = 0; i < quant_in.size(); ++i) {
+    quant_in[i] = (input_scale_[i] != Dtype(1.0) || input_zero_point_[i] != 0);
+    if (quant_in[i]) {
+      caffe_cpu_dequantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
+        input_scale_[i], input_zero_point_[i]);
+    }
+  }// <<-- dequantize the input blobs
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* eltwise_data = NULL; //CUSTOMIZATION
   if(bottom.size() > 1)
@@ -275,6 +289,25 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     //CUSTOMIZATION-->
   default:
     LOG(FATAL) << "Unknown elementwise operation.";
+  }
+  // quantize the output blob
+  if (output_scale_ != Dtype(1.0) || output_zero_point_ != 0) {
+    caffe_cpu_quantize<Dtype>(count, top_data, output_scale_, output_zero_point_);
+  }
+  if (saturate_ == EltwiseParameter_SaturateMethod_Signed)
+    caffe_cpu_signed_saturate(count, top_data);
+  if (saturate_ == EltwiseParameter_SaturateMethod_Unsigned)
+    caffe_cpu_unsigned_saturate(count, top_data);
+  if (saturate_ == EltwiseParameter_SaturateMethod_Signed_8bit)
+    caffe_cpu_signed_8bit_saturate(count, top_data);
+  if (saturate_ == EltwiseParameter_SaturateMethod_Unsigned_8bit)
+    caffe_cpu_unsigned_8bit_saturate(count, top_data);
+  // restore the quantized input blobs -->>
+  for (int i = 0; i < quant_in.size(); ++i) {
+    if (quant_in[i]) {
+      caffe_cpu_quantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
+        input_scale_[i], input_zero_point_[i]);
+    }
   }
 }
 
