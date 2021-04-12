@@ -27,7 +27,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       coeffs_[i] = this->layer_param().eltwise_param().coeff(i);
     }
   }
-  input_scale_ = vector<Dtype>(bottom.size(), 0);
+  input_scale_ = vector<Dtype>(bottom.size(), 1.0);
   if (this->layer_param().eltwise_param().input_scale_size()) {
     for (int i = 0; i < bottom.size(); ++i) {
       input_scale_[i] = this->layer_param().eltwise_param().input_scale(i);
