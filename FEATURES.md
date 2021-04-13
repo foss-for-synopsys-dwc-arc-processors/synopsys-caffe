@@ -131,6 +131,7 @@ InnerProductParameter
 ConcatParameter  
 EltwiseParameter  
 PoolingParameter  
+ReLUParameter  
 SigmoidParameter  
 SoftmaxParameter  
 

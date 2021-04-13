@@ -2326,6 +2326,10 @@ message ReLUParameter {
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
   optional float maximum = 6 [default = 0]; //CUSTOMIZATION, act as MAX range setting
   optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting
+  optional float input_scale = 13 [default = 1]; //CUSTOMIZATION
+  optional float output_scale = 14 [default = 1]; //CUSTOMIZATION
+  optional int32 input_zero_point = 15 [default = 0]; //CUSTOMIZATION
+  optional int32 output_zero_point = 16 [default = 0]; //CUSTOMIZATION
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
