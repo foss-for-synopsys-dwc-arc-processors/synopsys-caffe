@@ -23,11 +23,19 @@ void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   scale_.Reshape(scale_dims);
   input_scale_ = this->layer_param_.softmax_param().input_scale(); //CUSTOMIZATION
   output_scale_ = this->layer_param_.softmax_param().output_scale(); //CUSTOMIZATION
+  input_zero_point_ = this->layer_param_.softmax_param().input_zero_point(); //CUSTOMIZATION
+  output_zero_point_ = this->layer_param_.softmax_param().output_zero_point(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
 void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+  const bool quant_in = (input_scale_ != Dtype(1.0) || input_zero_point_ != 0);
+  const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
+  if (quant_in) {
+    caffe_cpu_dequantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+        input_scale_, input_zero_point_);
+  }
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   Dtype* scale_data = scale_.mutable_cpu_data();
@@ -58,6 +66,14 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       caffe_div(inner_num_, top_data, scale_data, top_data);
       top_data += inner_num_;
     }
+  }
+  if (quant_out) {
+    // do not reuse "top_data"; it is shifted during the computation
+    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+  }
+  if (quant_in) {
+    caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+        input_scale_, input_zero_point_);
   }
 }
 
