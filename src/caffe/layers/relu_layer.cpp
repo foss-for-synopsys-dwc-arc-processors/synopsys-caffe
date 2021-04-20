@@ -25,8 +25,18 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
   Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
   Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
+  Dtype input_scale_ = this->layer_param_.relu_param().input_scale(); //CUSTOMIZATION
+  Dtype output_scale_ = this->layer_param_.relu_param().output_scale(); //CUSTOMIZATION
+  int input_zero_point_ = this->layer_param_.relu_param().input_zero_point(); //CUSTOMIZATION
+  int output_zero_point_ = this->layer_param_.relu_param().output_zero_point(); //CUSTOMIZATION
   if (bottom.size() > 1)  //bottom[1] provides the maximum case
   	maximum = bottom[1]->cpu_data()[0];
+  const bool quant_in = (input_scale_ != Dtype(1.0) || input_zero_point_ != 0);
+  const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
+  if (quant_in) {
+      caffe_cpu_dequantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+          input_scale_, input_zero_point_);
+  }
   for (int i = 0; i < count; ++i) {
     top_data[i] = std::max(bottom_data[i], Dtype(0))
         + negative_slope * std::min(bottom_data[i], Dtype(0));
@@ -38,6 +48,14 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       top_data[i] = std::min(top_data[i], maximum); //CUSTOMIZATION
     if(minimum != Dtype(0))
       top_data[i] = std::max(top_data[i], minimum); //CUSTOMIZATION
+  }
+  if (quant_out) {
+    // do not reuse "top_data"; it is shifted during the computation
+    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+  }
+  if (quant_in) {
+    caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+        input_scale_, input_zero_point_);
   }
 }
 
