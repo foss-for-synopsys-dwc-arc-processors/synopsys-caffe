@@ -134,6 +134,10 @@ PoolingParameter
 ReLUParameter  
 SigmoidParameter  
 SoftmaxParameter  
++ output_scale, output_zero_point in  
+InputParameter  
+ReshapeParameter  
+PadParameter  
 
 
 ## evquantize related (only valid for CUDA forwards implementation)   
