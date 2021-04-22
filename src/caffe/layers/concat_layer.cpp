@@ -11,6 +11,23 @@ void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const ConcatParameter& concat_param = this->layer_param_.concat_param();
   CHECK(!(concat_param.has_axis() && concat_param.has_concat_dim()))
       << "Either axis or concat_dim should be specified; not both.";
+  
+  // retrieve quantization parameters
+  const int num_bot = bottom.size();
+  input_scale_ = vector<Dtype>(num_bot, 1);
+  if (concat_param.input_scale_size()) {
+    for (int i = 0; i < num_bot; ++i) {
+      input_scale_[i] = concat_param.input_scale(i);
+    }
+  }
+  input_zero_point_ = vector<int>(bottom.size(), 0);
+  if (concat_param.input_zero_point_size()) {
+    for (int i = 0; i < num_bot; ++i) {
+      input_zero_point_[i] = concat_param.input_zero_point(i);
+    }
+  }
+  output_scale_ = concat_param.output_scale();
+  output_zero_point_ = concat_param.output_zero_point();
 }
 
 template <typename Dtype>
@@ -61,6 +78,7 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   int offset_concat_axis = 0;
   const int top_concat_axis = top[0]->shape(concat_axis_);
   for (int i = 0; i < bottom.size(); ++i) {
+    const bool quant_concat = !(input_scale_[i] == output_scale_ && input_zero_point_[i] == output_zero_point_);
     const Dtype* bottom_data = bottom[i]->cpu_data();
     const int bottom_concat_axis = bottom[i]->shape(concat_axis_);
     for (int n = 0; n < num_concats_; ++n) {
@@ -68,6 +86,13 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           bottom_data + n * bottom_concat_axis * concat_input_size_,
           top_data + (n * top_concat_axis + offset_concat_axis)
               * concat_input_size_);
+
+      if (quant_concat) {
+        Dtype* top_anchor = top_data + (n * top_concat_axis + offset_concat_axis) * concat_input_size_;
+        const int count_slice = bottom_concat_axis * concat_input_size_;
+        caffe_cpu_dequantize<Dtype>(count_slice, top_anchor, input_scale_[i], input_zero_point_[i]);
+        caffe_cpu_quantize<Dtype>(count_slice, top_anchor, output_scale_, output_zero_point_);
+      }
     }
     offset_concat_axis += bottom_concat_axis;
   }
