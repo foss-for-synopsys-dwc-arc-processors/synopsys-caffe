@@ -169,6 +169,9 @@ void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero
 template <typename Dtype>
 void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int zero_point);
 
+template <typename Dtype>
+void caffe_cpu_scale_double_round(const int n, const Dtype scale, Dtype* x);
+
 #ifndef CPU_ONLY  // GPU
 
 // Decaf gpu gemm provides an interface that is almost the same as the cpu
