@@ -2441,8 +2441,6 @@ message ReshapeParameter {
   optional int32 axis = 2 [default = 0];
   optional int32 num_axes = 3 [default = -1];
   optional int32 pixelshuffler = 4 [default = 1];
-  optional float output_scale = 5 [default = 1]; //CUSTOMIZATION
-  optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
 }
 
 message ROIAlignParameter {
@@ -3157,8 +3155,6 @@ message PyramidROIAlignParameter {
 message PadParameter{
   repeated uint32 paddings = 1;
   optional float constant_values = 2 [default = 0.0];
-  optional float output_scale = 3 [default = 1]; //CUSTOMIZATION
-  optional int32 output_zero_point = 4 [default = 0]; //CUSTOMIZATION
 }
 
 message MirrorPadParameter{
