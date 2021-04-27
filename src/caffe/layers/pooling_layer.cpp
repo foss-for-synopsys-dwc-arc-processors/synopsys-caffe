@@ -132,6 +132,9 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK_LT(pad_h_, kernel_h_);
     CHECK_LT(pad_w_, kernel_w_);
   }
+
+  output_scale_ = pool_param.output_scale(); //CUSTOMIZATION
+  output_zero_point_ = pool_param.output_zero_point(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
@@ -246,6 +249,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const bool use_top_mask = top.size() > 1;
   int* mask = NULL;  // suppress warnings about uninitialized variables
   Dtype* top_mask = NULL;
+  const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0); //CUSTOMIZATION
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
 
@@ -370,6 +374,8 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               }
             }
             top_data[ph * pooled_width_ + pw] /= pool_size;
+            if (quant_out) //CUSTOMIZATION
+              top_data[ph * pooled_width_ + pw] = std::round(top_data[ph * pooled_width_ + pw]);
           }
         }
         // compute offset
@@ -410,6 +416,8 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                }
              }
              top_data[ph * pooled_width_ + pw] /= pool_size;
+             if (quant_out) //CUSTOMIZATION
+               top_data[ph * pooled_width_ + pw] = std::round(top_data[ph * pooled_width_ + pw]);
            }
          }
          // compute offset
