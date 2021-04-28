@@ -101,16 +101,89 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
+int affine_and_shift(const Dtype x, const int zp_in, const Dtype mul, const int shift) {
+  int r = (int) std::round((x - zp_in) * mul);
+  r = r << shift;
+  return r;
+}
+
+template <typename Dtype>
+void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+  const vector<Dtype> &input_scale, const vector<int> &input_zero_point,
+  const Dtype &output_scale, const int &output_zero_point) {
+  /*** This kernel is not yet tested with tf-lite models
+    Refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L172-L184
+  ***/
+  const int shift = 20;
+  const Dtype twice_max_scale = std::max(input_scale[0], input_scale[1]) * 2.0;
+  const Dtype mul_x = input_scale[0] / twice_max_scale;
+  const Dtype mul_y = input_scale[1] / twice_max_scale;
+  const Dtype mul_z = twice_max_scale / output_scale;
+  const Dtype* x_data = bottom[0]->cpu_data();
+  const Dtype* y_data = bottom[1]->cpu_data();
+  Dtype* z_data = top[0]->mutable_cpu_data();
+
+  const int N = top[0]->count();
+  int affine_x, affine_y, affine_z;
+  for (int i = 0; i < N; ++i) {
+    affine_x = affine_and_shift(x_data[i], input_zero_point[0], mul_x, shift);
+    affine_y = affine_and_shift(y_data[i], input_zero_point[1], mul_y, shift);
+    affine_z = affine_x + affine_y;
+    affine_z = (int) std::round(mul_z * affine_z);
+    affine_z = affine_z >> shift;
+    affine_z += output_zero_point;
+    z_data[i] = Dtype(affine_z);
+  }
+}
+
+template <typename Dtype>
+void caffe2_int8add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+  const vector<Dtype> &input_scale, const vector<int> &input_zero_point,
+  const Dtype &output_scale, const int &output_zero_point) {
+  // refer to https://github.com/pytorch/pytorch/pull/14089#issuecomment-439545562
+  Dtype max_scale = std::max(input_scale[0], input_scale[1]) / output_scale;
+  const int max_22bits = 1 << 21;
+  int shift = 0;
+  Dtype a_multiplier = input_scale[0] / output_scale;
+  Dtype b_multiplier = input_scale[1] / output_scale;
+  while (max_scale < max_22bits) {
+    // the result will be 2^22 <= max_scale < 2^23, cast to integer it will occupy 22 bits
+    max_scale *= 2;
+    a_multiplier *= 2;
+    b_multiplier *= 2;
+    ++shift;
+  }
+  const int a_mul = (int) std::round(a_multiplier);
+  const int b_mul = (int) std::round(b_multiplier);
+
+  const Dtype* a_data = bottom[0]->cpu_data();
+  const Dtype* b_data = bottom[1]->cpu_data();
+  Dtype* z_data = top[0]->mutable_cpu_data();
+  const int N = top[0]->count();
+  long long int acc; // the accumulator
+  // use output_multiplier to simulate right shift
+  // expected right-shift uses rounding half to infinity
+  const int out_mul = 1 << shift;
+  for (int i = 0; i < N; ++i) {
+    acc = 0;
+    acc += ( (long long int) std::round(a_data[i]) - input_zero_point[0]) * a_mul;
+    acc += ( (long long int) std::round(b_data[i]) - input_zero_point[1]) * b_mul;
+    // right shift operation on a two's complement representation does not round toward zero
+    // use division instead
+    z_data[i] = std::round(Dtype(acc) / out_mul);
+    z_data[i] += output_zero_point;
+  }
+}
+
+template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  std::vector<bool> quant_in(bottom.size(), false);
-  for (int i = 0; i < quant_in.size(); ++i) {
-    quant_in[i] = (input_scale_[i] != Dtype(1.0) || input_zero_point_[i] != 0);
-    if (quant_in[i]) {
-      caffe_cpu_dequantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
-        input_scale_[i], input_zero_point_[i]);
-    }
-  }// <<-- dequantize the input blobs
+  bool is_quant = false;
+  for (int i = 0; i < bottom.size(); ++i) {
+    is_quant |= (input_scale_[i] != Dtype(1.0) || input_zero_point_[i] != 0);
+  }
+  is_quant |= (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
+
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* eltwise_data = NULL; //CUSTOMIZATION
   if(bottom.size() > 1)
@@ -161,6 +234,11 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     }
     break;
   case EltwiseParameter_EltwiseOp_SUM:
+    if (is_quant) {
+      // introduce custom computation
+      caffe2_int8add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      break;
+    }
     caffe_set(count, Dtype(0), top_data);
 	//<--CUSTOMIZATION
 	caffe_axpy(count, coeffs_[0],  bottom_data, top_data);
@@ -290,10 +368,7 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   default:
     LOG(FATAL) << "Unknown elementwise operation.";
   }
-  // quantize the output blob
-  if (output_scale_ != Dtype(1.0) || output_zero_point_ != 0) {
-    caffe_cpu_quantize<Dtype>(count, top_data, output_scale_, output_zero_point_);
-  }
+
   if (saturate_ == EltwiseParameter_SaturateMethod_Signed)
     caffe_cpu_signed_saturate(count, top_data);
   if (saturate_ == EltwiseParameter_SaturateMethod_Unsigned)
@@ -302,13 +377,6 @@ void EltwiseLayer<Dtype>::Forward_cpu(
     caffe_cpu_signed_8bit_saturate(count, top_data);
   if (saturate_ == EltwiseParameter_SaturateMethod_Unsigned_8bit)
     caffe_cpu_unsigned_8bit_saturate(count, top_data);
-  // restore the quantized input blobs -->>
-  for (int i = 0; i < quant_in.size(); ++i) {
-    if (quant_in[i]) {
-      caffe_cpu_quantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
-        input_scale_[i], input_zero_point_[i]);
-    }
-  }
 }
 
 template <typename Dtype>
