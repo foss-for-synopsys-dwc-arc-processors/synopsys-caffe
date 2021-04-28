@@ -373,9 +373,15 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                     bottom_data[h * width_ + w];
               }
             }
-            top_data[ph * pooled_width_ + pw] /= pool_size;
-            if (quant_out) //CUSTOMIZATION
-              top_data[ph * pooled_width_ + pw] = std::round(top_data[ph * pooled_width_ + pw]);
+            if (quant_out) { // CUSTOMIZATION
+              int acc = (int) std::round(top_data[ph * pooled_width_ + pw]);
+              acc -= pool_size * output_zero_point_;
+              top_data[ph * pooled_width_ + pw] = std::round(Dtype(acc) / pool_size);
+              top_data[ph * pooled_width_ + pw] += output_zero_point_;
+            }
+            else {
+              top_data[ph * pooled_width_ + pw] /= pool_size;
+            }
           }
         }
         // compute offset
@@ -415,9 +421,15 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                      bottom_data[h * width_ + w];
                }
              }
-             top_data[ph * pooled_width_ + pw] /= pool_size;
-             if (quant_out) //CUSTOMIZATION
-               top_data[ph * pooled_width_ + pw] = std::round(top_data[ph * pooled_width_ + pw]);
+             if (quant_out) { // CUSTOMIZATION
+               int acc = (int) std::round(top_data[ph * pooled_width_ + pw]);
+               acc -= pool_size * output_zero_point_;
+               top_data[ph * pooled_width_ + pw] = std::round(Dtype(acc) / pool_size);
+               top_data[ph * pooled_width_ + pw] += output_zero_point_;
+             }
+             else {
+               top_data[ph * pooled_width_ + pw] /= pool_size;
+             }
            }
          }
          // compute offset
