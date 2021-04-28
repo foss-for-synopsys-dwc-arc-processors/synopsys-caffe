@@ -132,6 +132,7 @@ ConcatParameter
 EltwiseParameter  
 PoolingParameter  
 ReLUParameter  
+ResizeBilinearParameter  
 SigmoidParameter  
 SoftmaxParameter  
 + output_scale, output_zero_point in  

@@ -1655,6 +1655,11 @@ message DetectionOutputParameter {
   optional int32 ratio3 = 29 [default = 6];
   optional int32 ratio4 = 30 [default = 6];
   optional int32 ratio5 = 31 [default = 6];
+  // tflite detection related parameters
+  optional bool tflite_detection = 34[default = false];
+  optional bool tflite_use_regular_nms = 35[default = false];
+  optional int32 max_classes_per_detection = 36[default = 1];
+  repeated float scale_xywh = 37;
 }
 
 message DomainTransformParameter {
@@ -3178,6 +3183,10 @@ message ResizeBilinearParameter {
   optional bool pytorch_half_pixel = 8 [default = false];
   optional int32 output_depth = 9;
   optional float scale_depth = 10 [default = 1];
+  optional float input_scale = 20 [default = 1]; //CUSTOMIZATION
+  optional float output_scale = 21 [default = 1]; //CUSTOMIZATION
+  optional int32 input_zero_point = 22 [default = 0]; //CUSTOMIZATION
+  optional int32 output_zero_point = 23 [default = 0]; //CUSTOMIZATION
 }
 
 message ReduceSumParameter {

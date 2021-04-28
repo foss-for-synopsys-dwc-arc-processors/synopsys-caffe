@@ -145,6 +145,15 @@ void CasRegDecodeBBoxesAll(const vector<LabelBBox>& all_loc_pred,
     const bool clip, vector<LabelBBox>* all_decode_bboxes,
     const vector<LabelBBox>& all_arm_loc_pred);
 
+void DecodeBBoxesTFLite(const vector<LabelBBox>& all_loc_pred,
+	const vector<NormalizedBBox>& prior_bboxes,
+	const int num, const vector<float> scale_xywh_,
+	vector<LabelBBox>* all_decode_bboxes);
+
+void TFLiteDecodeBBox(
+	const NormalizedBBox& prior_bbox, const NormalizedBBox& bbox,
+	const vector<float> scale_xywh_, NormalizedBBox* decode_bbox);
+
 // Match prediction bboxes with ground truth bboxes.
 void MatchBBox(const vector<NormalizedBBox>& gt,
     const vector<NormalizedBBox>& pred_bboxes, const int label,
@@ -373,6 +382,14 @@ void GetPriorBBoxes(const Dtype* prior_data, const int num_priors,
       vector<NormalizedBBox>* prior_bboxes,
       vector<vector<float> >* prior_variances);
 
+// Get prior bounding boxes from prior_data.
+//    prior_data: 1 x num_priors * 4 x 1 blob.
+//    num_priors: number of priors.
+//    prior_bboxes: stores all the prior bboxes in the format of NormalizedBBox.
+template <typename Dtype>
+void GetTFLiteBBoxes(const Dtype* prior_data, const int num_priors,
+	vector<NormalizedBBox>* prior_bboxes);
+
 // Get detection results from det_data.
 //    det_data: 1 x 1 x num_det x 7 blob.
 //    num_det: the number of detections.
@@ -553,6 +570,8 @@ template <typename Dtype>
       const vector<map<int, vector<int> > >& all_match_indices,
       const map<int, vector<NormalizedBBox> >& all_gt_bboxes,
       vector<vector<float> >* all_conf_loss);
+
+
 #endif  // !CPU_ONLY
 
 #ifdef USE_OPENCV
