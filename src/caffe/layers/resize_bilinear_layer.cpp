@@ -24,6 +24,8 @@ void ResizeBilinearLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         "If pytorch_half_pixel_ is True, align_corners must be False.";
   CHECK(!(half_pixel_centers_ && pytorch_half_pixel_)) <<
         "If pytorch_half_pixel_ is True, half_pixel_centers_ must be False.";
+  output_scale_ = this->layer_param_.resize_bilinear_param().output_scale(); //CUSTOMIZATION
+  output_zero_point_ = this->layer_param_.resize_bilinear_param().output_zero_point(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
@@ -137,6 +139,7 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int batch_size = bottom_shape[0];
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
+  const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0); //CUSTOMIZATION
 
   if(data_format_ == "NHWC"){
     const int input_height = bottom_shape[1];
@@ -182,6 +185,8 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
             top_data[x * channels + c] =
                 compute_lerp(top_left, top_right, bottom_left, bottom_right,
                              xs_lerp, ys_lerp);
+            if (quant_out) //CUSTOMIZATION
+              top_data[x * channels + c] = std::round(top_data[x * channels + c]);
           }
         }
         top_data += out_row_size;
@@ -233,6 +238,8 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
             top_data[x] =
                 compute_lerp(top_left, top_right, bottom_left, bottom_right,
                     xs_lerp, ys_lerp);
+            if (quant_out) //CUSTOMIZATION
+              top_data[x] = std::round(top_data[x]);
           }
           top_data += out_row_size;
         }
@@ -310,6 +317,8 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                       xs_lerp, ys_lerp);
               top_data[x] =
                   interped_low + (interped_up - interped_low) * zs_lerp;
+              if (quant_out) //CUSTOMIZATION
+                top_data[x] = std::round(top_data[x]);
             }
           top_data += out_D_size;
           }
