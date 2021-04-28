@@ -1655,6 +1655,11 @@ message DetectionOutputParameter {
   optional int32 ratio3 = 29 [default = 6];
   optional int32 ratio4 = 30 [default = 6];
   optional int32 ratio5 = 31 [default = 6];
+  // tflite detection related parameters
+  optional bool tflite_detection = 34[default = false];
+  optional bool tflite_use_regular_nms = 35[default = false];
+  optional int32 max_classes_per_detection = 36[default = 1];
+  repeated float scale_xywh = 37;
 }
 
 message DomainTransformParameter {

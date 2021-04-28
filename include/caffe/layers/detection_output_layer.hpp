@@ -129,6 +129,11 @@ class DetectionOutputLayer : public Layer<Dtype> {
   int ratio5_;
   int nbottom_; // bottom count for conf/loc
   vector<int> collect_ratios_;
+	//TFLite_Detection_Postprocess parameters
+	bool tflite_detection_;
+	bool tflite_use_regular_nms_;
+	vector<float> scale_xywh_;
+	int max_classes_per_detection_;
 };
 
 }  // namespace caffe
