@@ -37,8 +37,12 @@ void SigmoidLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top_data[i] = sigmoid(bottom_data[i]);
   }
   if (quant_out) {
-    caffe_cpu_dequantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(),
         output_scale_, output_zero_point_);
+  } // CUSTOMIZATION
+  if (quant_in) {
+    caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
+        input_scale_, input_zero_point_);
   } // CUSTOMIZATION
 }
 

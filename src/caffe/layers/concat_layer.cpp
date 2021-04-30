@@ -14,7 +14,7 @@ void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   
   // retrieve quantization parameters
   const int num_bot = bottom.size();
-  input_scale_ = vector<Dtype>(num_bot, 1);
+  input_scale_ = vector<Dtype>(num_bot, 1.0);
   if (concat_param.input_scale_size()) {
     for (int i = 0; i < num_bot; ++i) {
       input_scale_[i] = concat_param.input_scale(i);
@@ -74,28 +74,38 @@ template <typename Dtype>
 void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   if (bottom.size() == 1) { return; }
+  bool is_quant = false;
+  for (int i = 0; i < bottom.size(); ++i) {
+    is_quant |= (input_scale_[i] != Dtype(1.0) || input_zero_point_[i] != 0);
+  }
+  is_quant |= (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
   Dtype* top_data = top[0]->mutable_cpu_data();
   int offset_concat_axis = 0;
   const int top_concat_axis = top[0]->shape(concat_axis_);
   for (int i = 0; i < bottom.size(); ++i) {
-    const bool quant_concat = !(input_scale_[i] == output_scale_ && input_zero_point_[i] == output_zero_point_);
     const Dtype* bottom_data = bottom[i]->cpu_data();
+    if (is_quant) {
+      caffe_cpu_dequantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
+          input_scale_[i], input_zero_point_[i]);
+    } // CUSTOMIZATION
     const int bottom_concat_axis = bottom[i]->shape(concat_axis_);
     for (int n = 0; n < num_concats_; ++n) {
       caffe_copy(bottom_concat_axis * concat_input_size_,
           bottom_data + n * bottom_concat_axis * concat_input_size_,
           top_data + (n * top_concat_axis + offset_concat_axis)
               * concat_input_size_);
-
-      if (quant_concat) {
-        Dtype* top_anchor = top_data + (n * top_concat_axis + offset_concat_axis) * concat_input_size_;
-        const int count_slice = bottom_concat_axis * concat_input_size_;
-        caffe_cpu_dequantize<Dtype>(count_slice, top_anchor, input_scale_[i], input_zero_point_[i]);
-        caffe_cpu_quantize<Dtype>(count_slice, top_anchor, output_scale_, output_zero_point_);
-      }
     }
     offset_concat_axis += bottom_concat_axis;
   }
+  if (is_quant) // CUSTOMIZATION
+    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+
+  if (is_quant) {
+    for (int i = 0; i < bottom.size(); ++i) {
+      caffe_cpu_quantize<Dtype>(bottom[i]->count(), bottom[i]->mutable_cpu_data(),
+          input_scale_[i], input_zero_point_[i]);
+    }
+  } // CUSTOMIZATION
 }
 
 template <typename Dtype>
