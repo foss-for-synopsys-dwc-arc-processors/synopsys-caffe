@@ -477,6 +477,7 @@ void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero
   if (zero_point != 0) {
     caffe_add_scalar<Dtype>(n, Dtype(zero_point), x);
   }
+  caffe_cpu_unsigned_8bit_saturate(n, x);
 }
 
 template void caffe_cpu_quantize<float>(const int n, float* x, const float scale, const int zero_point);
@@ -497,10 +498,10 @@ template void caffe_cpu_dequantize<float>(const int n, float* x, const float sca
 
 template void caffe_cpu_dequantize<double>(const int n, double* x, const double scale, const int zero_point);
 
-template <typename Dtype>
-void caffe_cpu_scale_double_round(const int n, const Dtype scale, Dtype* x){
+template <typename Dtype, typename Stype>
+void caffe_cpu_scale_double_round(const int n, const Stype scale, Dtype* x){
   // refer to https://github.com/google/gemmlowp/blob/master/doc/quantization.md#implementation-of-quantized-matrix-multiplication
-  Dtype mul = scale; // multiplier in normalized interval [0.5, 1.0)
+  Stype mul = scale; // multiplier in normalized interval [0.5, 1.0)
   int shift = 0;
   while (mul < 0.5) {
     mul *= 2.0;
@@ -513,8 +514,12 @@ void caffe_cpu_scale_double_round(const int n, const Dtype scale, Dtype* x){
   }
 }
 
-template void caffe_cpu_scale_double_round<float>(const int n, const float scale, float* x);
+template void caffe_cpu_scale_double_round<float, float>(const int n, const float scale, float* x);
 
-template void caffe_cpu_scale_double_round<double>(const int n, const double scale, double* x);
+template void caffe_cpu_scale_double_round<double, double>(const int n, const double scale, double* x);
+
+template void caffe_cpu_scale_double_round<double, float>(const int n, const float scale, double* x);
+
+template void caffe_cpu_scale_double_round<float, double>(const int n, const double scale, float* x);
 
 }  // namespace caffe

@@ -106,11 +106,10 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const int count_t = top[i]->count();
     if (scale_output) {
-      //Dtype out_scal = input_scale * weight_scale / output_scale;
-      Dtype out_scal = bias_scale / output_scale;
-      //caffe_scal<Dtype>(count_t, out_scal, top_data);
-      //caffe_cpu_round<Dtype>(count_t, top_data);
-      caffe_cpu_scale_double_round<Dtype>(count_t, out_scal, top_data);
+      // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
+      double out_scal = (double)input_scale * weight_scale;
+      out_scal /= output_scale;
+      caffe_cpu_scale_double_round(count_t, out_scal, top_data);
     }
     if (shift_output) {
       caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point), top_data);
