@@ -477,7 +477,6 @@ void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero
   if (zero_point != 0) {
     caffe_add_scalar<Dtype>(n, Dtype(zero_point), x);
   }
-  caffe_cpu_unsigned_8bit_saturate(n, x);
 }
 
 template void caffe_cpu_quantize<float>(const int n, float* x, const float scale, const int zero_point);
