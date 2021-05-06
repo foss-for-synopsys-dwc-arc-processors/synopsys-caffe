@@ -25,8 +25,8 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   Dtype relu6 = this->layer_param_.relu_param().relu6(); //CUSTOMIZATION
   Dtype maximum = this->layer_param_.relu_param().maximum(); //CUSTOMIZATION
   Dtype minimum = this->layer_param_.relu_param().minimum(); //CUSTOMIZATION
-  Dtype input_scale_ = this->layer_param_.relu_param().input_scale(); //CUSTOMIZATION
-  Dtype output_scale_ = this->layer_param_.relu_param().output_scale(); //CUSTOMIZATION
+  double input_scale_ = this->layer_param_.relu_param().input_scale(); //CUSTOMIZATION
+  double output_scale_ = this->layer_param_.relu_param().output_scale(); //CUSTOMIZATION
   int input_zero_point_ = this->layer_param_.relu_param().input_zero_point(); //CUSTOMIZATION
   int output_zero_point_ = this->layer_param_.relu_param().output_zero_point(); //CUSTOMIZATION
   if (bottom.size() > 1)  //bottom[1] provides the maximum case

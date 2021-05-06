@@ -467,7 +467,7 @@ template void caffe_cpu_round<float>(const int n, float* x);
 template void caffe_cpu_round<double>(const int n, double* x);
 
 template <typename Dtype>
-void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero_point){
+void caffe_cpu_quantize(const int n, Dtype* x, const double scale, const int zero_point){
   if (scale != Dtype(1.0)) {
     caffe_div_scalar<Dtype>(n, scale, x);
     caffe_cpu_round<Dtype>(n, x);
@@ -479,12 +479,12 @@ void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero
   }
 }
 
-template void caffe_cpu_quantize<float>(const int n, float* x, const float scale, const int zero_point);
+template void caffe_cpu_quantize<float>(const int n, float* x, const double scale, const int zero_point);
 
 template void caffe_cpu_quantize<double>(const int n, double* x, const double scale, const int zero_point);
 
 template <typename Dtype>
-void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int zero_point){
+void caffe_cpu_dequantize(const int n, Dtype* x, const double scale, const int zero_point){
   if (zero_point != 0) {
     caffe_add_scalar<Dtype>(n, Dtype(-zero_point), x);
   }
@@ -493,7 +493,7 @@ void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int ze
   }
 }
 
-template void caffe_cpu_dequantize<float>(const int n, float* x, const float scale, const int zero_point);
+template void caffe_cpu_dequantize<float>(const int n, float* x, const double scale, const int zero_point);
 
 template void caffe_cpu_dequantize<double>(const int n, double* x, const double scale, const int zero_point);
 

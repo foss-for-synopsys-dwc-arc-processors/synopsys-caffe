@@ -67,8 +67,8 @@ class SigmoidLayer : public NeuronLayer<Dtype> {
   virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  Dtype input_scale_;
-  Dtype output_scale_;
+  double input_scale_;
+  double output_scale_;
   int input_zero_point_;
   int output_zero_point_;
 };

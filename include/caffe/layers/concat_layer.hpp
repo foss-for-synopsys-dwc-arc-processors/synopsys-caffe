@@ -80,9 +80,9 @@ class ConcatLayer : public Layer<Dtype> {
   int num_concats_;
   int concat_input_size_;
   int concat_axis_;
-  vector<Dtype> input_scale_; //CUSTOMIZATION
+  vector<double> input_scale_; //CUSTOMIZATION
   vector<int> input_zero_point_; //CUSTOMIZATION
-  Dtype output_scale_;  //CUSTOMIZATION
+  double output_scale_;  //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
   //Dtype saturate_; //CUSTOMIZATION
 };

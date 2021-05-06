@@ -14,7 +14,7 @@ void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   
   // retrieve quantization parameters
   const int num_bot = bottom.size();
-  input_scale_ = vector<Dtype>(num_bot, 1.0);
+  input_scale_ = vector<double>(num_bot, 1.0);
   if (concat_param.input_scale_size()) {
     for (int i = 0; i < num_bot; ++i) {
       input_scale_[i] = concat_param.input_scale(i);

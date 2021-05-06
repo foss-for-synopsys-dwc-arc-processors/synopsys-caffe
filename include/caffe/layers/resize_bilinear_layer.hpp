@@ -53,7 +53,7 @@ class ResizeBilinearLayer : public Layer<Dtype> {
   string data_format_;
   bool half_pixel_centers_;
   bool pytorch_half_pixel_;
-  Dtype output_scale_; //CUSTOMIZATION
+  double output_scale_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
 
   // Compute the interpolation indices only once.

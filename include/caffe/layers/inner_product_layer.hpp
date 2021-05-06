@@ -48,7 +48,7 @@ class InnerProductLayer : public Layer<Dtype> {
   bool update_weight_;
   int gan_mode_;
 
-  Dtype output_scale_; //CUSTOMIZATION
+  double output_scale_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

@@ -1325,8 +1325,8 @@ message ConcatParameter {
   // DEPRECATED: alias for "axis" -- does not support negative indexing.
   optional uint32 concat_dim = 1 [default = 1];
 
-  repeated float input_scale = 3; // CUSTOMIZATION, blob-wise for quantization
-  optional float output_scale = 4 [default = 1]; //CUSTOMIZATION
+  repeated double input_scale = 3; // CUSTOMIZATION, blob-wise for quantization
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
   repeated int32 input_zero_point = 5; //CUSTOMIZATION, blob-wise for quantization
   optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
 }
@@ -1372,10 +1372,10 @@ message ConvolutionParameter {
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
 
-  optional float input_scale = 30 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 31 [default = 1]; //CUSTOMIZATION
-  optional float weight_scale = 33 [default = 1]; //CUSTOMIZATION
-  optional float bias_scale = 34 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional double weight_scale = 33 [default = 1]; //CUSTOMIZATION
+  optional double bias_scale = 34 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 35 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 36 [default = 0]; //CUSTOMIZATION
   optional int32 weight_zero_point = 37 [default = 0]; //CUSTOMIZATION
@@ -1713,8 +1713,8 @@ message EltwiseParameter {
   // of computing the gradient for the PROD operation. (No effect for SUM op.)
   optional bool stable_prod_grad = 3 [default = true];
 
-  repeated float input_scale = 14; // CUSTOMIZATION, blob-wise for quantization
-  optional float output_scale = 15 [default = 1]; //CUSTOMIZATION
+  repeated double input_scale = 14; // CUSTOMIZATION, blob-wise for quantization
+  optional double output_scale = 15 [default = 1]; //CUSTOMIZATION
   repeated int32 input_zero_point = 16; //CUSTOMIZATION, blob-wise for quantization
   optional int32 output_zero_point = 17 [default = 0]; //CUSTOMIZATION
 
@@ -1882,10 +1882,10 @@ message InnerProductParameter {
   optional bool dis_mode = 8 [default = false];
   optional bool gen_mode = 9 [default = false];
 
-  optional float input_scale = 11 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 12 [default = 1]; //CUSTOMIZATION
-  optional float weight_scale = 13 [default = 1]; //CUSTOMIZATION
-  optional float bias_scale = 14 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 11 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 12 [default = 1]; //CUSTOMIZATION
+  optional double weight_scale = 13 [default = 1]; //CUSTOMIZATION
+  optional double bias_scale = 14 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 15 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 16 [default = 0]; //CUSTOMIZATION
   optional int32 weight_zero_point = 17 [default = 0]; //CUSTOMIZATION
@@ -1939,8 +1939,8 @@ message LRNParameter {
     CUDNN = 2;
   }
   optional Engine engine = 6 [default = DEFAULT];
-  optional float input_scale = 7 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 8 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 7 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 8 [default = 1]; //CUSTOMIZATION
 }
 
 message MatReadParameter {
@@ -2101,8 +2101,8 @@ message PoolingParameter {
   optional uint32 stride_h = 7; // The stride height
   optional uint32 stride_w = 8; // The stride width
   optional uint32 output_shift_instead_division = 21 [default = 0]; //CUSTOMIZATION, only valid for Average pooling
-  optional float input_scale = 30 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 31 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 35 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 36 [default = 0]; //CUSTOMIZATION
   //<--CUSTOMIZATION
@@ -2333,8 +2333,8 @@ message ReLUParameter {
   optional bool relu6 = 3 [default = false]; //CUSTOMIZATION, if set true, the output is min(max(0, input), 6)
   optional float maximum = 6 [default = 0]; //CUSTOMIZATION, act as MAX range setting
   optional float minimum = 7 [default = 0]; //CUSTOMIZATION, act as MIN range setting
-  optional float input_scale = 13 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 14 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 13 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 14 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 15 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 16 [default = 0]; //CUSTOMIZATION
   //<--CUSTOMIZATION
@@ -2533,8 +2533,8 @@ message SigmoidParameter {
     CUDNN = 2;
   }
   optional Engine engine = 1 [default = DEFAULT];
-  optional float input_scale = 3 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 4 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 3 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 5 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
 }
@@ -2574,8 +2574,8 @@ message SoftmaxParameter {
   // from the end (e.g., -1 for the last axis).
   // Any other axes will be evaluated as independent softmaxes.
   optional int32 axis = 2 [default = 1];
-  optional float input_scale = 3 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 4 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 3 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 5 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
 }
@@ -2617,10 +2617,10 @@ message SqueezeConvolutionParameter {
   optional uint32 stride_h = 13; // The stride height (2D only)
   optional uint32 stride_w = 14; // The stride width (2D only)
 
-  optional float input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional float output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
-  optional float weight_scale = 49 [default = 1]; //CUSTOMIZATION
-  optional float bias_scale = 50 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
+  optional double weight_scale = 49 [default = 1]; //CUSTOMIZATION
+  optional double bias_scale = 50 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 51 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional int32 output_zero_point = 52 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional int32 weight_zero_point = 53 [default = 0]; //CUSTOMIZATION
@@ -3183,8 +3183,8 @@ message ResizeBilinearParameter {
   optional bool pytorch_half_pixel = 8 [default = false];
   optional int32 output_depth = 9;
   optional float scale_depth = 10 [default = 1];
-  optional float input_scale = 20 [default = 1]; //CUSTOMIZATION
-  optional float output_scale = 21 [default = 1]; //CUSTOMIZATION
+  optional double input_scale = 20 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 21 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 22 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 23 [default = 0]; //CUSTOMIZATION
 }

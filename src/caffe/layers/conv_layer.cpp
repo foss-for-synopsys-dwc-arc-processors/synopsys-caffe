@@ -54,10 +54,10 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
 template <typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const Dtype input_scale = this->input_scale_;
-  const Dtype output_scale = this->output_scale_;
-  const Dtype weight_scale = this->weight_scale_;
-  const Dtype bias_scale = this->bias_scale_; // bias_scale = input_scale * weight_scale
+  const double input_scale = this->input_scale_;
+  const double output_scale = this->output_scale_;
+  const double weight_scale = this->weight_scale_;
+  const double bias_scale = this->bias_scale_; // bias_scale = input_scale * weight_scale
   const int input_zero_point = this->input_zero_point_;
   const int output_zero_point = this->output_zero_point_;
   const int weight_zero_point = this->weight_zero_point_;

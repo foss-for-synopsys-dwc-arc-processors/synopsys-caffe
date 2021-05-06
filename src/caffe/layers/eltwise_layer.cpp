@@ -27,7 +27,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       coeffs_[i] = this->layer_param().eltwise_param().coeff(i);
     }
   }
-  input_scale_ = vector<Dtype>(bottom.size(), 1.0);
+  input_scale_ = vector<double>(bottom.size(), 1.0);
   if (this->layer_param().eltwise_param().input_scale_size()) {
     for (int i = 0; i < bottom.size(); ++i) {
       input_scale_[i] = this->layer_param().eltwise_param().input_scale(i);
@@ -101,7 +101,7 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-int affine_and_shift(const Dtype x, const int zp_in, const Dtype mul, const int shift) {
+int affine_and_shift(const Dtype x, const int zp_in, const double mul, const int shift) {
   int r = (int) std::round((x - zp_in) * mul);
   r = r << shift;
   return r;
@@ -109,8 +109,8 @@ int affine_and_shift(const Dtype x, const int zp_in, const Dtype mul, const int 
 
 template <typename Dtype>
 void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-  const vector<Dtype> &input_scale, const vector<int> &input_zero_point,
-  const Dtype &output_scale, const int &output_zero_point) {
+  const vector<double> &input_scale, const vector<int> &input_zero_point,
+  const double &output_scale, const int &output_zero_point) {
   /*** This kernel is not yet tested with tf-lite models
     Refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L172-L184
   ***/
@@ -138,8 +138,8 @@ void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dty
 
 template <typename Dtype>
 void caffe2_int8add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
-  const vector<Dtype> &input_scale, const vector<int> &input_zero_point,
-  const Dtype &output_scale, const int &output_zero_point) {
+  const vector<double> &input_scale, const vector<int> &input_zero_point,
+  const double &output_scale, const int &output_zero_point) {
   // refer to https://github.com/pytorch/pytorch/pull/14089#issuecomment-439545562
   Dtype max_scale = std::max(input_scale[0], input_scale[1]) / output_scale;
   const int max_22bits = 1 << 21;

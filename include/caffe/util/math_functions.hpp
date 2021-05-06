@@ -164,10 +164,10 @@ template <typename Dtype>
 void caffe_cpu_round(const int n, Dtype* x);
 
 template <typename Dtype>
-void caffe_cpu_quantize(const int n, Dtype* x, const Dtype scale, const int zero_point);
+void caffe_cpu_quantize(const int n, Dtype* x, const double scale, const int zero_point);
 
 template <typename Dtype>
-void caffe_cpu_dequantize(const int n, Dtype* x, const Dtype scale, const int zero_point);
+void caffe_cpu_dequantize(const int n, Dtype* x, const double scale, const int zero_point);
 
 template <typename Dtype, typename Stype>
 void caffe_cpu_scale_double_round(const int n, const Stype scale, Dtype* x);
