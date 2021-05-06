@@ -88,12 +88,19 @@ void caffe_gpu_memcpy(const size_t N, const void* X, void* Y) {
 }
 
 template <>
-void caffe_gpu_scal<float>(const int N, const float alpha, float *X) {
+void caffe_gpu_scal<float, float>(const int N, const float alpha, float *X) {
   CUBLAS_CHECK(cublasSscal(Caffe::cublas_handle(), N, &alpha, X, 1));
 }
 
 template <>
-void caffe_gpu_scal<double>(const int N, const double alpha, double *X) {
+void caffe_gpu_scal<float, double>(const int N, const double alpha, float *X) {
+  // workaround to feed input/output scale in GPU mode
+  float alph = alpha;
+  CUBLAS_CHECK(cublasSscal(Caffe::cublas_handle(), N, &alph, X, 1));
+}
+
+template <>
+void caffe_gpu_scal<double, double>(const int N, const double alpha, double *X) {
   CUBLAS_CHECK(cublasDscal(Caffe::cublas_handle(), N, &alpha, X, 1));
 }
 

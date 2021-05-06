@@ -212,8 +212,8 @@ inline void caffe_gpu_memset(const size_t N, const int alpha, void* X) {
 template <typename Dtype>
 void caffe_gpu_add_scalar(const int N, const Dtype alpha, Dtype *X);
 
-template <typename Dtype>
-void caffe_gpu_scal(const int N, const Dtype alpha, Dtype *X);
+template <typename Dtype, typename Stype>
+void caffe_gpu_scal(const int N, const Stype alpha, Dtype *X);
 
 #ifndef CPU_ONLY
 template <typename Dtype>
