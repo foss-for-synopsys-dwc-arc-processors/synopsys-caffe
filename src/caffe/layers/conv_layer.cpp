@@ -63,6 +63,8 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int weight_zero_point = this->weight_zero_point_;
   const int bias_zero_point = this->bias_zero_point_;
   const Dtype saturate = this->saturate_;
+  const bool per_channel_scale_weight = this->per_channel_scale_weight_;
+  const bool per_channel_scale_bias = this->per_channel_scale_bias_;
   /*** Quantization Computation
     (1) shift input/weight/bias w.r.t corresponding zero_point
     (2) compute Convolution+Bias on the integer value range
@@ -77,6 +79,16 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
                              output_scale != Dtype(1.0));
   const bool shift_output = (output_zero_point != 0);
+  if(per_channel_scale_weight)
+  {
+    const Dtype* weight_scale_data = this->blobs_[2]->cpu_data();
+    const Dtype* weight_zero_point_data = this->blobs_[3]->cpu_data();
+  }
+  if(per_channel_scale_bias)
+  {
+    const Dtype* bias_scale_data = this->blobs_[4]->cpu_data();
+    const Dtype* bias_zero_point_data = this->blobs_[5]->cpu_data();
+  }
 
   if (shift_weight) { // shift the quantized weight
     caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point), W->mutable_cpu_data());
