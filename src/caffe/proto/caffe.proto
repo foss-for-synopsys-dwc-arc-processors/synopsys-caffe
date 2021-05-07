@@ -1894,6 +1894,16 @@ message InnerProductParameter {
   optional int32 output_zero_point = 16 [default = 0]; //CUSTOMIZATION
   optional int32 weight_zero_point = 17 [default = 0]; //CUSTOMIZATION
   optional int32 bias_zero_point = 18 [default = 0]; //CUSTOMIZATION
+  //<--CUSTOMIZATION
+  enum SaturateMethod {
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 19 [default = None]; //control the output in certain range
+  //CUSTOMIZATION-->
 }
 
 message InputParameter {
