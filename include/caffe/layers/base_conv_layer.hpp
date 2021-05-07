@@ -110,6 +110,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   double weight_scale_; //CUSTOMIZATION
   double bias_scale_; //CUSTOMIZATION
   Dtype saturate_; //CUSTOMIZATION
+  bool per_channel_scale_weight_; //CUSTOMIZATION
+  bool per_channel_scale_bias_; //CUSTOMIZATION
 
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists

@@ -86,6 +86,8 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   bias_scale_ = conv_param.bias_scale();
   bias_zero_point_ = conv_param.bias_zero_point();
   saturate_ = conv_param.saturate();
+  per_channel_scale_weight_ = conv_param.per_channel_scale_weight();
+  per_channel_scale_bias_ = conv_param.per_channel_scale_bias();
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).
@@ -246,6 +248,26 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
     } else {
       this->blobs_.resize(1);
     }
+    // reserve space for per channel weights/bias' scales and zero_points in caffemodel
+    if(per_channel_scale_weight_ && per_channel_scale_bias_)
+    {
+      int old_size = this->blobs_.size();
+      this->blobs_.resize(old_size+4);
+      vector<int> param_shape(1);
+      param_shape[0] = conv_out_channels_;
+      for(int i=0;i<4;i++)
+        this->blobs_[old_size+i].reset(new Blob<Dtype>(param_shape));
+      // initialize blobs' value with 1. or 0.
+      caffe_set(this->blobs_[old_size]->count(), Dtype(1),
+          this->blobs_[old_size]->mutable_cpu_data());
+      caffe_set(this->blobs_[old_size+1]->count(), Dtype(0),
+          this->blobs_[old_size+1]->mutable_cpu_data());
+      caffe_set(this->blobs_[old_size+2]->count(), Dtype(1),
+          this->blobs_[old_size+2]->mutable_cpu_data());
+      caffe_set(this->blobs_[old_size+3]->count(), Dtype(0),
+          this->blobs_[old_size+3]->mutable_cpu_data());
+    }
+
     // Initialize and fill the weights:
     // output channels x input channels per-group x kernel height x kernel width
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
