@@ -124,8 +124,9 @@ squeeze_deconv_layer
   
 
 ## Custom Quantization related  
-+ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, bias_scale, bias_zero_point in  
++ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, bias_scale, bias_zero_point, per_channel_scale_weight, per_channel_scale_bias in  
 ConvolutionParameter  
++ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, bias_scale, bias_zero_point in  
 InnerProductParameter  
 + input_scale, input_zero_point, output_scale, output_zero_point in  
 ConcatParameter  

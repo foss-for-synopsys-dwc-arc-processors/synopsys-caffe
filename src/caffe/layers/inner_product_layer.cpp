@@ -3,6 +3,8 @@
 #include "caffe/filler.hpp"
 #include "caffe/layers/inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#define W this->blobs_[0]
+#define B this->blobs_[1]
 
 namespace caffe {
 
@@ -15,7 +17,15 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   update_weight_ = !this->layer_param_.inner_product_param().weight_fixed();
   N_ = num_output;
   gan_mode_ = 1;
+  input_scale_ = this->layer_param_.inner_product_param().input_scale();  //CUSTOMIZATION
   output_scale_ = this->layer_param_.inner_product_param().output_scale();  //CUSTOMIZATION
+  weight_scale_ = this->layer_param_.inner_product_param().weight_scale();  //CUSTOMIZATION
+  bias_scale_ = this->layer_param_.inner_product_param().bias_scale();  //CUSTOMIZATION
+  input_zero_point_ = this->layer_param_.inner_product_param().input_zero_point();  //CUSTOMIZATION
+  output_zero_point_ = this->layer_param_.inner_product_param().output_zero_point();  //CUSTOMIZATION
+  weight_zero_point_ = this->layer_param_.inner_product_param().weight_zero_point();  //CUSTOMIZATION
+  bias_zero_point_ = this->layer_param_.inner_product_param().bias_zero_point();  //CUSTOMIZATION
+  saturate_ = this->layer_param_.inner_product_param().saturate();  //CUSTOMIZATION
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
   // Dimensions starting from "axis" are "flattened" into a single
@@ -86,6 +96,23 @@ void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
+  const bool shift_input = (input_zero_point_ != 0);
+  const bool shift_weight = (weight_zero_point_ != 0);
+  const bool shift_bias = (bias_zero_point_ != 0);
+  const bool scale_output = (input_scale_ != Dtype(1.0) || weight_scale_ != Dtype(1.0) ||
+                              output_scale_ != Dtype(1.0));
+  const bool shift_output = (output_zero_point_ != 0);
+  if (shift_weight) { // shift the quantized weight
+    caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point_), W->mutable_cpu_data());
+  }
+  if (shift_bias) {
+    caffe_add_scalar<Dtype>(B->count(), Dtype(-bias_zero_point_), B->mutable_cpu_data());
+  }
+  if (shift_input) {
+    caffe_add_scalar<Dtype>(bottom[0]->count(),
+        Dtype(-input_zero_point_), bottom[0]->mutable_cpu_data());
+  }
+
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const Dtype* weight = this->blobs_[0]->cpu_data();
@@ -96,6 +123,36 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, 1, (Dtype)1.,
         bias_multiplier_.cpu_data(),
         this->blobs_[1]->cpu_data(), (Dtype)1., top_data);
+  }
+  const int count_t = top[0]->count();
+  if (scale_output) {
+    // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
+    double out_scal = (double)input_scale_ * weight_scale_;
+    out_scal /= output_scale_;
+    caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+  }
+  if (shift_output) {
+    caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point_), top_data);
+  }
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed)
+    caffe_cpu_signed_saturate(count_t, top_data);
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned)
+    caffe_cpu_unsigned_saturate(count_t, top_data);
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed_8bit)
+    caffe_cpu_signed_8bit_saturate(count_t, top_data);
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
+    caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
+
+  if (shift_input) { // shift the quantized input blob back to correct range
+    caffe_add_scalar<Dtype>(bottom[0]->count(),
+        Dtype(input_zero_point_), bottom[0]->mutable_cpu_data());
+  }
+  // shift quantized weight/bias back to correct range
+  if (shift_weight) {
+    caffe_add_scalar<Dtype>(W->count(), Dtype(weight_zero_point_), W->mutable_cpu_data());
+  }
+  if (shift_bias) {
+    caffe_add_scalar<Dtype>(B->count(), Dtype(bias_zero_point_), B->mutable_cpu_data());
   }
 }
 
