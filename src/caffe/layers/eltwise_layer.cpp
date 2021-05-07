@@ -107,6 +107,7 @@ int affine_and_shift(const Dtype x, const int zp_in, const double mul, const int
   return r;
 }
 
+typedef double Stype; // scale type
 template <typename Dtype>
 void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
   const vector<double> &input_scale, const vector<int> &input_zero_point,
@@ -115,10 +116,10 @@ void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dty
     Refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L172-L184
   ***/
   const int shift = 20;
-  const Dtype twice_max_scale = std::max(input_scale[0], input_scale[1]) * 2.0;
-  const Dtype mul_x = input_scale[0] / twice_max_scale;
-  const Dtype mul_y = input_scale[1] / twice_max_scale;
-  const Dtype mul_z = twice_max_scale / output_scale;
+  const Stype twice_max_scale = std::max(input_scale[0], input_scale[1]) * 2.0;
+  const Stype mul_x = input_scale[0] / twice_max_scale;
+  const Stype mul_y = input_scale[1] / twice_max_scale;
+  const Stype mul_z = twice_max_scale / output_scale;
   const Dtype* x_data = bottom[0]->cpu_data();
   const Dtype* y_data = bottom[1]->cpu_data();
   Dtype* z_data = top[0]->mutable_cpu_data();
@@ -141,11 +142,11 @@ void caffe2_int8add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob
   const vector<double> &input_scale, const vector<int> &input_zero_point,
   const double &output_scale, const int &output_zero_point) {
   // refer to https://github.com/pytorch/pytorch/pull/14089#issuecomment-439545562
-  Dtype max_scale = std::max(input_scale[0], input_scale[1]) / output_scale;
+  Stype max_scale = std::max(input_scale[0], input_scale[1]) / output_scale;
   const int max_22bits = 1 << 21;
   int shift = 0;
-  Dtype a_multiplier = input_scale[0] / output_scale;
-  Dtype b_multiplier = input_scale[1] / output_scale;
+  Stype a_multiplier = input_scale[0] / output_scale;
+  Stype b_multiplier = input_scale[1] / output_scale;
   while (max_scale < max_22bits) {
     // the result will be 2^22 <= max_scale < 2^23, cast to integer it will occupy 22 bits
     max_scale *= 2;
