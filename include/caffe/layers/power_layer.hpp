@@ -115,6 +115,8 @@ class PowerLayer : public NeuronLayer<Dtype> {
   Dtype shift_;
   /// @brief Result of @f$ \alpha \gamma @f$
   Dtype diff_scale_;
+
+  Dtype saturate_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

@@ -2180,6 +2180,16 @@ message PowerParameter {
   optional float power = 1 [default = 1.0];
   optional float scale = 2 [default = 1.0];
   optional float shift = 3 [default = 0.0];
+ //CUSTOMIZATION
+  enum SaturateMethod {
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 4 [default = None];
+  //control the output in certain range (for quantization purpose)
 }
 
 // Message that store parameters used by PriorBoxLayer

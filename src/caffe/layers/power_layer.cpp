@@ -13,6 +13,7 @@ void PowerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   scale_ = this->layer_param_.power_param().scale();
   shift_ = this->layer_param_.power_param().shift();
   diff_scale_ = power_  * scale_;
+  saturate_ = this->layer_param_.power_param().saturate();  //CUSTOMIZATION
 }
 
 // Compute y = (shift + scale * x)^power
@@ -37,6 +38,28 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   }
   if (power_ != Dtype(1)) {
     caffe_powx(count, top_data, power_, top_data);
+  }
+
+  const int count_t = top[0]->count();
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed)
+  {
+    caffe_cpu_round<Dtype>(count_t, top_data);
+    caffe_cpu_signed_saturate(count_t, top_data);
+  }
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned)
+  {
+    caffe_cpu_round<Dtype>(count_t, top_data);
+    caffe_cpu_unsigned_saturate(count_t, top_data);
+  }
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed_8bit)
+  {
+    caffe_cpu_round<Dtype>(count_t, top_data);
+    caffe_cpu_signed_8bit_saturate(count_t, top_data);
+  }
+  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
+  {
+    caffe_cpu_round<Dtype>(count_t, top_data);
+    caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
   }
 }
 
