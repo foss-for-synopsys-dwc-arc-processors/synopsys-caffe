@@ -675,6 +675,7 @@ message LayerParameter {
   optional CountNonzeroParameter count_nonzero_param = 273;
   optional NotEqualParameter not_equal_param = 274;
   optional PointNetParameter point_net_param = 275;
+  optional MulParameter mul_param = 278;
   
   //ONNX related
   optional NonMaxSuppressionParameter non_max_suppression_param = 271;
@@ -3510,4 +3511,8 @@ message ScatterNDParameter {
 message LayerNormParameter {
   optional float eps = 1 [default = 1e-5];
   optional bool elementwise_affine = 2 [default = true];
+}
+
+message MulParameter {
+  repeated uint32 mul_shape = 1;
 }
