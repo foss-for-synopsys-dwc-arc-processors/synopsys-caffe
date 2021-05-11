@@ -57,15 +57,13 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const double input_scale = this->input_scale_;
   const double output_scale = this->output_scale_;
   const double weight_scale = this->weight_scale_;
-  //const double bias_scale = this->bias_scale_; // bias_scale = input_scale * weight_scale
+  // bias_scale = input_scale * weight_scale
   const int input_zero_point = this->input_zero_point_;
   const int output_zero_point = this->output_zero_point_;
   const int weight_zero_point = this->weight_zero_point_;
-  const int bias_zero_point = this->bias_zero_point_;
   const Dtype saturate = this->saturate_;
   // weight/bias scale will retrieve the default values if per-channel is set
   const bool per_channel_scale_weight = this->per_channel_scale_weight_;
-  const bool per_channel_scale_bias = this->per_channel_scale_bias_;
   /*** Quantization Computation
     (1) shift input/weight/bias w.r.t corresponding zero_point
     (2) compute Convolution+Bias on the integer value range
@@ -76,17 +74,14 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   ***/
   const bool shift_input = (input_zero_point != 0);
   const bool shift_weight = (weight_zero_point != 0);
-  const bool shift_bias = (bias_zero_point != 0); // the tensor has exactly 1 uniform zero_point
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
-                             output_scale != Dtype(1.0)) ||
-                             per_channel_scale_weight || per_channel_scale_bias;
+                             output_scale != Dtype(1.0)) || per_channel_scale_weight;
   const bool shift_output = (output_zero_point != 0);
 
-  const int quant_num_ch = (per_channel_scale_weight && per_channel_scale_bias) ? this->num_output_ : 1;
+  const int quant_num_ch = per_channel_scale_weight ? this->num_output_ : 1;
   const Dtype* weight_scale_data = per_channel_scale_weight ? this->blobs_[2]->cpu_data() : NULL;
   const Dtype* weight_zero_point_data = per_channel_scale_weight ? this->blobs_[3]->cpu_data() : NULL;
-  const Dtype* bias_scale_data = per_channel_scale_bias ? this->blobs_[4]->cpu_data() : NULL;
-  const Dtype* bias_zero_point_data = per_channel_scale_bias ? this->blobs_[5]->cpu_data() : NULL;
+
   if (shift_weight) { // shift the quantized weight
     caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point), W->mutable_cpu_data());
   } else if(per_channel_scale_weight) {
@@ -95,16 +90,6 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     for (int i = 0; i < quant_num_ch; ++i) {
       caffe_add_scalar<Dtype>(slice, -weight_zero_point_data[i], weight_mutable);
       weight_mutable += slice;
-    }
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(-bias_zero_point), B->mutable_cpu_data());
-  } else if(per_channel_scale_bias) {
-    // this branch might be dummy, because bias_zero_point is 0 in common
-    // slice is 1, since quant_num_ch = num_output = len(bias)
-    Dtype* bias_mutable = B->mutable_cpu_data();
-    for (int i = 0; i < quant_num_ch; ++i) {
-      bias_mutable[i] -= bias_zero_point_data[i];
     }
   }
 
@@ -129,7 +114,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const int count_t = top[i]->count();
     if (scale_output) {
-      if (per_channel_scale_weight && per_channel_scale_bias) {
+      if (per_channel_scale_weight) {
         const int slice = count_t / quant_num_ch;
         Dtype* top_mutable = top[i]->mutable_cpu_data();
         for (int i = 0; i < quant_num_ch; ++i) {
@@ -171,14 +156,6 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     for (int i = 0; i < quant_num_ch; ++i) {
       caffe_add_scalar<Dtype>(slice, weight_zero_point_data[i], weight_mutable);
       weight_mutable += slice;
-    }
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(bias_zero_point), B->mutable_cpu_data());
-  } else if(per_channel_scale_bias) {
-    Dtype* bias_mutable = B->mutable_cpu_data();
-    for (int i = 0; i < quant_num_ch; ++i) {
-      bias_mutable[i] += bias_zero_point_data[i];
     }
   }
 }

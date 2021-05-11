@@ -48,24 +48,18 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const double input_scale = this->input_scale_;
   const double output_scale = this->output_scale_;
   const double weight_scale = this->weight_scale_;
-  const double bias_scale = this->bias_scale_;
   const int input_zero_point = this->input_zero_point_;
   const int output_zero_point = this->output_zero_point_;
   const int weight_zero_point = this->weight_zero_point_;
-  const int bias_zero_point = this->bias_zero_point_;
   const Dtype saturate = this->saturate_;
   const bool shift_input = (input_zero_point != 0);
   const bool shift_weight = (weight_zero_point != 0);
-  const bool shift_bias = (bias_zero_point != 0);
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
                              output_scale != Dtype(1.0));
   const bool shift_output = (output_zero_point != 0);
   
   if (shift_weight) { // shift the quantized weight
     caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point), W->mutable_cpu_data());
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(-bias_zero_point), B->mutable_cpu_data());
   }
 
   const Dtype* weight = this->blobs_[0]->cpu_data();
@@ -87,8 +81,7 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     const int count_t = top[i]->count();
     if (scale_output) {
-      //Dtype out_scal = input_scale * weight_scale / output_scale;
-      Dtype out_scal = bias_scale / output_scale;
+      Dtype out_scal = double(input_scale * weight_scale) / output_scale;
       caffe_cpu_scale_double_round<Dtype>(count_t, out_scal, top_data);
     }
     if (shift_output) {
@@ -110,9 +103,6 @@ void DeconvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // shift quantized weight/bias back to correct range
   if (shift_weight) {
     caffe_add_scalar<Dtype>(W->count(), Dtype(weight_zero_point), W->mutable_cpu_data());
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(bias_zero_point), B->mutable_cpu_data());
   }
 }
 

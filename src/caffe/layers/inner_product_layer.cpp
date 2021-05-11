@@ -20,11 +20,9 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   input_scale_ = this->layer_param_.inner_product_param().input_scale();  //CUSTOMIZATION
   output_scale_ = this->layer_param_.inner_product_param().output_scale();  //CUSTOMIZATION
   weight_scale_ = this->layer_param_.inner_product_param().weight_scale();  //CUSTOMIZATION
-  bias_scale_ = this->layer_param_.inner_product_param().bias_scale();  //CUSTOMIZATION
   input_zero_point_ = this->layer_param_.inner_product_param().input_zero_point();  //CUSTOMIZATION
   output_zero_point_ = this->layer_param_.inner_product_param().output_zero_point();  //CUSTOMIZATION
   weight_zero_point_ = this->layer_param_.inner_product_param().weight_zero_point();  //CUSTOMIZATION
-  bias_zero_point_ = this->layer_param_.inner_product_param().bias_zero_point();  //CUSTOMIZATION
   saturate_ = this->layer_param_.inner_product_param().saturate();  //CUSTOMIZATION
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
@@ -98,15 +96,11 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const bool shift_input = (input_zero_point_ != 0);
   const bool shift_weight = (weight_zero_point_ != 0);
-  const bool shift_bias = (bias_zero_point_ != 0);
   const bool scale_output = (input_scale_ != Dtype(1.0) || weight_scale_ != Dtype(1.0) ||
                               output_scale_ != Dtype(1.0));
   const bool shift_output = (output_zero_point_ != 0);
   if (shift_weight) { // shift the quantized weight
     caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point_), W->mutable_cpu_data());
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(-bias_zero_point_), B->mutable_cpu_data());
   }
   if (shift_input) {
     caffe_add_scalar<Dtype>(bottom[0]->count(),
@@ -150,9 +144,6 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // shift quantized weight/bias back to correct range
   if (shift_weight) {
     caffe_add_scalar<Dtype>(W->count(), Dtype(weight_zero_point_), W->mutable_cpu_data());
-  }
-  if (shift_bias) {
-    caffe_add_scalar<Dtype>(B->count(), Dtype(bias_zero_point_), B->mutable_cpu_data());
   }
 }
 

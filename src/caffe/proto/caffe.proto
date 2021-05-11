@@ -1376,14 +1376,14 @@ message ConvolutionParameter {
   optional double input_scale = 30 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 31 [default = 1]; //CUSTOMIZATION
   optional double weight_scale = 33 [default = 1]; //CUSTOMIZATION
-  optional double bias_scale = 34 [default = 1]; //CUSTOMIZATION
+
   optional int32 input_zero_point = 35 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 36 [default = 0]; //CUSTOMIZATION
   optional int32 weight_zero_point = 37 [default = 0]; //CUSTOMIZATION
-  optional int32 bias_zero_point = 38 [default = 0]; //CUSTOMIZATION
+
   // CUSTOMIZATION, whether to have per-channel scale & zero_points for weights/bias (data will be stored in caffemodel)
   optional bool per_channel_scale_weight = 39 [default = false];
-  optional bool per_channel_scale_bias = 40 [default = false];
+
 
   //<--CUSTOMIZATION
   enum SaturateMethod {
@@ -1890,11 +1890,11 @@ message InnerProductParameter {
   optional double input_scale = 11 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 12 [default = 1]; //CUSTOMIZATION
   optional double weight_scale = 13 [default = 1]; //CUSTOMIZATION
-  optional double bias_scale = 14 [default = 1]; //CUSTOMIZATION
+
   optional int32 input_zero_point = 15 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 16 [default = 0]; //CUSTOMIZATION
   optional int32 weight_zero_point = 17 [default = 0]; //CUSTOMIZATION
-  optional int32 bias_zero_point = 18 [default = 0]; //CUSTOMIZATION
+
   //<--CUSTOMIZATION
   enum SaturateMethod {
     None = 0;
@@ -2645,14 +2645,12 @@ message SqueezeConvolutionParameter {
   optional double input_scale = 46 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional double output_scale = 47 [default = 1]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional double weight_scale = 49 [default = 1]; //CUSTOMIZATION
-  optional double bias_scale = 50 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 51 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional int32 output_zero_point = 52 [default = 0]; //CUSTOMIZATION, act as dummy param in squeeze_conv layer now
   optional int32 weight_zero_point = 53 [default = 0]; //CUSTOMIZATION
-  optional int32 bias_zero_point = 54 [default = 0]; //CUSTOMIZATION
   // CUSTOMIZATION, whether to have per-channel scale & zero_points for weights/bias (data will be stored in caffemodel)
   optional bool per_channel_scale_weight = 59 [default = false];
-  optional bool per_channel_scale_bias = 60 [default = false];
+
 
   //<--CUSTOMIZATION
   enum SaturateMethod {

@@ -51,11 +51,10 @@ class InnerProductLayer : public Layer<Dtype> {
   int input_zero_point_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
   int weight_zero_point_; //CUSTOMIZATION
-  int bias_zero_point_; //CUSTOMIZATION
   double input_scale_; //CUSTOMIZATION
   double output_scale_; //CUSTOMIZATION
   double weight_scale_; //CUSTOMIZATION
-  double bias_scale_; //CUSTOMIZATION
+
   Dtype saturate_; //CUSTOMIZATION
 
 };
