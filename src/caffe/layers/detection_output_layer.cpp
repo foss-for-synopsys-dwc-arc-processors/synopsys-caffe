@@ -981,8 +981,8 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
       }
 
       // Sort the score pair according to the scores in descending order
-      std::sort(score_index_vec.begin(), score_index_vec.end(),
-                SortScorePairDescend<int>);
+      std::partial_sort(score_index_vec.begin(), score_index_vec.begin()+score_index_vec.size(), score_index_vec.end(),
+                [](const std::pair<float, int> &left, const std::pair<float, int> &right) {return left.first > right.first;});
 
       int num_scores_kept = score_index_vec.size();
       const int output_size = std::min<int>(keep_top_k_, num_scores_kept);
@@ -1033,7 +1033,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         for (int col = 0; col < num_categories_per_anchor; col++) {
           int d_class = sorted_class_indices[select_indices[j]][col];
           float d_score =
-              conf_data[select_indices[j] * num_classes_ + 1 + d_class];
+              conf_data[i * num_priors_ * num_classes_ + select_indices[j] * num_classes_ + 1 + d_class];
 
           top_data[count * 7] = i;
           top_data[count * 7 + 1] = d_class;
