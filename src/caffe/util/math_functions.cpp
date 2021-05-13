@@ -470,9 +470,11 @@ template <typename Dtype>
 void caffe_cpu_quantize(const int n, Dtype* x, const double scale, const int zero_point){
   if (scale != Dtype(1.0)) {
     caffe_div_scalar<Dtype>(n, scale, x);
-    caffe_cpu_round<Dtype>(n, x);
-    // we can't naively change the rounding of all layers to double_rounding
-    //caffe_cpu_scale_double_round<Dtype>(n, scale, x);
+    for (int i = 0; i < n; ++i) {
+      // TfLiteRound == std::round
+      // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/cppmath.h#L36
+      x[i] = std::round(x[i]);
+    }
   }
   if (zero_point != 0) {
     caffe_add_scalar<Dtype>(n, Dtype(zero_point), x);
@@ -500,16 +502,13 @@ template void caffe_cpu_dequantize<double>(const int n, double* x, const double 
 template <typename Dtype, typename Stype>
 void caffe_cpu_scale_double_round(const int n, const Stype scale, Dtype* x){
   // refer to https://github.com/google/gemmlowp/blob/master/doc/quantization.md#implementation-of-quantized-matrix-multiplication
-  Stype mul = scale; // multiplier in normalized interval [0.5, 1.0)
-  int shift = 0;
-  while (mul < 0.5) {
-    mul *= 2.0;
-    ++shift;
-  }
+  int shift;
+  Stype mul = std::frexp(scale, &shift); // multiplier in normalized interval [0.5, 1.0)
+  shift = -shift;
   shift = (1<<shift);
   for (int i = 0; i < n; ++i) {
     x[i] = std::round(x[i] * mul);
-    x[i] = std::round(x[i]/shift);
+    x[i] = std::round(x[i] / shift);
   }
 }
 
@@ -520,6 +519,36 @@ template void caffe_cpu_scale_double_round<double, double>(const int n, const do
 template void caffe_cpu_scale_double_round<double, float>(const int n, const float scale, double* x);
 
 template void caffe_cpu_scale_double_round<float, double>(const int n, const double scale, float* x);
+
+template <typename Dtype>
+void MultiplyByQaunzizedMultiplierVR(const int n, Dtype* x, const int mul, const int shift, const int round_mode){
+  // MultiplyByQuantizedMultiplier ; V for vector, R for round_mode
+  // simulate x[i] * mul * 2^31* 2^shift
+  CHECK_EQ(round_mode >= 1 && round_mode <= 2, true);
+  int shf = -shift;
+
+  if (round_mode == 1) {
+    shf += 31;
+    long long round = (1ll << (shf-1));
+    // round half to positive inf
+    // https://github.com/tensorflow/tensorflow/blob/cfa91be9863a91d5105a3b4941096044ab32036b/tensorflow/core/kernels/quantized_conv_ops.cc#L73
+    for (int i = 0; i < n; ++i) {
+      long long v = (long long) x[i];
+      v *= mul;
+      v += round;
+      v = v>>shf;
+      x[i] = v;
+    }
+  } else if (round_mode == 2) {
+    for(int i = 0; i < n; ++i) {
+      x[i] = tfl_RoundingDivideByPOT(tfl_SaturatingRoundingDoublingHighMul((int)x[i], mul), shf);
+    }
+  }
+}
+
+template void MultiplyByQaunzizedMultiplierVR<float>(const int n, float* x, const int mul, const int shift, const int round_mode);
+
+template void MultiplyByQaunzizedMultiplierVR<double>(const int n, double* x, const int mul, const int shift, const int round_mode);
 
 int tfl_SaturatingRoundingDoublingHighMul(int a, int b) {
   // https://github.com/google/gemmlowp/blob/master/fixedpoint/fixedpoint.h#L340

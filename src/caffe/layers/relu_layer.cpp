@@ -23,8 +23,6 @@ void QuantizeLeakyRelu(const int n, const Dtype *in, Dtype *out, Dtype alpha, do
   int mul_ident = tfl_QuantizeMultiplier((double)in_s / out_s, &shift_ident); // for positive value
   int mul_alpha = tfl_QuantizeMultiplier((double)in_s * (double)alpha / out_s, &shift_alpha); // for negative value
   int input_value, unclamped_output;
-  printf("mul_ident = %d, shift_ident = %d\n", mul_ident, shift_ident);
-  printf("mul_alpha = %d, shift_alpha = %d\n", mul_alpha, shift_alpha);
   for (int i = 0; i < n; ++i) {
     input_value = (int) std::round(in[i]) - in_zp;
     if (input_value >= 0) {

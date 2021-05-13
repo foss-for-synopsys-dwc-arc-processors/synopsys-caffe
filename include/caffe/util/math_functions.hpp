@@ -172,6 +172,9 @@ void caffe_cpu_dequantize(const int n, Dtype* x, const double scale, const int z
 template <typename Dtype, typename Stype>
 void caffe_cpu_scale_double_round(const int n, const Stype scale, Dtype* x);
 
+template <typename Dtype>
+void MultiplyByQaunzizedMultiplierVR(const int n, Dtype* x, const int mul, const int shift, const int round_mode);
+
 int tfl_SaturatingRoundingDoublingHighMul(int a, int b);
 
 int tfl_RoundingDivideByPOT(int x, int exp);

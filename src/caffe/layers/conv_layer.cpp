@@ -77,6 +77,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
                              output_scale != Dtype(1.0)) || per_channel_scale_weight;
   const bool shift_output = (output_zero_point != 0);
+  bool is_depthwise = (this->group_ == this->num_output_);
 
   const int quant_num_ch = per_channel_scale_weight ? this->num_output_ : 1;
   const Dtype* weight_scale_data = per_channel_scale_weight ? this->blobs_[2]->cpu_data() : NULL;
@@ -117,22 +118,36 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       if (per_channel_scale_weight) {
         const int slice = count_t / quant_num_ch;
         Dtype* top_mutable = top[i]->mutable_cpu_data();
-        for (int i = 0; i < quant_num_ch; ++i) {
-          double out_scal = (double)input_scale * weight_scale_data[i];
-          out_scal /= output_scale;
-          caffe_cpu_scale_double_round(slice, out_scal, top_mutable);
+        for (int j = 0; j < quant_num_ch; ++j) {
+          double out_scal = input_scale * (double)weight_scale_data[j] / output_scale;
+          int q_shift;
+          int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
+
+          if (is_depthwise) {
+            // double rounding
+            MultiplyByQaunzizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 2);
+          } else {
+            // It is found at https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/quantized_conv_ops.cc 
+            // single rounding
+            MultiplyByQaunzizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 1);
+          }
           top_mutable += slice;
         }
       } else {
         // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
         double out_scal = (double)input_scale * weight_scale;
         out_scal /= output_scale;
-        caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+        int q_shift;
+        int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
+        //caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+        MultiplyByQaunzizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
       }
     }
+
     if (shift_output) {
       caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point), top_data);
     }
+
     if (saturate == ConvolutionParameter_SaturateMethod_Signed)
       caffe_cpu_signed_saturate(count_t, top_data);
     if (saturate == ConvolutionParameter_SaturateMethod_Unsigned)
