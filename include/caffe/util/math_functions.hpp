@@ -172,6 +172,14 @@ void caffe_cpu_dequantize(const int n, Dtype* x, const double scale, const int z
 template <typename Dtype, typename Stype>
 void caffe_cpu_scale_double_round(const int n, const Stype scale, Dtype* x);
 
+int tfl_SaturatingRoundingDoublingHighMul(int a, int b);
+
+int tfl_RoundingDivideByPOT(int x, int exp);
+
+int tfl_QuantizeMultiplier(double scale, int *shift);
+
+int tfl_MultiplyByQuantizedMultiplier(int x, int q_mul, int shift);
+
 #ifndef CPU_ONLY  // GPU
 
 // Decaf gpu gemm provides an interface that is almost the same as the cpu

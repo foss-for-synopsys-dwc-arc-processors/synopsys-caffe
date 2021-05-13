@@ -521,4 +521,42 @@ template void caffe_cpu_scale_double_round<double, float>(const int n, const flo
 
 template void caffe_cpu_scale_double_round<float, double>(const int n, const double scale, float* x);
 
+int tfl_SaturatingRoundingDoublingHighMul(int a, int b) {
+  // https://github.com/google/gemmlowp/blob/master/fixedpoint/fixedpoint.h#L340
+  bool overflow = a == b && a== std::numeric_limits<std::int32_t>::min();
+  CHECK_NE(overflow, true);
+  long long a_64 = (long long) a;
+  long long b_64 = (long long) b;
+  long long ab_64 = a_64 * b_64;
+  int nudge = ab_64 >= 0 ? (1 << 30) : (1 - (1 << 30));
+  //int nudge = (1 << 30);// - (ab_64 < 0);
+  int ab_x2_high32 = (int) ((ab_64 + nudge) / (1ll << 31));
+  return overflow ? std::numeric_limits<std::int32_t>::max() : ab_x2_high32;
+}
+int tfl_RoundingDivideByPOT(int x, int exp) {
+  // https://github.com/google/gemmlowp/blob/master/fixedpoint/fixedpoint.h#L368
+  CHECK_GE(exp, 0);
+  CHECK_LE(exp, 31);
+  const int mask = (1ll << exp) - 1;
+  const int remainder = x & mask;
+  const int threshold = (mask >> 1) + (x < 0);
+  return (x >> exp) + (remainder > threshold);
+}
+
+int tfl_QuantizeMultiplier(double scale, int *shift) {
+  // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/quantization_util.cc#L53
+  CHECK_NE(scale, 0.0);
+  double q_mul = std::frexp(scale, shift);
+  long long quantized_multiplier = (long long) std::round(q_mul * (1ll<<31));
+  CHECK_LT(quantized_multiplier, 1ll<<31);
+  CHECK_GE(*shift, -31);
+  return (int) quantized_multiplier;
+}
+int tfl_MultiplyByQuantizedMultiplier(int x, int q_mul, int shift) {
+  int left_shift = shift > 0 ? shift : 0;
+  int right_shift = shift > 0 ? 0 : -shift;
+  // divide by power of two
+  return tfl_RoundingDivideByPOT(tfl_SaturatingRoundingDoublingHighMul(x * (1 << left_shift), q_mul), right_shift);
+}
+
 }  // namespace caffe

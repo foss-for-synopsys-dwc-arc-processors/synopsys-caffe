@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "caffe/layers/relu_layer.hpp"
+#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 template <typename Dtype>
@@ -13,6 +14,30 @@ template <typename Dtype>
 void ReLULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   top[0]->ReshapeLike(*bottom[0]);
+}
+
+template <typename Dtype>
+void QuantizeLeakyRelu(const int n, const Dtype *in, Dtype *out, Dtype alpha, double in_s, int in_zp, double out_s, int out_zp) {
+  // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/reference/leaky_relu.h#L49-L59
+  int shift_ident, shift_alpha;
+  int mul_ident = tfl_QuantizeMultiplier((double)in_s / out_s, &shift_ident); // for positive value
+  int mul_alpha = tfl_QuantizeMultiplier((double)in_s * (double)alpha / out_s, &shift_alpha); // for negative value
+  int input_value, unclamped_output;
+  printf("mul_ident = %d, shift_ident = %d\n", mul_ident, shift_ident);
+  printf("mul_alpha = %d, shift_alpha = %d\n", mul_alpha, shift_alpha);
+  for (int i = 0; i < n; ++i) {
+    input_value = (int) std::round(in[i]) - in_zp;
+    if (input_value >= 0) {
+      unclamped_output = out_zp + tfl_MultiplyByQuantizedMultiplier(
+                                    input_value, mul_ident, shift_ident);
+    } else {
+      unclamped_output = out_zp + tfl_MultiplyByQuantizedMultiplier(
+                                    input_value, mul_alpha, shift_alpha);
+    }
+    if (unclamped_output < -128) unclamped_output = -128;
+    if (unclamped_output > 127) unclamped_output = 127;
+    out[i] = Dtype(unclamped_output);
+  }
 }
 
 template <typename Dtype>
@@ -33,6 +58,11 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   	maximum = bottom[1]->cpu_data()[0];
   const bool quant_in = (input_scale_ != Dtype(1.0) || input_zero_point_ != 0);
   const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
+  if (negative_slope != Dtype(0) && quant_in && quant_out) {
+    QuantizeLeakyRelu(bottom[0]->count(), bottom[0]->cpu_data(), top[0]->mutable_cpu_data(),
+      negative_slope, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+    return;
+  }
   if (quant_in) {
       caffe_cpu_dequantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
           input_scale_, input_zero_point_);
@@ -49,6 +79,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     if(minimum != Dtype(0))
       top_data[i] = std::max(top_data[i], minimum); //CUSTOMIZATION
   }
+
   if (quant_out) {
     // do not reuse "top_data"; it is shifted during the computation
     caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
