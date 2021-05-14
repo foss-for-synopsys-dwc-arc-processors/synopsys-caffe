@@ -2599,10 +2599,20 @@ message SoftmaxParameter {
   // from the end (e.g., -1 for the last axis).
   // Any other axes will be evaluated as independent softmaxes.
   optional int32 axis = 2 [default = 1];
+  //<--CUSTOMIZATION
   optional double input_scale = 3 [default = 1]; //CUSTOMIZATION
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 5 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
+  enum SaturateMethod {
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 7 [default = None];
+  //CUSTOMIZATION-->
 }
 
 message LogSoftmaxParameter {

@@ -25,6 +25,7 @@ void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   output_scale_ = this->layer_param_.softmax_param().output_scale(); //CUSTOMIZATION
   input_zero_point_ = this->layer_param_.softmax_param().input_zero_point(); //CUSTOMIZATION
   output_zero_point_ = this->layer_param_.softmax_param().output_zero_point(); //CUSTOMIZATION
+  saturate_ = this->layer_param_.softmax_param().saturate(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
@@ -32,6 +33,10 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const bool quant_in = (input_scale_ != Dtype(1.0) || input_zero_point_ != 0);
   const bool quant_out = (output_scale_ != Dtype(1.0) || output_zero_point_ != 0);
+  /* For quantized softmax, tflite computes with float numbers. Refer to 
+  https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/optimized/optimized_ops.h#L3765
+  https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/softmax_quantized_test.cc#L49-L53
+  */
   if (quant_in) {
     caffe_cpu_dequantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
         input_scale_, input_zero_point_);
@@ -68,8 +73,19 @@ void SoftmaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
   if (quant_out) {
-    // do not reuse "top_data"; it is shifted during the computation
-    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+    const int count_t = top[0]->count();
+    top_data = top[0]->mutable_cpu_data();
+    // reset "top_data"; it is shifted during the computation
+    caffe_cpu_quantize<Dtype>(count_t, top_data, output_scale_, output_zero_point_);
+    // uint8_256 represents float_1, and saturate clamps it to 255.
+    if (saturate_ == SoftmaxParameter_SaturateMethod_Signed)
+      caffe_cpu_signed_saturate(count_t, top_data);
+    if (saturate_ == SoftmaxParameter_SaturateMethod_Unsigned)
+      caffe_cpu_unsigned_saturate(count_t, top_data);
+    if (saturate_ == SoftmaxParameter_SaturateMethod_Signed_8bit)
+      caffe_cpu_signed_8bit_saturate(count_t, top_data);
+    if (saturate_ == SoftmaxParameter_SaturateMethod_Unsigned_8bit)
+      caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
   }
   if (quant_in) {
     caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),

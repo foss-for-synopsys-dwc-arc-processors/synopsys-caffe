@@ -47,6 +47,7 @@ class SoftmaxLayer : public Layer<Dtype> {
   double output_scale_; //CUSTOMIZATION
   int input_zero_point_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
+  Dtype saturate_; //CUSTOMIZATION
 };
 
 }  // namespace caffe
