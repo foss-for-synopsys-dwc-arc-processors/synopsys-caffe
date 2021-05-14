@@ -532,6 +532,8 @@ void MultiplyByQaunzizedMultiplierVR(const int n, Dtype* x, const int mul, const
     long long round = (1ll << (shf-1));
     // round half to positive inf
     // https://github.com/tensorflow/tensorflow/blob/cfa91be9863a91d5105a3b4941096044ab32036b/tensorflow/core/kernels/quantized_conv_ops.cc#L73
+    // also found ruy::MultiplyByQuantizedMultiplier using single-rounding
+    // https://github.com/google/ruy/blob/master/ruy/apply_multiplier.cc#L48
     for (int i = 0; i < n; ++i) {
       long long v = (long long) x[i];
       v *= mul;

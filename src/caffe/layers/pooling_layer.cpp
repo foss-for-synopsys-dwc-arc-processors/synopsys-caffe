@@ -374,10 +374,10 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               }
             }
             if (quant_out) { // CUSTOMIZATION
-              int acc = (int) std::round(top_data[ph * pooled_width_ + pw]);
-              acc -= pool_size * output_zero_point_;
-              top_data[ph * pooled_width_ + pw] = std::round(Dtype(acc) / pool_size);
-              top_data[ph * pooled_width_ + pw] += output_zero_point_;
+              int acc = (int) top_data[ph * pooled_width_ + pw];
+              acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                            : (acc - pool_size / 2) / pool_size;
+              top_data[ph * pooled_width_ + pw] = acc;
             }
             else {
               top_data[ph * pooled_width_ + pw] /= pool_size;
@@ -422,10 +422,11 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                }
              }
              if (quant_out) { // CUSTOMIZATION
-               int acc = (int) std::round(top_data[ph * pooled_width_ + pw]);
-               acc -= pool_size * output_zero_point_;
-               top_data[ph * pooled_width_ + pw] = std::round(Dtype(acc) / pool_size);
-               top_data[ph * pooled_width_ + pw] += output_zero_point_;
+               // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
+               int acc = (int) top_data[ph * pooled_width_ + pw];
+               acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                             : (acc - pool_size / 2) / pool_size;
+               top_data[ph * pooled_width_ + pw] = acc;
              }
              else {
                top_data[ph * pooled_width_ + pw] /= pool_size;
