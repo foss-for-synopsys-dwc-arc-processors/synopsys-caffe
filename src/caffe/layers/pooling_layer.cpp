@@ -133,6 +133,8 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     CHECK_LT(pad_w_, kernel_w_);
   }
 
+  input_scale_ = pool_param.input_scale(); //CUSTOMIZATION
+  input_zero_point_ = pool_param.input_zero_point(); //CUSTOMIZATION
   output_scale_ = pool_param.output_scale(); //CUSTOMIZATION
   output_zero_point_ = pool_param.output_zero_point(); //CUSTOMIZATION
 }
@@ -424,8 +426,20 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
              if (quant_out) { // CUSTOMIZATION
                // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
                int acc = (int) top_data[ph * pooled_width_ + pw];
-               acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+               // Some mean_layer is mapped to AVG_pool, then has input_scale != output_scale
+               // https://github.com/tensorflow/tensorflow/blob/a2173743554b3414e87a38c8271afa50ba705c14/tensorflow/lite/kernels/internal/reference/integer_ops/mean.h#L63-L65
+               if (input_scale_ != output_scale_) {
+                acc -= input_zero_point_ * pool_size;
+                double out_scal = input_scale_ / output_scale_;
+                int q_shift, q_mul = tfl_QuantizeMultiplier(out_scal, &q_shift);
+                acc = tfl_MultiplyByQuantizedMultiplier(acc, q_mul, q_shift);
+                acc = acc > 0 ? (acc + pool_size / 2) / pool_size
                              : (acc - pool_size / 2) / pool_size;
+                acc += output_zero_point_;
+               } else {
+                acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                             : (acc - pool_size / 2) / pool_size;
+               }
                top_data[ph * pooled_width_ + pw] = acc;
              }
              else {

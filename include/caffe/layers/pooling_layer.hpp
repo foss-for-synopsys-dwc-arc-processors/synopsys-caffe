@@ -61,6 +61,8 @@ class PoolingLayer : public Layer<Dtype> {
   int pad_b_; //CUSTOMIZATION
   int output_shift_instead_division_; //CUSTOMIZATION
   Dtype saturate_; //CUSTOMIZATION
+  double input_scale_; //CUSTOMIZATION
+  int input_zero_point_; //CUSTOMIZATION
   double output_scale_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
 };
