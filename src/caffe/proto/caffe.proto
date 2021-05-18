@@ -2562,6 +2562,14 @@ message SigmoidParameter {
   optional double output_scale = 4 [default = 1]; //CUSTOMIZATION
   optional int32 input_zero_point = 5 [default = 0]; //CUSTOMIZATION
   optional int32 output_zero_point = 6 [default = 0]; //CUSTOMIZATION
+  enum SaturateMethod { // CUSTOMIZATION
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 7 [default = None]; // CUSTOMIZATION
 }
 
 

@@ -14,6 +14,7 @@ void SigmoidLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   output_scale_ = sigmoid_param.output_scale();
   input_zero_point_ = sigmoid_param.input_zero_point();
   output_zero_point_ = sigmoid_param.output_zero_point();
+  saturate_ = sigmoid_param.saturate();
 }
 
 template <typename Dtype>
@@ -37,8 +38,16 @@ void SigmoidLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     top_data[i] = sigmoid(bottom_data[i]);
   }
   if (quant_out) {
-    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(),
+    caffe_cpu_quantize<Dtype>(count, top_data,
         output_scale_, output_zero_point_);
+    if (saturate_ == SigmoidParameter_SaturateMethod_Signed)
+      caffe_cpu_signed_saturate(count, top_data);
+    if (saturate_ == SigmoidParameter_SaturateMethod_Unsigned)
+      caffe_cpu_unsigned_saturate(count, top_data);
+    if (saturate_ == SigmoidParameter_SaturateMethod_Signed_8bit)
+      caffe_cpu_signed_8bit_saturate(count, top_data);
+    if (saturate_ == SigmoidParameter_SaturateMethod_Unsigned_8bit)
+      caffe_cpu_unsigned_8bit_saturate(count, top_data);
   } // CUSTOMIZATION
   if (quant_in) {
     caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),

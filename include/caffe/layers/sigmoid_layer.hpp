@@ -71,6 +71,7 @@ class SigmoidLayer : public NeuronLayer<Dtype> {
   double output_scale_;
   int input_zero_point_;
   int output_zero_point_;
+  Dtype saturate_;
 };
 
 }  // namespace caffe
