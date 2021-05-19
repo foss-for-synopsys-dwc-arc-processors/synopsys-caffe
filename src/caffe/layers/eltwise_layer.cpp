@@ -107,36 +107,51 @@ int affine_and_shift(const Dtype x, const int zp_in, const double mul, const int
   return r;
 }
 
-typedef double Stype; // scale type
 template <typename Dtype>
 void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
   const vector<double> &input_scale, const vector<int> &input_zero_point,
   const double &output_scale, const int &output_zero_point) {
-  /*** This kernel is not yet tested with tf-lite models
-    Refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L172-L184
+  /*** For left_shift and multipliers, 
+  refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L172-L184
+       Reference implementation in tflite:
+  refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/reference/integer_ops/add.h#L86
   ***/
-  const int shift = 20;
-  const Stype twice_max_scale = std::max(input_scale[0], input_scale[1]) * 2.0;
-  const Stype mul_x = input_scale[0] / twice_max_scale;
-  const Stype mul_y = input_scale[1] / twice_max_scale;
-  const Stype mul_z = twice_max_scale / output_scale;
+  const int left_shift = 20; // for 8-bit, refer to https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L175
+  const double twice_max_scale = std::max(input_scale[0], input_scale[1]) * 2.0;
+  const double mul_x = input_scale[0] / twice_max_scale;
+  const double mul_y = input_scale[1] / twice_max_scale;
+  const double mul_z = twice_max_scale / ((1<<left_shift) * output_scale);
+  int qshift_x, qshift_y, qshift_z;
+  int qmul_x = tfl_QuantizeMultiplier(mul_x, &qshift_x);
+  int qmul_y = tfl_QuantizeMultiplier(mul_y, &qshift_y);
+  int qmul_z = tfl_QuantizeMultiplier(mul_z, &qshift_z);
+  // TODO: search what does left_shift do?
+  // here's a guess: ensure that mul_z <= 1.0 , and also use higher significant bits for calculation
+  // also note that ((1<<left_shift) * output_scale) might introduce error if output_scale is not Power Of Two.
+  // There's another parameter, pot_scale_int16, to indicate if all scales are POT. https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/add.cc#L75
+  // Current received models are 8-bit models, don't see necessity to handle pot_scale_int16 (it will assign left_shift:=15 in 16-bit quantization)
+
   const Dtype* x_data = bottom[0]->cpu_data();
   const Dtype* y_data = bottom[1]->cpu_data();
   Dtype* z_data = top[0]->mutable_cpu_data();
 
   const int N = top[0]->count();
-  int affine_x, affine_y, affine_z;
+  int scaled_x, scaled_y, scaled_z;
   for (int i = 0; i < N; ++i) {
-    affine_x = affine_and_shift(x_data[i], input_zero_point[0], mul_x, shift);
-    affine_y = affine_and_shift(y_data[i], input_zero_point[1], mul_y, shift);
-    affine_z = affine_x + affine_y;
-    affine_z = (int) std::round(mul_z * affine_z);
-    affine_z = affine_z >> shift;
-    affine_z += output_zero_point;
-    z_data[i] = Dtype(affine_z);
+    // affine x and y to the same scale: 2*max_input_scale.
+    scaled_x = (int(x_data[i]) - input_zero_point[0]) * (1 << left_shift);
+    scaled_x = tfl_MultiplyByQuantizedMultiplier(scaled_x, qmul_x, qshift_x);
+    scaled_y = (int(y_data[i]) - input_zero_point[1]) * (1 << left_shift);
+    scaled_y = tfl_MultiplyByQuantizedMultiplier(scaled_y, qmul_y, qshift_y);
+    // affine (x+y) to output scale
+    scaled_z = scaled_x + scaled_y;
+    scaled_z = tfl_MultiplyByQuantizedMultiplier(scaled_z, qmul_z, qshift_z) + output_zero_point;
+    z_data[i] = Dtype(scaled_z);
+    // the clamp/saturate will be applied at the end of Forward_cpu
   }
 }
 
+typedef double Stype; // scale type
 template <typename Dtype>
 void caffe2_int8add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
   const vector<double> &input_scale, const vector<int> &input_zero_point,
@@ -237,7 +252,8 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   case EltwiseParameter_EltwiseOp_SUM:
     if (is_quant) {
       // introduce custom computation
-      caffe2_int8add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      //caffe2_int8add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      tflite_add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
       break;
     }
     caffe_set(count, Dtype(0), top_data);
