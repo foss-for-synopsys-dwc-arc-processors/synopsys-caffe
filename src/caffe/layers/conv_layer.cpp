@@ -125,11 +125,11 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
           if (is_depthwise) {
             // double rounding
-            MultiplyByQaunzizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 2);
+            MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 2);
           } else {
             // It is found at https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/quantized_conv_ops.cc 
             // single rounding
-            MultiplyByQaunzizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 1);
+            MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 1);
           }
           top_mutable += slice;
         }
@@ -140,7 +140,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         int q_shift;
         int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
         //caffe_cpu_scale_double_round(count_t, out_scal, top_data);
-        MultiplyByQaunzizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+        MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
       }
     }
 

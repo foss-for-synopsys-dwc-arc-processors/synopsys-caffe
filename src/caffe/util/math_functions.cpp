@@ -521,7 +521,7 @@ template void caffe_cpu_scale_double_round<double, float>(const int n, const flo
 template void caffe_cpu_scale_double_round<float, double>(const int n, const double scale, float* x);
 
 template <typename Dtype>
-void MultiplyByQaunzizedMultiplierVR(const int n, Dtype* x, const int mul, const int shift, const int round_mode){
+void MultiplyByQuantizedMultiplierVR(const int n, Dtype* x, const int mul, const int shift, const int round_mode){
   // MultiplyByQuantizedMultiplier ; V for vector, R for round_mode
   // simulate x[i] * mul * 2^31* 2^shift
   CHECK_EQ(round_mode >= 1 && round_mode <= 2, true);
@@ -548,9 +548,9 @@ void MultiplyByQaunzizedMultiplierVR(const int n, Dtype* x, const int mul, const
   }
 }
 
-template void MultiplyByQaunzizedMultiplierVR<float>(const int n, float* x, const int mul, const int shift, const int round_mode);
+template void MultiplyByQuantizedMultiplierVR<float>(const int n, float* x, const int mul, const int shift, const int round_mode);
 
-template void MultiplyByQaunzizedMultiplierVR<double>(const int n, double* x, const int mul, const int shift, const int round_mode);
+template void MultiplyByQuantizedMultiplierVR<double>(const int n, double* x, const int mul, const int shift, const int round_mode);
 
 int tfl_SaturatingRoundingDoublingHighMul(int a, int b) {
   // https://github.com/google/gemmlowp/blob/master/fixedpoint/fixedpoint.h#L340
