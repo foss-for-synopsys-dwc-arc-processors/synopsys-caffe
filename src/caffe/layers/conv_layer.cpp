@@ -77,7 +77,8 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
                              output_scale != Dtype(1.0)) || per_channel_scale_weight;
   const bool shift_output = (output_zero_point != 0);
-  bool is_depthwise = (this->group_ == this->num_output_);
+  const bool is_depthwise = (this->group_ == this->num_output_);
+  const bool is_pointwise = (W->count(2) == 1); // NCHW, count(HW) == 1
 
   const int quant_num_ch = per_channel_scale_weight ? this->num_output_ : 1;
   const Dtype* weight_scale_data = per_channel_scale_weight ? this->blobs_[2]->cpu_data() : NULL;
@@ -103,7 +104,6 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* top_data = top[i]->mutable_cpu_data();
-
     for (int n = 0; n < this->num_; ++n) {
       this->forward_cpu_gemm(bottom_data + n * this->bottom_dim_, weight,
           top_data + n * this->top_dim_);
@@ -140,7 +140,17 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         int q_shift;
         int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
         //caffe_cpu_scale_double_round(count_t, out_scal, top_data);
-        MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+        //MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+        if (is_depthwise || is_pointwise) {
+          double ref_scal = (float)input_scale * (float)weight_scale;
+          ref_scal /= (float) output_scale;
+          q_scal = tfl_QuantizeMultiplier(ref_scal, &q_shift);
+          // ref_scale to reproduce error https://github.com/tensorflow/tensorflow/issues/23800
+          // this error is observed in uint8 models, with input=[0,255]. TF version=2.5.0rc0
+          MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+        } else {
+          MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+        }
       }
     }
 
