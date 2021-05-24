@@ -405,6 +405,18 @@ void caffe_cpu_scale<double>(const int n, const double alpha, const double *x,
 }
 
 template <typename Dtype>
+void caffe_cpu_saturate(const int n, Dtype* x, Dtype saturate_method) {
+  if (saturate_method == ConvolutionParameter_SaturateMethod_Signed)
+    caffe_cpu_signed_saturate(n, x);
+  if (saturate_method == ConvolutionParameter_SaturateMethod_Unsigned)
+    caffe_cpu_unsigned_saturate(n, x);
+  if (saturate_method == ConvolutionParameter_SaturateMethod_Signed_8bit)
+    caffe_cpu_signed_8bit_saturate(n, x);
+  if (saturate_method == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
+    caffe_cpu_unsigned_8bit_saturate(n, x);
+}
+
+template <typename Dtype>
 void caffe_cpu_universal_saturate(const int n, Dtype* x, Dtype SATURATE_MAX, Dtype SATURATE_MIN) {
   for (int i = 0; i < n; ++i) {
     if (x[i] > SATURATE_MAX) {

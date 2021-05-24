@@ -149,6 +149,9 @@ template <typename Dtype>
 void caffe_cpu_scale(const int n, const Dtype alpha, const Dtype *x, Dtype* y);
 
 template <typename Dtype>
+void caffe_cpu_saturate(const int n, Dtype* x, Dtype saturate_method);
+
+template <typename Dtype>
 void caffe_cpu_signed_saturate(const int n, Dtype* x);
 
 template <typename Dtype>
