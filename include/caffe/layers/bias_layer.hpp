@@ -45,6 +45,16 @@ class BiasLayer : public Layer<Dtype> {
  private:
   Blob<Dtype> bias_multiplier_;
   int outer_dim_, bias_dim_, inner_dim_, dim_;
+  // <--- CUSTOMIZATION
+  double input_scale_;
+  double output_scale_;
+  double bias_scale_; // It doesn't agree with input_scale*weight_scale of previous FC layer.
+  int input_zero_point_;
+  int output_zero_point_;
+  int bias_zero_point_;
+  Dtype saturate_;
+  int quantize_method_;
+  // ---> CUSTOMIZATION
 };
 
 

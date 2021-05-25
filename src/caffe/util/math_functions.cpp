@@ -416,6 +416,10 @@ void caffe_cpu_saturate(const int n, Dtype* x, Dtype saturate_method) {
     caffe_cpu_unsigned_8bit_saturate(n, x);
 }
 
+template void caffe_cpu_saturate<float>(const int n, float* x, float saturate_method);
+
+template void caffe_cpu_saturate<double>(const int n, double* x, double saturate_method);
+
 template <typename Dtype>
 void caffe_cpu_universal_saturate(const int n, Dtype* x, Dtype SATURATE_MAX, Dtype SATURATE_MIN) {
   for (int i = 0; i < n; ++i) {

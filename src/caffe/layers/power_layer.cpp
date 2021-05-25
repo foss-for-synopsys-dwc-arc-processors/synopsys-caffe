@@ -14,6 +14,7 @@ void PowerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   shift_ = this->layer_param_.power_param().shift();
   diff_scale_ = power_  * scale_;
   saturate_ = this->layer_param_.power_param().saturate();  //CUSTOMIZATION
+  quantize_method_ = this->layer_param_.power_param().quantize_method();  //CUSTOMIZATION
 }
 
 // Compute y = (shift + scale * x)^power
@@ -33,6 +34,17 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   if (scale_ != Dtype(1)) {
     caffe_scal(count, scale_, top_data);
   }
+  const int count_t = top[0]->count();
+  if (saturate_ != ConvolutionParameter_SaturateMethod_None) {
+  // determine if it's a Quantize operator
+    if (quantize_method_ == ConvolutionParameter_QuantizeMethod_TensorFlowLite) {
+      for (int i = 0; i < count_t; ++i) {
+        top_data[i] = std::round(top_data[i]);
+      }
+    } else { // QuantizeMethod_ONNX
+      caffe_cpu_round(count, top_data);
+    }
+  }
   if (shift_ != Dtype(0)) {
     caffe_add_scalar(count, shift_, top_data);
   }
@@ -40,27 +52,7 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_powx(count, top_data, power_, top_data);
   }
 
-  const int count_t = top[0]->count();
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed)
-  {
-    caffe_cpu_round<Dtype>(count_t, top_data);
-    caffe_cpu_signed_saturate(count_t, top_data);
-  }
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned)
-  {
-    caffe_cpu_round<Dtype>(count_t, top_data);
-    caffe_cpu_unsigned_saturate(count_t, top_data);
-  }
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed_8bit)
-  {
-    caffe_cpu_round<Dtype>(count_t, top_data);
-    caffe_cpu_signed_8bit_saturate(count_t, top_data);
-  }
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
-  {
-    caffe_cpu_round<Dtype>(count_t, top_data);
-    caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
-  }
+  caffe_cpu_saturate(count_t, top_data, saturate_); // if None nothing happens
 }
 
 template <typename Dtype>

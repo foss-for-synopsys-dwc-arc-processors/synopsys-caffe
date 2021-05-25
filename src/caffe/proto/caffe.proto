@@ -1283,6 +1283,28 @@ message BiasParameter {
   // Default is the zero (0) initialization, resulting in the BiasLayer
   // initially performing the identity operation.
   optional FillerParameter filler = 3;
+  //<--CUSTOMIZATION
+  optional double input_scale = 4 [default = 1]; //CUSTOMIZATION
+  optional double output_scale = 5 [default = 1]; //CUSTOMIZATION
+  optional double bias_scale = 6  [default = 1]; //CUSTOMIZATION
+  optional int32 input_zero_point = 7 [default = 0]; //CUSTOMIZATION
+  optional int32 output_zero_point = 8 [default = 0]; //CUSTOMIZATION
+  optional int32 bias_zero_point = 9 [default = 0]; //CUSTOMIZATION
+  enum SaturateMethod {
+    None = 0;
+    Signed = 1;
+    Unsigned = 2;
+    Signed_8bit = 3;
+    Unsigned_8bit = 4;
+  }
+  optional SaturateMethod saturate = 10 [default = None]; //control the output in certain range
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 11 [default = TensorFlowLite];
+  //CUSTOMIZATION-->
 }
 
 // Message that stores parameters used by BN (Batch Normalization)  layer
@@ -1394,6 +1416,12 @@ message ConvolutionParameter {
     Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 32 [default = None]; //control the output in certain range
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 40 [default = TensorFlowLite];
   //CUSTOMIZATION-->
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
@@ -1732,6 +1760,12 @@ message EltwiseParameter {
     Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 5 [default = None]; //only valid for SUM, control the output in certain range
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 18 [default = TensorFlowLite];
   //CUSTOMIZATION-->
 
   optional int32 axis = 6 [default = 0]; //CUSTOMIZATION for broadcasting
@@ -1904,6 +1938,12 @@ message InnerProductParameter {
     Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 19 [default = None]; //control the output in certain range
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 20 [default = TensorFlowLite];
   //CUSTOMIZATION-->
 }
 
@@ -2129,6 +2169,12 @@ message PoolingParameter {
     Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 22 [default = None]; //control the output in certain range
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 37 [default = TensorFlowLite];
   //CUSTOMIZATION-->
   enum Engine {
     DEFAULT = 0;
@@ -2191,6 +2237,12 @@ message PowerParameter {
   }
   optional SaturateMethod saturate = 4 [default = None];
   //control the output in certain range (for quantization purpose)
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 5 [default = TensorFlowLite];
 }
 
 // Message that store parameters used by PriorBoxLayer
@@ -2679,6 +2731,12 @@ message SqueezeConvolutionParameter {
     Unsigned_8bit = 4;
   }
   optional SaturateMethod saturate = 48 [default = None]; //act as dummy param in squeeze_conv layer now
+  enum QuantizeMethod {
+    TensorFlowLite = 0;
+    ONNX = 1;
+    Caffe2 = 2;
+  }
+  optional QuantizeMethod quantize_method = 60 [default = TensorFlowLite];
   //CUSTOMIZATION-->
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv

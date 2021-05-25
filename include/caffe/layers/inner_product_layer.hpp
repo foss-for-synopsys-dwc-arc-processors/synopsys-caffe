@@ -56,6 +56,7 @@ class InnerProductLayer : public Layer<Dtype> {
   double weight_scale_; //CUSTOMIZATION
 
   Dtype saturate_; //CUSTOMIZATION
+  int quantize_method_; //CUSTOMIZATION
 
 };
 

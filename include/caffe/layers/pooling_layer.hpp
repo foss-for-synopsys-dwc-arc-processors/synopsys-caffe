@@ -65,6 +65,7 @@ class PoolingLayer : public Layer<Dtype> {
   int input_zero_point_; //CUSTOMIZATION
   double output_scale_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
+  int quantize_method_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

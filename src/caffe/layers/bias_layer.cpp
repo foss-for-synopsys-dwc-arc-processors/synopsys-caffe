@@ -34,6 +34,17 @@ void BiasLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     filler->Fill(this->blobs_[0].get());
   }
   this->param_propagate_down_.resize(this->blobs_.size(), true);
+  // <--- CUSTOMIZATION
+  const BiasParameter& param = this->layer_param_.bias_param();
+  input_scale_ = param.input_scale();
+  output_scale_ = param.output_scale();;
+  bias_scale_ = param.bias_scale();
+  input_zero_point_ = param.input_zero_point();
+  output_zero_point_ = param.output_zero_point();
+  bias_zero_point_ = param.bias_zero_point();
+  saturate_ = param.saturate();
+  quantize_method_ = param.quantize_method();
+  // ---> CUSTOMIZATION
 }
 
 template <typename Dtype>
@@ -71,6 +82,18 @@ void BiasLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
+  const int bias_count = ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->count();
+  Dtype* bias_mut = ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->mutable_cpu_data(); // bias_mutatble
+  const int input_count = bottom[0]->count();
+  Dtype* input_mut = bottom[0]->mutable_cpu_data(); // input_mutatble
+  const bool quant_in = (input_scale_ != Dtype(1)) || (input_zero_point_ != 0);
+  const bool quant_bias = (bias_scale_ != Dtype(1)) || (bias_zero_point_ != 0);
+  const bool quant_out = (output_scale_ != Dtype(1)) || (output_zero_point_ != 0);
+  // if (quantize_method_ == ?)
+  // Currently, only onnx has bias_layer; the quantized computation is for onnx.
+  if (quant_in) caffe_cpu_dequantize(input_count, input_mut, input_scale_, input_zero_point_);
+  if (quant_bias) caffe_cpu_dequantize(bias_count, bias_mut, bias_scale_, bias_zero_point_);
+  // https://github.com/microsoft/onnxruntime/blob/6334c292408a1df4d19835a1edd1d563d932880b/onnxruntime/test/mlas/unittest/test_qlinear_binaryop.cpp#L43
   const Dtype* bias_data =
       ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -84,6 +107,14 @@ void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         bias_multiplier_.cpu_data(), Dtype(1), top_data);
     top_data += dim_;
   }
+  if (quant_out) {
+    const int count_t = top[0]->count();
+    top_data = top[0]->mutable_cpu_data();
+    caffe_cpu_quantize(count_t, top_data, output_scale_, output_zero_point_);
+    caffe_cpu_saturate(count_t, top_data, saturate_); // if None nothing happens
+  }
+  if (quant_in) caffe_cpu_quantize(input_count, input_mut, input_scale_, input_zero_point_);
+  if (quant_bias) caffe_cpu_quantize(bias_count, bias_mut, bias_scale_, bias_zero_point_);
 }
 
 template <typename Dtype>

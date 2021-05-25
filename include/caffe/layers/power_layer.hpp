@@ -117,6 +117,7 @@ class PowerLayer : public NeuronLayer<Dtype> {
   Dtype diff_scale_;
 
   Dtype saturate_; //CUSTOMIZATION
+  int quantize_method_; //CUSTOMIZATION
 };
 
 }  // namespace caffe

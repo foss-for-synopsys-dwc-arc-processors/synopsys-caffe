@@ -84,6 +84,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   weight_scale_ = conv_param.weight_scale();
   weight_zero_point_ = conv_param.weight_zero_point();
   saturate_ = conv_param.saturate();
+  quantize_method_ = conv_param.quantize_method();
   per_channel_scale_weight_ = conv_param.per_channel_scale_weight();
   //CUSTOMIZATION-->
 

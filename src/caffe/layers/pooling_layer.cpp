@@ -240,8 +240,6 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
 }
 
-template <typename Dtype>
-
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
 // case?
 template <typename Dtype>
@@ -379,10 +377,30 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               }
             }
             if (quant_out) { // CUSTOMIZATION
-              int acc = (int) top_data[ph * pooled_width_ + pw];
-              acc = acc > 0 ? (acc + pool_size / 2) / pool_size
-                            : (acc - pool_size / 2) / pool_size;
-              top_data[ph * pooled_width_ + pw] = acc;
+              if (quantize_method_ == PoolingParameter_QuantizeMethod_TensorFlowLite) {
+                // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
+                int acc = (int) top_data[ph * pooled_width_ + pw];
+                if (input_scale_ == output_scale_) { // TFLite::AVGPool
+                  acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                               : (acc - pool_size / 2) / pool_size;
+                } else { // TFLite::Mean is mapped to Caffe:AVGPool
+                  acc -= input_zero_point_ * pool_size;
+                  double out_scal = input_scale_ / output_scale_;
+                  int q_shift, q_mul = tfl_QuantizeMultiplier(out_scal, &q_shift);
+                  acc = tfl_MultiplyByQuantizedMultiplier(acc, q_mul, q_shift);
+                  acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                               : (acc - pool_size / 2) / pool_size;
+                  acc += output_zero_point_;
+                }
+                top_data[ph * pooled_width_ + pw] = acc;
+              } else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+                float scale = (float) input_scale_ / ((float)output_scale_ * (float) pool_size);
+                Dtype acc = top_data[ph * pooled_width_ + pw];
+                acc -= input_zero_point_ * pool_size;
+                acc = std::rint(acc * scale);
+                acc += output_zero_point_;
+                top_data[ph * pooled_width_ + pw] = acc;
+              }
             }
             else {
               top_data[ph * pooled_width_ + pw] /= pool_size;

@@ -62,6 +62,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int output_zero_point = this->output_zero_point_;
   const int weight_zero_point = this->weight_zero_point_;
   const Dtype saturate = this->saturate_;
+  const int quantize_method = this->quantize_method_;
   // weight/bias scale will retrieve the default values if per-channel is set
   const bool per_channel_scale_weight = this->per_channel_scale_weight_;
   /*** Quantization Computation
@@ -115,41 +116,49 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const int count_t = top[i]->count();
     if (scale_output) {
-      if (per_channel_scale_weight) {
-        const int slice = count_t / quant_num_ch;
-        Dtype* top_mutable = top[i]->mutable_cpu_data();
-        for (int j = 0; j < quant_num_ch; ++j) {
-          double out_scal = input_scale * (double)weight_scale_data[j] / output_scale;
+      if (quantize_method == ConvolutionParameter_QuantizeMethod_TensorFlowLite) {
+        if (per_channel_scale_weight) {
+          const int slice = count_t / quant_num_ch;
+          Dtype* top_mutable = top[i]->mutable_cpu_data();
+          for (int j = 0; j < quant_num_ch; ++j) {
+            double out_scal = input_scale * (double)weight_scale_data[j] / output_scale;
+            int q_shift;
+            int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
+
+            if (is_depthwise) {
+              // double rounding
+              MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 2);
+            } else {
+              // It is found at https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/quantized_conv_ops.cc
+              // single rounding
+              MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 1);
+            }
+            top_mutable += slice;
+          }
+        } else {
+          // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
+          double out_scal = (double)input_scale * weight_scale;
+          out_scal /= output_scale;
           int q_shift;
           int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
-
-          if (is_depthwise) {
-            // double rounding
-            MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 2);
+          //caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+          //MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+          if (is_depthwise || is_pointwise) {
+            double ref_scal = (float)input_scale * (float)weight_scale;
+            ref_scal /= (float) output_scale; // break the scale into two lines to reproduce the error
+            q_scal = tfl_QuantizeMultiplier(ref_scal, &q_shift);
+            // ref_scale to reproduce error https://github.com/tensorflow/tensorflow/issues/23800
+            // this error is observed in uint8 models, with input=[0,255]. TF version=2.5.0rc0
+            MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
           } else {
-            // It is found at https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/kernels/quantized_conv_ops.cc 
-            // single rounding
-            MultiplyByQuantizedMultiplierVR(slice, top_mutable, q_scal, q_shift, 1);
+            MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
           }
-          top_mutable += slice;
         }
-      } else {
-        // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
-        double out_scal = (double)input_scale * weight_scale;
-        out_scal /= output_scale;
-        int q_shift;
-        int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
-        //caffe_cpu_scale_double_round(count_t, out_scal, top_data);
-        //MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
-        if (is_depthwise || is_pointwise) {
-          double ref_scal = (float)input_scale * (float)weight_scale;
-          ref_scal /= (float) output_scale;
-          q_scal = tfl_QuantizeMultiplier(ref_scal, &q_shift);
-          // ref_scale to reproduce error https://github.com/tensorflow/tensorflow/issues/23800
-          // this error is observed in uint8 models, with input=[0,255]. TF version=2.5.0rc0
-          MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
-        } else {
-          MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
+      }
+      else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+        float onnx_scale = (float) input_scale * (float) weight_scale / (float) output_scale;
+        for (int k = 0; k < count_t; ++k) {
+          top_data[k] = std::rint(top_data[k] * onnx_scale);
         }
       }
     }
@@ -158,14 +167,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point), top_data);
     }
 
-    if (saturate == ConvolutionParameter_SaturateMethod_Signed)
-      caffe_cpu_signed_saturate(count_t, top_data);
-    if (saturate == ConvolutionParameter_SaturateMethod_Unsigned)
-      caffe_cpu_unsigned_saturate(count_t, top_data);
-    if (saturate == ConvolutionParameter_SaturateMethod_Signed_8bit)
-      caffe_cpu_signed_8bit_saturate(count_t, top_data);
-    if (saturate == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
-      caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
+    caffe_cpu_saturate(count_t, top_data, saturate); // if None nothing happens
 
     if (shift_input) { // shift the quantized input blob back to correct range
       caffe_add_scalar<Dtype>(bottom[i]->count(),

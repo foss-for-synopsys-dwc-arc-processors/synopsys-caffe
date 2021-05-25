@@ -24,6 +24,7 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   output_zero_point_ = this->layer_param_.inner_product_param().output_zero_point();  //CUSTOMIZATION
   weight_zero_point_ = this->layer_param_.inner_product_param().weight_zero_point();  //CUSTOMIZATION
   saturate_ = this->layer_param_.inner_product_param().saturate();  //CUSTOMIZATION
+  quantize_method_ = this->layer_param_.inner_product_param().quantize_method();  //CUSTOMIZATION
   const int axis = bottom[0]->CanonicalAxisIndex(
       this->layer_param_.inner_product_param().axis());
   // Dimensions starting from "axis" are "flattened" into a single
@@ -123,19 +124,18 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
     double out_scal = (double)input_scale_ * weight_scale_;
     out_scal /= output_scale_;
-    caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+    if (quantize_method_ == InnerProductParameter_QuantizeMethod_TensorFlowLite) {
+      caffe_cpu_scale_double_round(count_t, out_scal, top_data);
+    } else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+      for (int k = 0; k < count_t; ++k) {
+        top_data[k] = std::rint(top_data[k] * out_scal);
+      }
+    }
   }
   if (shift_output) {
     caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point_), top_data);
   }
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed)
-    caffe_cpu_signed_saturate(count_t, top_data);
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned)
-    caffe_cpu_unsigned_saturate(count_t, top_data);
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Signed_8bit)
-    caffe_cpu_signed_8bit_saturate(count_t, top_data);
-  if (saturate_ == ConvolutionParameter_SaturateMethod_Unsigned_8bit)
-    caffe_cpu_unsigned_8bit_saturate(count_t, top_data);
+  caffe_cpu_saturate(count_t, top_data, saturate_); // if None nothing happens
 
   if (shift_input) { // shift the quantized input blob back to correct range
     caffe_add_scalar<Dtype>(bottom[0]->count(),
