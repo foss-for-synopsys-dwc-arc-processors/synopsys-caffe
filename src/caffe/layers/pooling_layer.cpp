@@ -85,6 +85,7 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 
   saturate_ = pool_param.saturate();
+  quantize_method_ = pool_param.quantize_method();
 
   if (pool_param.has_pad_l()){
     pad_l_ = pool_param.pad_l();
@@ -238,6 +239,8 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       pooled_width_);
   }
 }
+
+template <typename Dtype>
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
 // case?
@@ -394,66 +397,73 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     break;
   //<--CUSTOMIZATION
   case PoolingParameter_PoolMethod_AVE_EXC_PAD:
-     for (int i = 0; i < top_count; ++i) {
-       top_data[i] = 0;
-     }
-     // The main loop
-     for (int n = 0; n < bottom[0]->num(); ++n) {
-       for (int c = 0; c < channels_; ++c) {
-         for (int ph = 0; ph < pooled_height_; ++ph) {
-           for (int pw = 0; pw < pooled_width_; ++pw) {
-             //<--CUSTOMIZATION
-             //int hstart = ph * stride_h_ - pad_h_;
-             //int wstart = pw * stride_w_ - pad_w_;
-             int hstart = ph * stride_h_ - pad_top;
-             int wstart = pw * stride_w_ - pad_left;
-             //int hend = min(hstart + kernel_h_, height_ + pad_h_);
-             //int wend = min(wstart + kernel_w_, width_ + pad_w_);
-             int hend = min(hstart + kernel_h_, height_ + pad_bottom);
-             int wend = min(wstart + kernel_w_, width_ + pad_right);
-             //CUSTOMIZATION-->
-             hstart = max(hstart, 0);
-             wstart = max(wstart, 0);
-             hend = min(hend, height_);
-             wend = min(wend, width_);
-             int pool_size = (hend - hstart) * (wend - wstart); //
-             for (int h = hstart; h < hend; ++h) {
-               for (int w = wstart; w < wend; ++w) {
-                 top_data[ph * pooled_width_ + pw] +=
-                     bottom_data[h * width_ + w];
-               }
-             }
-             if (quant_out) { // CUSTOMIZATION
-               // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
-               int acc = (int) top_data[ph * pooled_width_ + pw];
-               // Some mean_layer is mapped to AVG_pool, then has input_scale != output_scale
-               // https://github.com/tensorflow/tensorflow/blob/a2173743554b3414e87a38c8271afa50ba705c14/tensorflow/lite/kernels/internal/reference/integer_ops/mean.h#L63-L65
-               if (input_scale_ != output_scale_) {
+    for (int i = 0; i < top_count; ++i) {
+      top_data[i] = 0;
+    }
+    // The main loop
+    for (int n = 0; n < bottom[0]->num(); ++n) {
+      for (int c = 0; c < channels_; ++c) {
+        for (int ph = 0; ph < pooled_height_; ++ph) {
+          for (int pw = 0; pw < pooled_width_; ++pw) {
+            //<--CUSTOMIZATION
+            //int hstart = ph * stride_h_ - pad_h_;
+            //int wstart = pw * stride_w_ - pad_w_;
+            int hstart = ph * stride_h_ - pad_top;
+            int wstart = pw * stride_w_ - pad_left;
+            //int hend = min(hstart + kernel_h_, height_ + pad_h_);
+            //int wend = min(wstart + kernel_w_, width_ + pad_w_);
+            int hend = min(hstart + kernel_h_, height_ + pad_bottom);
+            int wend = min(wstart + kernel_w_, width_ + pad_right);
+            //CUSTOMIZATION-->
+            hstart = max(hstart, 0);
+            wstart = max(wstart, 0);
+            hend = min(hend, height_);
+            wend = min(wend, width_);
+            int pool_size = (hend - hstart) * (wend - wstart); //
+            for (int h = hstart; h < hend; ++h) {
+              for (int w = wstart; w < wend; ++w) {
+                top_data[ph * pooled_width_ + pw] +=
+                    bottom_data[h * width_ + w];
+              }
+            }
+            if (quant_out) { // CUSTOMIZATION
+              if (quantize_method_ == PoolingParameter_QuantizeMethod_TensorFlowLite) {
+                // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
+                int acc = (int) top_data[ph * pooled_width_ + pw];
+                if (input_scale_ == output_scale_) { // TFLite::AVGPool
+                  acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                               : (acc - pool_size / 2) / pool_size;
+                } else { // TFLite::Mean is mapped to Caffe:AVGPool
+                  acc -= input_zero_point_ * pool_size;
+                  double out_scal = input_scale_ / output_scale_;
+                  int q_shift, q_mul = tfl_QuantizeMultiplier(out_scal, &q_shift);
+                  acc = tfl_MultiplyByQuantizedMultiplier(acc, q_mul, q_shift);
+                  acc = acc > 0 ? (acc + pool_size / 2) / pool_size
+                               : (acc - pool_size / 2) / pool_size;
+                  acc += output_zero_point_;
+                }
+                top_data[ph * pooled_width_ + pw] = acc;
+              } else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+                float scale = (float) input_scale_ / ((float)output_scale_ * (float) pool_size);
+                Dtype acc = top_data[ph * pooled_width_ + pw];
                 acc -= input_zero_point_ * pool_size;
-                double out_scal = input_scale_ / output_scale_;
-                int q_shift, q_mul = tfl_QuantizeMultiplier(out_scal, &q_shift);
-                acc = tfl_MultiplyByQuantizedMultiplier(acc, q_mul, q_shift);
-                acc = acc > 0 ? (acc + pool_size / 2) / pool_size
-                             : (acc - pool_size / 2) / pool_size;
+                acc = std::rint(acc * scale);
                 acc += output_zero_point_;
-               } else {
-                acc = acc > 0 ? (acc + pool_size / 2) / pool_size
-                             : (acc - pool_size / 2) / pool_size;
-               }
-               top_data[ph * pooled_width_ + pw] = acc;
-             }
-             else {
-               top_data[ph * pooled_width_ + pw] /= pool_size;
-             }
-           }
-         }
-         // compute offset
-         bottom_data += bottom[0]->offset(0, 1);
-         top_data += top[0]->offset(0, 1);
-       }
-     }
-     break;
-     //CUSTOMIZATION-->
+                top_data[ph * pooled_width_ + pw] = acc;
+              }
+            }
+            else {
+              top_data[ph * pooled_width_ + pw] /= pool_size;
+            }
+          }
+        }
+        // compute offset
+        bottom_data += bottom[0]->offset(0, 1);
+        top_data += top[0]->offset(0, 1);
+      }
+    }
+    break;
+    //CUSTOMIZATION-->
   case PoolingParameter_PoolMethod_STOCHASTIC:
     NOT_IMPLEMENTED;
     break;
