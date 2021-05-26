@@ -147,8 +147,8 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(
     conf_concat_ = false;
     loc_concat_ = true;
     priorbox_concat_ = true;
-  } else if (bottom.size() >= 2 * nbottom_ + 1 &&
-             bottom.size() < 3 * nbottom_) {
+  } else if ((bottom.size() >= 2 * nbottom_ + 1 &&
+             bottom.size() < 3 * nbottom_) || nbottom_ == 1 ) {
     conf_concat_ = false;
     loc_concat_ = false;
     priorbox_concat_ = true;
