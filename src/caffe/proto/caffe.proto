@@ -1299,11 +1299,11 @@ message BiasParameter {
   }
   optional SaturateMethod saturate = 10 [default = None]; //control the output in certain range
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 11 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 11 [default = tflite];
   //CUSTOMIZATION-->
 }
 
@@ -1417,11 +1417,11 @@ message ConvolutionParameter {
   }
   optional SaturateMethod saturate = 32 [default = None]; //control the output in certain range
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 40 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 40 [default = tflite];
   //CUSTOMIZATION-->
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv
@@ -1761,11 +1761,11 @@ message EltwiseParameter {
   }
   optional SaturateMethod saturate = 5 [default = None]; //only valid for SUM, control the output in certain range
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 18 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 18 [default = tflite];
   //CUSTOMIZATION-->
 
   optional int32 axis = 6 [default = 0]; //CUSTOMIZATION for broadcasting
@@ -1939,11 +1939,11 @@ message InnerProductParameter {
   }
   optional SaturateMethod saturate = 19 [default = None]; //control the output in certain range
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 20 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 20 [default = tflite];
   //CUSTOMIZATION-->
 }
 
@@ -2170,11 +2170,11 @@ message PoolingParameter {
   }
   optional SaturateMethod saturate = 22 [default = None]; //control the output in certain range
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 37 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 37 [default = tflite];
   //CUSTOMIZATION-->
   enum Engine {
     DEFAULT = 0;
@@ -2238,11 +2238,11 @@ message PowerParameter {
   optional SaturateMethod saturate = 4 [default = None];
   //control the output in certain range (for quantization purpose)
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 5 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 5 [default = tflite];
 }
 
 // Message that store parameters used by PriorBoxLayer
@@ -2732,11 +2732,11 @@ message SqueezeConvolutionParameter {
   }
   optional SaturateMethod saturate = 48 [default = None]; //act as dummy param in squeeze_conv layer now
   enum QuantizeMethod {
-    TensorFlowLite = 0;
+    tflite = 0;
     ONNX = 1;
     Caffe2 = 2;
   }
-  optional QuantizeMethod quantize_method = 60 [default = TensorFlowLite];
+  optional QuantizeMethod quantize_method = 60 [default = tflite];
   //CUSTOMIZATION-->
 
   optional uint32 group = 5 [default = 1]; // The group size for group conv

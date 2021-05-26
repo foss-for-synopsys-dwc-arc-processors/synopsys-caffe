@@ -116,7 +116,7 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
     const int count_t = top[i]->count();
     if (scale_output) {
-      if (quantize_method == ConvolutionParameter_QuantizeMethod_TensorFlowLite) {
+      if (quantize_method == ConvolutionParameter_QuantizeMethod_tflite) {
         if (per_channel_scale_weight) {
           const int slice = count_t / quant_num_ch;
           Dtype* top_mutable = top[i]->mutable_cpu_data();

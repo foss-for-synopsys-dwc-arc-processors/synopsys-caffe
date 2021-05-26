@@ -377,7 +377,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               }
             }
             if (quant_out) { // CUSTOMIZATION
-              if (quantize_method_ == PoolingParameter_QuantizeMethod_TensorFlowLite) {
+              if (quantize_method_ == PoolingParameter_QuantizeMethod_tflite) {
                 // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
                 int acc = (int) top_data[ph * pooled_width_ + pw];
                 if (input_scale_ == output_scale_) { // TFLite::AVGPool
@@ -445,7 +445,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
               }
             }
             if (quant_out) { // CUSTOMIZATION
-              if (quantize_method_ == PoolingParameter_QuantizeMethod_TensorFlowLite) {
+              if (quantize_method_ == PoolingParameter_QuantizeMethod_tflite) {
                 // https://github.com/tensorflow/tensorflow/blob/5dcfc51118817f27fad5246812d83e5dccdc5f72/tensorflow/lite/kernels/internal/reference/integer_ops/pooling.h#L70-L71
                 int acc = (int) top_data[ph * pooled_width_ + pw];
                 if (input_scale_ == output_scale_) { // TFLite::AVGPool

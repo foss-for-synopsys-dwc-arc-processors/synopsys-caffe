@@ -37,7 +37,7 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int count_t = top[0]->count();
   if (saturate_ != ConvolutionParameter_SaturateMethod_None) {
   // determine if it's a Quantize operator
-    if (quantize_method_ == ConvolutionParameter_QuantizeMethod_TensorFlowLite) {
+    if (quantize_method_ == ConvolutionParameter_QuantizeMethod_tflite) {
       for (int i = 0; i < count_t; ++i) {
         top_data[i] = std::round(top_data[i]);
       }

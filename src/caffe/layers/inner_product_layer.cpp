@@ -124,7 +124,7 @@ void InnerProductLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     // refer out_multiplier to https://github.com/tensorflow/tensorflow/blob/r1.11/tensorflow/contrib/lite/kernels/kernel_util.cc#L41
     double out_scal = (double)input_scale_ * weight_scale_;
     out_scal /= output_scale_;
-    if (quantize_method_ == InnerProductParameter_QuantizeMethod_TensorFlowLite) {
+    if (quantize_method_ == InnerProductParameter_QuantizeMethod_tflite) {
       caffe_cpu_scale_double_round(count_t, out_scal, top_data);
     } else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
       for (int k = 0; k < count_t; ++k) {
