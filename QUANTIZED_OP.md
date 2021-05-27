@@ -16,8 +16,8 @@ Some operators (in some frameworks) would invoke intermediate floating-point rep
 ONNXruntime generally handles output_scale by [MlasRequantizeOutput](https://github.com/microsoft/onnxruntime/blob/8d737f977056444a307f1b7f0bcd402fba62d790/onnxruntime/core/mlas/lib/quantize.cpp#L357)(int Input, int Output, float scale); which uses intermediate floating-point representation -- `float`.
 
 ## Quantized Convolutions
-`output_multiplier` = `input_scale` * `weight_scale` / `output_scale`
-Reminded that TFLite uses <double>, while ONNXruntime and Caffe2 use <float> for scales.
+`output_multiplier` = `input_scale` * `weight_scale` / `output_scale`.  
+Reminded that TFLite uses `double`, while ONNXruntime and Caffe2 use `float` for scales.
 ### TFLite
 The quantized multiplier is calculated as (the `shift` is a power-of-two normalizer to normalize output_multiplier in [0.5,1) )
 ```cpp=
@@ -68,7 +68,7 @@ But it applies the `Roundings` in **A1**.
 When I try to match bit-exactness result, the combination of `PerTensor-A1` and `PerChannel-B2` is found by brute-force.
 
 ### ONNX runtime
-It casts `<int>acc` to `<float>`, multiply by <float>output_multiplier, and requantize the result.
+It casts `<int>acc` to `<float>`, multiply by `<float>output_multiplier`, and requantize the result.
 
 ### Caffe2
 It uses single-precision scales, the computation is the same as mentioned **A2**.
