@@ -461,11 +461,21 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
                   acc += output_zero_point_;
                 }
                 top_data[ph * pooled_width_ + pw] = acc;
-              } else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+              } else if (quantize_method_ == PoolingParameter_QuantizeMethod_ONNX) {
                 float scale = (float) input_scale_ / ((float)output_scale_ * (float) pool_size);
                 Dtype acc = top_data[ph * pooled_width_ + pw];
                 acc -= input_zero_point_ * pool_size;
                 acc = std::rint(acc * scale);
+                acc += output_zero_point_;
+                top_data[ph * pooled_width_ + pw] = acc;
+              }
+              else { // Caffe2
+                // https://github.com/pytorch/QNNPACK/blob/7d2a4e9931a82adc3814275b6219a03e24e36b4c/src/average-pooling.c#L176-L179
+                float scale = (float) input_scale_ / ((float)output_scale_ * (float) pool_size);
+                Dtype acc = top_data[ph * pooled_width_ + pw];
+                acc -= input_zero_point_ * pool_size;
+                //acc = std::round(acc / pool_size);
+                acc = std::round(acc * scale);
                 acc += output_zero_point_;
                 top_data[ph * pooled_width_ + pw] = acc;
               }

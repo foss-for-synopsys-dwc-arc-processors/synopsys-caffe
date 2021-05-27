@@ -155,11 +155,19 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           }
         }
       }
-      else { // quantize_method_ == PoolingParameter_QuantizeMethod_ONNX
+      else if (quantize_method == ConvolutionParameter_QuantizeMethod_ONNX) {
         float onnx_scale = (float) input_scale * (float) weight_scale / (float) output_scale;
         for (int k = 0; k < count_t; ++k) {
           top_data[k] = std::rint(top_data[k] * onnx_scale);
         }
+      }
+      else { // Caffe2
+        float out_scal = (float)input_scale * weight_scale;
+        out_scal /= output_scale;
+        int q_shift;
+        // Caffe2 uses float; cast to double to fit the function-call
+        int q_scal = tfl_QuantizeMultiplier((double)out_scal, &q_shift);
+        MultiplyByQuantizedMultiplierVR(count_t, top_data, q_scal, q_shift, 2);
       }
     }
 

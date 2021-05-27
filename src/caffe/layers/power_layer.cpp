@@ -41,8 +41,12 @@ void PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       for (int i = 0; i < count_t; ++i) {
         top_data[i] = std::round(top_data[i]);
       }
-    } else { // QuantizeMethod_ONNX
+    } else if (quantize_method_ == ConvolutionParameter_QuantizeMethod_ONNX) { // QuantizeMethod_ONNX
       caffe_cpu_round(count, top_data);
+    } else {
+      for (int i = 0; i < count_t; ++i) {
+        top_data[i] = std::nearbyint(top_data[i]);
+      }
     }
   }
   if (shift_ != Dtype(0)) {

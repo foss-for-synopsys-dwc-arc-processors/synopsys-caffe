@@ -43,6 +43,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   output_scale_ = this->layer_param_.eltwise_param().output_scale();
   output_zero_point_ = this->layer_param_.eltwise_param().output_zero_point();
   saturate_ = this->layer_param_.eltwise_param().saturate();
+  quantize_method_ = this->layer_param_.eltwise_param().quantize_method();
 
   //<--CUSTOMIZATION, for broadcasting
   const EltwiseParameter& param = this->layer_param_.eltwise_param();
@@ -101,13 +102,6 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-int affine_and_shift(const Dtype x, const int zp_in, const double mul, const int shift) {
-  int r = (int) std::round((x - zp_in) * mul);
-  r = r << shift;
-  return r;
-}
-
-template <typename Dtype>
 void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
   const vector<double> &input_scale, const vector<int> &input_zero_point,
   const double &output_scale, const int &output_zero_point) {
@@ -151,17 +145,18 @@ void tflite_add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dty
   }
 }
 
-typedef double Stype; // scale type
+typedef float Stype; // scale type; Caffe2 use float as floating-point representation (of tensors and scales)
 template <typename Dtype>
 void caffe2_int8add_kernel(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
   const vector<double> &input_scale, const vector<int> &input_zero_point,
   const double &output_scale, const int &output_zero_point) {
   // refer to https://github.com/pytorch/pytorch/pull/14089#issuecomment-439545562
-  Stype max_scale = std::max(input_scale[0], input_scale[1]) / output_scale;
+  Stype in_s0 = input_scale[0], in_s1 = input_scale[1], out_s = output_scale;
+  Stype max_scale = std::max(in_s0, in_s1) / out_s;
   const int max_22bits = 1 << 21;
   int shift = 0;
-  Stype a_multiplier = input_scale[0] / output_scale;
-  Stype b_multiplier = input_scale[1] / output_scale;
+  Stype a_multiplier = in_s0 / out_s;
+  Stype b_multiplier = in_s1 / out_s;
   while (max_scale < max_22bits) {
     // the result will be 2^22 <= max_scale < 2^23, cast to integer it will occupy 22 bits
     max_scale *= 2;
@@ -252,8 +247,11 @@ void EltwiseLayer<Dtype>::Forward_cpu(
   case EltwiseParameter_EltwiseOp_SUM:
     if (is_quant) {
       // introduce custom computation
-      //caffe2_int8add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
-      tflite_add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      if (quantize_method_ == ConvolutionParameter_QuantizeMethod_tflite) {
+        tflite_add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      } else {
+        caffe2_int8add_kernel(bottom, top, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+      }
       break;
     }
     caffe_set(count, Dtype(0), top_data);
