@@ -32,8 +32,8 @@ void QuantizeLeakyRelu(const int n, const Dtype *in, Dtype *out, Dtype alpha, do
       unclamped_output = out_zp + tfl_MultiplyByQuantizedMultiplier(
                                     input_value, mul_alpha, shift_alpha);
     }
-    if (unclamped_output < -128) unclamped_output = -128;
-    if (unclamped_output > 127) unclamped_output = 127;
+    // if (unclamped_output < clip_min) unclamped_output = clip_min; // will do caffe_cpu_saturate later
+    // if (unclamped_output > clip_max) unclamped_output = clip_max;
     out[i] = Dtype(unclamped_output);
   }
 }
@@ -52,6 +52,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   double output_scale_ = this->layer_param_.relu_param().output_scale(); //CUSTOMIZATION
   int input_zero_point_ = this->layer_param_.relu_param().input_zero_point(); //CUSTOMIZATION
   int output_zero_point_ = this->layer_param_.relu_param().output_zero_point(); //CUSTOMIZATION
+  Dtype saturate_ = this->layer_param_.relu_param().saturate(); //CUSTOMIZATION
   if (bottom.size() > 1)  //bottom[1] provides the maximum case
   	maximum = bottom[1]->cpu_data()[0];
   const bool quant_in = (input_scale_ != Dtype(1.0) || input_zero_point_ != 0);
@@ -59,6 +60,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   if (negative_slope != Dtype(0) && quant_in && quant_out) {
     QuantizeLeakyRelu(bottom[0]->count(), bottom[0]->cpu_data(), top[0]->mutable_cpu_data(),
       negative_slope, input_scale_, input_zero_point_, output_scale_, output_zero_point_);
+    caffe_cpu_saturate(top[0]->count(), top[0]->mutable_cpu_data(), saturate_); // if None nothing happens
     return;
   }
   if (quant_in) {
