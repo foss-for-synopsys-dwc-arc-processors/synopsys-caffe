@@ -26,6 +26,7 @@ void ResizeBilinearLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
         "If pytorch_half_pixel_ is True, half_pixel_centers_ must be False.";
   output_scale_ = this->layer_param_.resize_bilinear_param().output_scale(); //CUSTOMIZATION
   output_zero_point_ = this->layer_param_.resize_bilinear_param().output_zero_point(); //CUSTOMIZATION
+  saturate_ = this->layer_param_.resize_bilinear_param().saturate(); //CUSTOMIZATION
 }
 
 template <typename Dtype>
@@ -327,6 +328,7 @@ void ResizeBilinearLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
   }
+  caffe_cpu_saturate(top[0]->count(), top[0]->mutable_cpu_data(), saturate_); // if None nothing happens
 }
 
 INSTANTIATE_CLASS(ResizeBilinearLayer);

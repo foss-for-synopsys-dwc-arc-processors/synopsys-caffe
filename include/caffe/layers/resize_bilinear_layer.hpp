@@ -55,6 +55,7 @@ class ResizeBilinearLayer : public Layer<Dtype> {
   bool pytorch_half_pixel_;
   double output_scale_; //CUSTOMIZATION
   int output_zero_point_; //CUSTOMIZATION
+  Dtype saturate_; //CUSTOMIZATION
 
   // Compute the interpolation indices only once.
   struct CachedInterpolation {

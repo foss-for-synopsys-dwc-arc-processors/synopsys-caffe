@@ -498,6 +498,7 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   default:
     LOG(FATAL) << "Unknown pooling method.";
   }
+  caffe_cpu_saturate(top[0]->count(), top[0]->mutable_cpu_data(), saturate_); // if None nothing happens
 }
 
 template <typename Dtype>

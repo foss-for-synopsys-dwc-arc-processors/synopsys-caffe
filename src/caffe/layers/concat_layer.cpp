@@ -28,6 +28,7 @@ void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
   output_scale_ = concat_param.output_scale();
   output_zero_point_ = concat_param.output_zero_point();
+  saturate_ = concat_param.saturate();
 }
 
 template <typename Dtype>
@@ -97,8 +98,12 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
     offset_concat_axis += bottom_concat_axis;
   }
-  if (is_quant) // CUSTOMIZATION
-    caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+  if (is_quant){ // CUSTOMIZATION
+    const int count_t = top[0]->count();
+    top_data = top[0]->mutable_cpu_data();
+    caffe_cpu_quantize(count_t, top_data, output_scale_, output_zero_point_);
+    caffe_cpu_saturate(count_t, top_data, saturate_); // if None nothing happens
+  }
 
   if (is_quant) {
     for (int i = 0; i < bottom.size(); ++i) {
