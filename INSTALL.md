@@ -1,7 +1,7 @@
 # Installation
 
-See http://caffe.berkeleyvision.org/installation.html for the latest
-installation instructions.
+See https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/development/README.md#installation 
+for the installation instructions.
 
-Check the users group in case you need help:
-https://groups.google.com/forum/#!forum/caffe-users
+Check https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/master/scripts/ubuntu_python3_build_caffe_guide.md
+if you need to build the full environment on a Ubuntu machine.
