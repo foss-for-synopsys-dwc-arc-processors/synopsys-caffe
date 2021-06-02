@@ -15,26 +15,39 @@ fp generally denotes the data_type of
 
 ## Quick Look-Up for Implementations in SNPS Caffe
 We support the implementations from different frameworks, which leverages the layer parameter `quantize_method` when their results fail bit-exactness. You can also refer to [FEATURES.md](https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe/blob/development/FEATURES.md#custom-quantization-related) for other quantization-related parameters.
-We denote TFLite/ONNXruntime/Caffe2 implementations by **t**/**o**/**c**. Since some quantized operators may have bit-exactness results between the frameworks, we don't elaborate the specific implementation.
 
-| `operator` \ `quantize_method` | TFLite |  ONNX | Caffe2|
+| `operator` \ `quantize_method` | TFLite |  ONNX | Caffe2 |
 | ----------- | ------ | ----- | ----- |
-| AveragePooling  | **t**  | **o** | **c** |
-| Bias        |        |       | **c** |
-| Convolution | **t**  | **o** | **c** |
-| EltwiseSum  | **t**  | **c** | **c** |
-| InnerProduct| **t**  | **o** |       |
-| Power*       | **t**  | **o** | **c** |
-| Concat*       |  |  |  |
-| ResizeBilinear*|   |  |  |
+| AveragePool    | **t** | **o** | **c** |
+| BiasAdd        |       | **o** |       |
+| Concat         | **~** |       |       |
+| Convolution    | **t** | **o** | **c** |
+| Deconvolution  |       |       | **c** |
+| EltwiseSum     | **t** | **c** | **c** |
+| InnerProduct   | **t** | **t** |       |
+| LeakyReLU      | **t** |       |       |
+| Power*         | **t** | **o** | **c** |
+| ReLU           | **~** | **~** | **~** |
+| ResizeBilinear | **~** |       |       |
+| Sigmoid        | **~** |       |       |
+| Softmax        | **~** |       |       |
 
+We denote TFLite/ONNXruntime/Caffe2 implementations by `t/o/c`; and the **`~`** entries indicate that the Caffe implementation computes in floating representation such as  
+
+```cpp=
+// A Dequantize-Op-Quantize procedure, taking ReLU as example.
+float_in = Dequantize(int_in, input_scale, input_zero_point);
+float_out = ReLU(float_in);
+int_out = Quantize(float_out, output_scale, output_zero_point);
+```
 
 #### Notes
 1. Our model zoo doesn't cover all quantized operators over the frameworks. The entry is left empty if the `(framework,operator)` combination is not seen yet.
-    * Quantized bias_layer only occurs in ONNX (does not support FC+Bias fusion yet).    
-2. Only Quantize and Dequantize operators are mapped to Power_layer.
-3. For ResizeBilinear/Concat layers, we use Dequantize+Quantize to implment the affine transformation.
- 
+    * Quantized `bias_layer` only occurs in ONNX (does not support `FC+Bias` fusion yet).    
+2. Only `Quantize` and `Dequantize` operators are mapped to `Power_layer`.
+3. Since some quantized operators may have bit-exactness results between the frameworks, for such entries we adapt the implementation from other framework.
+4. `MaxPool`, `ArgMax` are seen, but they do nothing different for quantized/floating numbers.
+5. `Convolution` concludes a number of variations, please see the folloing section.
 
 
 ## Quantized Convolutions
@@ -86,7 +99,7 @@ out_acc = (scaled_acc + (1<<(31+shift-1)) >> (31+shift-1)
 ```
 
 #### **Pointwise Convolution***
-When I try to match bit-exactness result, the combination of `PerTensor-A1` and `PerChannel-B2` is found by brute-force.
+When I try to match bit-exactness result, the combination of `PerTensor-F2` and `PerChannel-D1` is found by brute-force.
 
 ### ONNX runtime
 It casts `<int>acc` to `<float>`, multiply by `<float>output_multiplier`, then requantize the result.
