@@ -27,6 +27,8 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(
   ratio3_ = detection_output_param.ratio3();
   ratio4_ = detection_output_param.ratio4();
   ratio5_ = detection_output_param.ratio5();
+  arm_conf_no_concat_ = detection_output_param.arm_conf_no_concat();
+  arm_loc_no_concat_ = detection_output_param.arm_loc_no_concat();
   // TFLite_Detection_PostProcess related params
   tflite_detection_ = detection_output_param.tflite_detection();
   tflite_use_regular_nms_ = detection_output_param.tflite_use_regular_nms();
@@ -139,32 +141,41 @@ void DetectionOutputLayer<Dtype>::LayerSetUp(
     data_transformer_->InitRand();
     save_file_ = detection_output_param.save_file();
   }
-  if (bottom.size() < nbottom_) {
-    conf_concat_ = true;
-    loc_concat_ = true;
-    priorbox_concat_ = true;
-  } else if (bottom.size() >= nbottom_ && bottom.size() < 2 * nbottom_ + 1) {
-    conf_concat_ = false;
-    loc_concat_ = true;
-    priorbox_concat_ = true;
-  } else if ((bottom.size() >= 2 * nbottom_ + 1 &&
-             bottom.size() < 3 * nbottom_) || nbottom_ == 1 ) {
-    conf_concat_ = false;
-    loc_concat_ = false;
-    priorbox_concat_ = true;
-  } else // ==3*nbottom_
+  if (!arm_conf_no_concat_ && !arm_loc_no_concat_)
+  {
+    if (bottom.size() < nbottom_) {
+      conf_concat_ = true;
+      loc_concat_ = true;
+      priorbox_concat_ = true;
+    } else if (bottom.size() >= nbottom_ && bottom.size() < 2 * nbottom_ + 1) {
+      conf_concat_ = false;
+      loc_concat_ = true;
+      priorbox_concat_ = true;
+    } else if ((bottom.size() >= 2 * nbottom_ + 1 &&
+               bottom.size() < 3 * nbottom_) || nbottom_ == 1 ) {
+      conf_concat_ = false;
+      loc_concat_ = false;
+      priorbox_concat_ = true;
+    } else // ==3*nbottom_
+    {
+      conf_concat_ = false;
+      loc_concat_ = false;
+      priorbox_concat_ = false;
+    }
+
+    if (conf_concat_ && loc_concat_) {
+      bbox_preds_.ReshapeLike(*(bottom[0]));
+      if (!share_location_) {
+        bbox_permute_.ReshapeLike(*(bottom[0]));
+      }
+      conf_permute_.ReshapeLike(*(bottom[1]));
+    }
+  }
+  else if (bottom.size() == 4 * nbottom_ + 1) // only consider this situation for mapping with arm_conf/arm_loc
   {
     conf_concat_ = false;
     loc_concat_ = false;
-    priorbox_concat_ = false;
-  }
-
-  if (conf_concat_ && loc_concat_) {
-    bbox_preds_.ReshapeLike(*(bottom[0]));
-    if (!share_location_) {
-      bbox_permute_.ReshapeLike(*(bottom[0]));
-    }
-    conf_permute_.ReshapeLike(*(bottom[1]));
+    priorbox_concat_ = true;
   }
 }
 

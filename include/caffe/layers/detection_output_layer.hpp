@@ -40,8 +40,8 @@ class DetectionOutputLayer : public Layer<Dtype> {
 
   virtual inline const char* type() const { return "DetectionOutput"; }
   virtual inline int MinBottomBlobs() const { return 3; }
-  virtual inline int MaxBottomBlobs() const { return 18; }
-  // Note: for no concat cases, the input order is conf*6+loc*6+priorbox(*6)
+  //virtual inline int MaxBottomBlobs() const { return 18; }
+  // Note: for no concat cases, the input order is conf*n+loc*n+priorbox(*n) (+arm_conf*n+arm_loc*n)
   // and only implement for CPU now
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
@@ -118,6 +118,8 @@ class DetectionOutputLayer : public Layer<Dtype> {
   bool conf_concat_ = true;
   bool loc_concat_ = true;
   bool priorbox_concat_ = true;
+  bool arm_conf_no_concat_;
+  bool arm_loc_no_concat_;
 
   bool ratio_permute_;
   bool no_permute_;
@@ -129,11 +131,12 @@ class DetectionOutputLayer : public Layer<Dtype> {
   int ratio5_;
   int nbottom_; // bottom count for conf/loc
   vector<int> collect_ratios_;
-	//TFLite_Detection_Postprocess parameters
-	bool tflite_detection_;
-	bool tflite_use_regular_nms_;
-	vector<float> scale_xywh_;
-	int max_classes_per_detection_;
+
+  //TFLite_Detection_Postprocess parameters
+  bool tflite_detection_;
+  bool tflite_use_regular_nms_;
+  vector<float> scale_xywh_;
+  int max_classes_per_detection_;
 };
 
 }  // namespace caffe
