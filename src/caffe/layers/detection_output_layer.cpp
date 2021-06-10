@@ -401,6 +401,41 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
     }
   }
 
+  if (arm_loc_no_concat_ && no_permute_)
+  {
+    all_arm_loc_preds.clear();
+    all_arm_loc_preds.resize(num);
+    if (share_location_) {
+      CHECK_EQ(num_loc_classes_, 1);
+    }
+    for (int i = 0; i < num; ++i) {
+      for (int n = 0; n < nbottom_; n++) {
+        const Dtype *arm_loc_data = bottom[n + 1 + 3*nbottom_]->cpu_data();
+        LabelBBox &arm_label_bbox = all_arm_loc_preds[i];
+        int count = bottom[n + 1 + 3*nbottom_]->height() * bottom[n + 1 + 3*nbottom_]->width();
+        for (int r = 0; r < bottom[n + 1+ 3*nbottom_]->channels() / 4 / num_loc_classes_; ++r) {
+          int start_idx = r * num_loc_classes_ * 4 * count;
+          for (int p = 0; p < count; ++p) {
+            for (int c = 0; c < num_loc_classes_; ++c) {
+              int label = share_location_ ? -1 : c;
+              // if (label_bbox.find(label) == label_bbox.end()) {
+              //  label_bbox[label].resize(num_priors_);
+              //}
+              NormalizedBBox locbox;
+              locbox.set_xmin(arm_loc_data[start_idx + c * 4 * count + p]);
+              locbox.set_ymin(arm_loc_data[start_idx + c * 4 * count + p + count]);
+              locbox.set_xmax(arm_loc_data[start_idx + c * 4 * count + p + 2 * count]);
+              locbox.set_ymax(arm_loc_data[start_idx + c * 4 * count + p + 3 * count]);
+              float locbox_size = BBoxSize(locbox);
+              locbox.set_size(locbox_size);
+              arm_label_bbox[label].push_back(locbox);
+           }
+         }
+       }
+     }
+   }
+  }
+
   // Retrieve all confidences.
   vector<map<int, vector<float>>> all_conf_scores;
   if (conf_concat_ && arm_conf_data != NULL) {
@@ -664,7 +699,7 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
   // Decode all loc predictions to bboxes.
   vector<LabelBBox> all_decode_bboxes;
   const bool clip_bbox = false;
-  if (bottom.size() >= 5 && loc_concat_) {
+  if ((bottom.size() >= 5 && loc_concat_) || arm_loc_no_concat_) {
     CasRegDecodeBBoxesAll(all_loc_preds, prior_bboxes, prior_variances, num,
                           share_location_, num_loc_classes_,
                           background_label_id_, code_type_,
