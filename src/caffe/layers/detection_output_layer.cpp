@@ -454,6 +454,8 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
         for (int n = 0; n < nbottom_; n++) {
           const Dtype *conf_data = bottom[n]->cpu_data();
           map<int, vector<float>> &label_scores = all_conf_scores[i];
+          if (arm_conf_no_concat_)
+            arm_conf_data = bottom[n + 1 + 2*nbottom_]->cpu_data();
           if (!ratio_permute_ && !no_permute_) // original caffe ssd
           {
             for (int p = 0; p < bottom[n]->channels() / num_classes_; ++p) {
@@ -481,11 +483,31 @@ void DetectionOutputLayer<Dtype>::Forward_cpu(
               int start_idx = c * bottom[n]->height() * bottom[n]->width();
               for (int r = 0; r < bottom[n]->height(); ++r) {
                 for (int p = 0; p < bottom[n]->width(); ++p) {
-                  label_scores[c].push_back(
-                      conf_data[start_idx + r * bottom[n]->width() + p]);
-                  // LOG(INFO)<<"p="<<p<<" ,c="<<c<<"
-                  // ,score="<<conf_data[start_idx + r * bottom[n]->width() +
-                  // p]<<"\n";
+                  if (!arm_conf_no_concat_)
+                  {
+                    label_scores[c].push_back(
+                        conf_data[start_idx + r * bottom[n]->width() + p]);
+                    // LOG(INFO)<<"p="<<p<<" ,c="<<c<<"
+                    // ,score="<<conf_data[start_idx + r * bottom[n]->width() +
+                    // p]<<"\n";
+                  }
+                  else{
+                    int index_c = num_classes_%2 + 1;
+                    int arm_index = index_c * bottom[n + 1 + 2*nbottom_]->height() * bottom[n + 1 + 2*nbottom_]->width() +
+                        r * bottom[n + 1 + 2*nbottom_]->width() + p;
+                    if (arm_conf_data[arm_index] < objectness_score_)
+                    {
+                      if (c==0)
+                      {
+                        label_scores[c].push_back(1.0);
+                      } else {
+                        label_scores[c].push_back(0.0);
+                      }
+                    }
+                    else{
+                      label_scores[c].push_back(conf_data[start_idx + r * bottom[n]->width() + p]);
+                    }
+                  }
                 }
               }
             }
