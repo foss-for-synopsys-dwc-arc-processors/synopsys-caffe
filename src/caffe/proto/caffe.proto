@@ -3628,7 +3628,6 @@ message MulParameter {
 
 message SpatialBatchingPoolingParameter {
   enum PoolMethod {
-    option allow_alias = true;
     MAX = 0;
     AVE = 1;
     STOCHASTIC = 2;
