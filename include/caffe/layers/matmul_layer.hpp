@@ -10,7 +10,7 @@
 
 namespace caffe {
 /*
- * @brief Resize images to size using nearest neighbor interpolation. ////
+ * @brief MatMul. ////
  * Note: implementation of tf.linalg.matmul()
  * https://www.tensorflow.org/versions/r1.14/api_docs/python/tf/linalg/matmul
  */
@@ -24,7 +24,7 @@ public:
                        const vector<Blob<Dtype> *> &top);
 
   virtual inline const char *type() const { return "MatMul"; }
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  virtual inline int MinNumBottomBlobs() const { return 1; }
   virtual inline int ExactNumTopBlobs() const { return 1; }
 
 protected:
@@ -48,6 +48,7 @@ protected:
   int K;
   bool transpose_a;
   bool transpose_b;
+  vector<int> blob_shape_;
 };
 
 } // namespace caffe
