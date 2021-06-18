@@ -51,6 +51,7 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
   }
 }
 
+#include "conv_layer.ev.inc"
 template <typename Dtype>
 void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
