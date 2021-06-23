@@ -33,6 +33,12 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
     strides_.assign(strided_begin_.size(), 1);
   }
 
+  for (int i = 0; i < strided_begin_.size(); ++i) {
+    if (strided_begin_[i] < 0) {
+      strided_begin_[i] = std::max(strided_begin_[i] + bottom[0]->shape(i), 0);
+    }
+  }
+
   // add onnx operator Slice parameter: axes
   axes_.clear();
   std::copy(strided_slice_param.axes().begin(),
