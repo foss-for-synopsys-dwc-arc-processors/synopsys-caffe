@@ -169,6 +169,7 @@ void Multiply_better(const int n, Dtype* x, const int mul, const int shift,
     (printf("Unrecognized rounding mode %s\n",QR), R_double_round);
   };
   static const Rmode QR = tell();
+
   static bool show_data_bool = getenv("CAFFE_SHOW_DATA") != 0;
   auto show_data = [&](const char *when) {
     printf("Data %s\n",when);
@@ -177,6 +178,7 @@ void Multiply_better(const int n, Dtype* x, const int mul, const int shift,
     }
     return 0;
   };
+
   switch (QR) {
   case R_double_round: {
     MultiplyByQuantizedMultiplierVR(n, x, mul, shift, round_mode);
@@ -190,7 +192,8 @@ void Multiply_better(const int n, Dtype* x, const int mul, const int shift,
     // Produces 15-bit mantissa and an exponent.  The mantissa is
     // thus less precise than that of a 32-bit floating-point number.
     normalize_fractional(scale, mpy, shift);
-    printf("    Layer %s: round mode %d by %18.15f = mpy %d shift %d\n",
+    if (show_data_bool)
+      printf("    Layer %s: round mode %d by %18.15f = mpy %d shift %d\n",
         name.c_str(), QR, scale, mpy, shift);
     typedef signed long long SLL;
     if (show_data_bool)
