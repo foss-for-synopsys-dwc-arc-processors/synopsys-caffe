@@ -67,6 +67,11 @@ void StridedSliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
       if (ellipsis_mask_ & 1 << i) {
         ellipsis_axis = i;
       }
+      if (strided_begin_[i] >= 0) {
+        strided_begin_[i] = std::min(strided_begin_[i], b_shape[i] - 1);
+      } else {
+        strided_begin_[i] = std::max(strided_begin_[i] + b_shape[i], 0);
+      }
       if (shrink_axis_mask_ & 1 << i && i != ellipsis_axis) {
         strided_end_[i] = strided_begin_[i] + strides_[i] / abs(strides_[i]);
         strides_[i] = strides_[i] / abs(strides_[i]);
