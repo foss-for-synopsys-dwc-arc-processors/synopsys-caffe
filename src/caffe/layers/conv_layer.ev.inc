@@ -95,6 +95,7 @@ static void normalize_fractional(Scale_type F, unsigned &mpy, unsigned &shift) {
   }
 }
 
+
 template<typename Dtype>
 void caffe_cpu_scale_better_round(const std::string &name, const int n,
     const Scale_type scale, Dtype* x) {
@@ -112,10 +113,15 @@ void caffe_cpu_scale_better_round(const std::string &name, const int n,
     (printf("Unrecognized rounding mode %s\n",QR), R_double_round);
   };
   static const Rmode QR = tell();
+
+  static bool show_data_bool = getenv("CAFFE_SHOW_DATA") != 0;
+
   switch (QR) {
-  case R_double_round:
+  case R_double_round: {
+    caffe_cpu_scale_double_round (n, scale, x);
+  } break;
   case R_single_round: {
-    if (QR != R_double_round)
+    if (show_data_bool)
       printf("    Layer %s: round mode %d by %18.15f\n", name.c_str(), QR,
           scale);
     bool SR = QR == R_single_round;
@@ -129,31 +135,31 @@ void caffe_cpu_scale_better_round(const std::string &name, const int n,
       x[i] = SR ? x[i] * mul : std::round(x[i] * mul);
       x[i] = std::round(x[i] / shift);
     }
-  }
-    break;
+  } break;
   case R_ev_round: {
 #define LLSHL1(x) (1LL<<(x))
 #define LL_ROUND(X,shift) /* (unbiased) round-to-even */ \
-        ((X + ((X >> (shift)) & 1) + (LLSHL1(shift-1)-1)) >> (shift))
+    ((X + ((X >> (shift)) & 1) + (LLSHL1(shift-1)-1)) >> (shift))
     unsigned mpy, shift;
     // Produces 15-bit mantissa and an exponent.  The mantissa is
     // thus less precise than that of a 32-bit floating-point number.
     normalize_fractional(scale, mpy, shift);
-    printf("    Layer %s: round mode %d by %18.15f = mpy %d shift %d\n",
-        name.c_str(), QR, scale, mpy, shift);
+    if (show_data_bool)
+      printf("    Layer %s: round mode %d by %18.15f = mpy %d shift %d\n",
+          name.c_str(), QR, scale, mpy, shift);
     typedef signed long long SLL;
     for (int i = 0; i < n; ++i) {
       SLL acc = SLL(x[i]);    // Assumed to be an integer already.
       acc *= mpy;
       x[i] = LL_ROUND(acc, shift);
     }
-  }
-    break;
+  } break;
   }
 }
 
-//#define caffe_cpu_scale_double_round(A,B,C) \
-//    caffe_cpu_scale_better_round(this->layer_param_.name(),A,B,C)
+#define caffe_cpu_scale_double_round(A,B,C) \
+    caffe_cpu_scale_better_round(this->layer_param_.name(),A,B,C)
+
 
 template<typename Dtype>
 void Multiply_better(const int n, Dtype* x, const int mul, const int shift,
