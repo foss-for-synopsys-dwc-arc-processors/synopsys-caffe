@@ -83,6 +83,7 @@ void ReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   if (quant_out) {
     // do not reuse "top_data"; it is shifted during the computation
     caffe_cpu_quantize<Dtype>(top[0]->count(), top[0]->mutable_cpu_data(), output_scale_, output_zero_point_);
+    caffe_cpu_saturate(top[0]->count(), top[0]->mutable_cpu_data(), saturate_);
   }
   if (quant_in) {
     caffe_cpu_quantize<Dtype>(bottom[0]->count(), bottom[0]->mutable_cpu_data(),
