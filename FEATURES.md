@@ -1,6 +1,6 @@
 # A Short Summary of New Features in Synopsys Caffe
 
-Synopsys Caffe Version: 2021.06  
+Synopsys Caffe Version: 2021.09  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 ## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -77,6 +77,7 @@ simple_rnn_layer
 sin_layer  
 softplus_layer  
 softsign_layer  
+spatial_batching_pooling_layer  
 space_to_batch_nd_layer  
 space_to_depth_layer  
 sparse_to_dense_layer  
@@ -84,6 +85,7 @@ squeeze_layer
 stack_layer  
 strided_slice_layer  
 sub_layer  
+tensor2box_layer  
 three_interpolate_layer  
 three_NN_layer  
 thresholded_relu_layer  
