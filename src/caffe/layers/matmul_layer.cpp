@@ -68,7 +68,12 @@ template <typename Dtype>
 void MatMulLayer<Dtype>::Reshape(const vector<Blob<Dtype> *> &bottom,
                                  const vector<Blob<Dtype> *> &top) {
   vector<int> top_shape = bottom[0]->shape();
+  Blob<Dtype> *inputs1 =
+      (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   top_shape[num_axes - 1] = N;
+  if (bottom[0]->num_axes() == inputs1->num_axes()) {
+    top_shape[num_axes - 2] = M;
+  }
   top[0]->Reshape(top_shape);
 }
 
