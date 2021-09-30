@@ -209,7 +209,7 @@ cd ../..
 
 # Boost: http://www.boost.org/
 if [ ! -f distro/boost.tar.gz ]; then
-    wget -O distro/boost.tar.gz https://dl.bintray.com/boostorg/release/1.65.1/source/boost_1_65_1.tar.gz
+    wget -O distro/boost.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.65.1/source/boost_1_65_1.tar.gz
 fi
 tar zxf distro/boost.tar.gz -C build
 cd build/boost_1_65_1
