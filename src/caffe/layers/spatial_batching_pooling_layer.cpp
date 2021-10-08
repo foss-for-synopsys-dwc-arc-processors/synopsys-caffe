@@ -324,20 +324,17 @@ void SpatialBatchingPoolingLayer<Dtype>::Forward_cpu(
       for (int c = 0; c < channels_; ++c) {
         for (int sbh = 0; sbh < spatial_batching_h_; sbh++) {
           int batch_hstart = sbh * (batch_h_ + gap_h_);
-          int batch_hend = min(height_, sbh * (batch_h_ + gap_h_) + batch_h_);
+          int batch_hend = min(height_, (sbh + 1) * (batch_h_ + gap_h_));
           for (int ph = sbh * (pooled_batch_h_ + pooled_gap_h_);
-               ph <
-               min(pooled_height_,
-                   sbh * (pooled_batch_h_ + pooled_gap_h_) + pooled_batch_h_);
+               ph < min(pooled_height_,
+                        (sbh + 1) * (pooled_batch_h_ + pooled_gap_h_));
                ++ph) {
             for (int sbw = 0; sbw < spatial_batching_w_; sbw++) {
               int batch_wstart = sbw * (batch_w_ + gap_w_);
-              int batch_wend =
-                  min(width_, sbw * (batch_w_ + gap_w_) + batch_w_);
+              int batch_wend = min(width_, (sbw + 1) * (batch_w_ + gap_w_));
               for (int pw = sbw * (pooled_batch_w_ + pooled_gap_w_);
-                   pw <
-                   min(pooled_width_, sbw * (pooled_batch_w_ + pooled_gap_w_) +
-                                          pooled_batch_w_);
+                   pw < min(pooled_width_,
+                            (sbw + 1) * (pooled_batch_w_ + pooled_gap_w_));
                    ++pw) {
                 int hstart = ph * stride_h_ - pad_top + skip_h_ * sbh;
                 int wstart = pw * stride_w_ - pad_left + skip_w_ * sbw;
