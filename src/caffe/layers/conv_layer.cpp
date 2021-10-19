@@ -157,9 +157,22 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         }
       }
       else if (quantize_method == ConvolutionParameter_QuantizeMethod_ONNX) {
-        float onnx_scale = (float) input_scale * (float) weight_scale / (float) output_scale;
-        for (int k = 0; k < count_t; ++k) {
-          top_data[k] = std::rint(top_data[k] * onnx_scale);
+        if (per_channel_scale_weight) {
+          const int slice = count_t / quant_num_ch;
+          Dtype* top_mutable = top[i]->mutable_cpu_data();
+          for (int j = 0; j < quant_num_ch; ++j) {
+            float onnx_scale = input_scale * weight_scale_data[j] / output_scale;
+            for (int k=0; k < slice; ++k) {
+              top_mutable[k] = std::rint(top_mutable[k] * onnx_scale);
+            }
+            top_mutable += slice;
+          }
+        }
+        else {
+          float onnx_scale = (float) input_scale * (float) weight_scale / (float) output_scale;
+          for (int k = 0; k < count_t; ++k) {
+            top_data[k] = std::rint(top_data[k] * onnx_scale);
+          }
         }
       }
       else { // Caffe2
