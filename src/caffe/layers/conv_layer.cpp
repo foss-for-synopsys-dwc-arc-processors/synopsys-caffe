@@ -64,8 +64,9 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int weight_zero_point = this->weight_zero_point_;
   const Dtype saturate = this->saturate_;
   const int quantize_method = this->quantize_method_;
-  // weight/bias scale will retrieve the default values if per-channel is set
+  // weight scale will retrieve the default values if per-channel is set
   const bool per_channel_scale_weight = this->per_channel_scale_weight_;
+  const bool per_channel_scale_output = this->per_channel_scale_output_;
   /*** Quantization Computation
     (1) shift input/weight/bias w.r.t corresponding zero_point
     (2) compute Convolution+Bias on the integer value range
@@ -77,8 +78,9 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const bool shift_input = (input_zero_point != 0);
   const bool shift_weight = (weight_zero_point != 0);
   const bool scale_output = (input_scale != Dtype(1.0) || weight_scale != Dtype(1.0) ||
-                             output_scale != Dtype(1.0)) || per_channel_scale_weight;
+                             output_scale != Dtype(1.0)) || per_channel_scale_weight || per_channel_scale_output;
   const bool shift_output = (output_zero_point != 0);
+
   const bool is_depthwise = (this->group_ == this->num_output_);
   const bool is_pointwise = (W->count(2) == 1); // NCHW, count(HW) == 1
 
@@ -86,9 +88,16 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const Dtype* weight_scale_data = per_channel_scale_weight ? this->blobs_[2]->cpu_data() : NULL;
   const Dtype* weight_zero_point_data = per_channel_scale_weight ? this->blobs_[3]->cpu_data() : NULL;
 
+  if(per_channel_scale_output)
+    CHECK_EQ(per_channel_scale_weight, true)
+           << "Currently per_channel_scale_output is only allowed when per_channel_scale_weight is enabled.";
+  const Dtype* output_scale_data = per_channel_scale_output ? this->blobs_[4]->cpu_data() : NULL;
+  const Dtype* output_zero_point_data = per_channel_scale_output ? this->blobs_[5]->cpu_data() : NULL;
+
   if (shift_weight) { // shift the quantized weight
     caffe_add_scalar<Dtype>(W->count(), Dtype(-weight_zero_point), W->mutable_cpu_data());
-  } else if(per_channel_scale_weight) {
+  }
+  else if(per_channel_scale_weight) {
     const int slice = W->count() / quant_num_ch;
     Dtype* weight_mutable = W->mutable_cpu_data();
     for (int i = 0; i < quant_num_ch; ++i) {
@@ -122,7 +131,11 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           const int slice = count_t / quant_num_ch;
           Dtype* top_mutable = top[i]->mutable_cpu_data();
           for (int j = 0; j < quant_num_ch; ++j) {
-            double out_scal = input_scale * (double)weight_scale_data[j] / output_scale;
+            double out_scal;
+            if (per_channel_scale_output)
+              out_scal = input_scale * (double)weight_scale_data[j] / (double)output_scale_data[j];
+            else
+              out_scal = input_scale * (double)weight_scale_data[j] / output_scale;
             int q_shift;
             int q_scal = tfl_QuantizeMultiplier(out_scal, &q_shift);
 
@@ -161,7 +174,11 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
           const int slice = count_t / quant_num_ch;
           Dtype* top_mutable = top[i]->mutable_cpu_data();
           for (int j = 0; j < quant_num_ch; ++j) {
-            float onnx_scale = input_scale * weight_scale_data[j] / output_scale;
+            float onnx_scale;
+            if (per_channel_scale_output)
+              onnx_scale = input_scale * weight_scale_data[j] / output_scale_data[j];
+            else
+              onnx_scale = input_scale * weight_scale_data[j] / output_scale;
             for (int k=0; k < slice; ++k) {
               top_mutable[k] = std::rint(top_mutable[k] * onnx_scale);
             }
@@ -185,8 +202,16 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       }
     }
 
-    if (shift_output) {
+    if (shift_output)
       caffe_add_scalar<Dtype>(count_t, Dtype(output_zero_point), top_data);
+    else if (per_channel_scale_output)
+    {
+      const int slice = count_t / quant_num_ch;
+      Dtype* top_mutable = top[i]->mutable_cpu_data();
+      for (int j = 0; j < quant_num_ch; ++j) {
+        caffe_add_scalar<Dtype>(slice, Dtype(output_zero_point_data[j]), top_mutable);
+        top_mutable += slice;
+      }
     }
 
     caffe_cpu_saturate(count_t, top_data, saturate); // if None nothing happens
@@ -199,7 +224,8 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   // shift quantized weight/bias back to correct range
   if (shift_weight) {
     caffe_add_scalar<Dtype>(W->count(), Dtype(weight_zero_point), W->mutable_cpu_data());
-  } else if(per_channel_scale_weight) {
+  }
+  else if(per_channel_scale_weight) {
     const int slice = W->count() / quant_num_ch;
     Dtype* weight_mutable = W->mutable_cpu_data();
     for (int i = 0; i < quant_num_ch; ++i) {

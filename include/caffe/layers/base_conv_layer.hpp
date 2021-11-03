@@ -109,6 +109,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   double weight_scale_; //CUSTOMIZATION
   Dtype saturate_; //CUSTOMIZATION
   bool per_channel_scale_weight_; //CUSTOMIZATION
+  bool per_channel_scale_output_; //CUSTOMIZATION
   int quantize_method_; //CUSTOMIZATION
 
  private:

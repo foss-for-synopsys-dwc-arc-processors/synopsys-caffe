@@ -1,6 +1,6 @@
 # A Short Summary of New Features in Synopsys Caffe
 
-Synopsys Caffe Version: 2021.09  
+Synopsys Caffe Version: 2021.12  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 ## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -126,7 +126,7 @@ squeeze_deconv_layer
   
 
 ## Custom Quantization related  
-+ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, per_channel_scale_weight, saturate in  
++ input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, per_channel_scale_weight, per_channel_scale_output, saturate in  
 ConvolutionParameter  
 + input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, saturate in  
 InnerProductParameter  
