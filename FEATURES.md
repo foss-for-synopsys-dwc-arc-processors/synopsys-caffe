@@ -140,6 +140,7 @@ ReLUParameter
 ResizeBilinearParameter  
 SigmoidParameter  
 SoftmaxParameter  
+SpatialBatchingPoolingParameter  
 + output_scale, output_zero_point in  
 InputParameter  
 + saturate in  

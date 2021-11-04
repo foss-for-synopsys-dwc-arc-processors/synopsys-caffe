@@ -140,6 +140,16 @@ void SpatialBatchingPoolingLayer<Dtype>::LayerSetUp(
     skip_w_ = 0;
   }
   // CUSTOMIZATION for spatial batching-->
+
+  input_scale_ = pool_param.input_scale(); //CUSTOMIZATION
+  input_zero_point_ = pool_param.input_zero_point(); //CUSTOMIZATION
+  output_scale_ = pool_param.output_scale(); //CUSTOMIZATION
+  output_zero_point_ = pool_param.output_zero_point(); //CUSTOMIZATION
+
+  CHECK_EQ(input_scale_, output_scale_)
+    << "We only support no rescaling case for this layer now!";
+  CHECK_EQ(input_zero_point_, output_zero_point_)
+    << "We only support no rescaling case for this layer now!";
 }
 
 template <typename Dtype>

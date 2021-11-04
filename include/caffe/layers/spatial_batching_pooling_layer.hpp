@@ -61,6 +61,11 @@ protected:
   int pad_t_;      // CUSTOMIZATION
   int pad_b_;      // CUSTOMIZATION
   Dtype saturate_; // CUSTOMIZATION
+  double input_scale_; //CUSTOMIZATION
+  int input_zero_point_; //CUSTOMIZATION
+  double output_scale_; //CUSTOMIZATION
+  int output_zero_point_; //CUSTOMIZATION
+
   int spatial_batching_h_;
   int spatial_batching_w_;
   int skip_h_, skip_w_;
