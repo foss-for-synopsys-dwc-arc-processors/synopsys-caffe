@@ -349,16 +349,26 @@ void SpatialBatchingPoolingLayer<Dtype>::Forward_cpu(
                 int hstart = ph * stride_h_ - pad_top + skip_h_ * sbh;
                 int wstart = pw * stride_w_ - pad_left + skip_w_ * sbw;
                 // CUSTOMIZATION-->
-                int hend = min(hstart + kernel_h_, batch_hend);
-                int wend = min(wstart + kernel_w_, batch_wend);
+                //int hend = min(hstart + kernel_h_, batch_hend);
+                //int wend = min(wstart + kernel_w_, batch_wend);
+                int hend = hstart + kernel_h_;
+                int wend = wstart + kernel_w_;
                 hstart = max(hstart, batch_hstart);
                 wstart = max(wstart, batch_wstart);
                 const int pool_index = ph * pooled_width_ + pw;
                 for (int h = hstart; h < hend; ++h) {
                   for (int w = wstart; w < wend; ++w) {
                     const int index = h * width_ + w;
-                    if (bottom_data[index] > top_data[pool_index]) {
-                      top_data[pool_index] = bottom_data[index];
+                    Dtype bot_data = ( \
+                       (h >= (sbh * (batch_h_ + gap_h_) + batch_h_ ) && \
+                       (h < (sbh * (batch_h_ + gap_h_) + batch_h_ + pad_b_ ))) || \
+                       (w >= (sbw * (batch_w_ + gap_w_) + batch_w_ ) && \
+                       (w < (sbw * (batch_w_ + gap_w_) + batch_w_ + pad_r_ ))) \
+                                         ) ? Dtype(0) : bottom_data[index];
+                    if (bot_data > top_data[pool_index]) {
+                      top_data[pool_index] = bot_data;
+                    //if (bottom_data[index] > top_data[pool_index]) {
+                    //  top_data[pool_index] = bottom_data[index];
                       if (use_top_mask) {
                         top_mask[pool_index] = static_cast<Dtype>(index);
                       } else {
