@@ -1,9 +1,9 @@
 # Assign variables
-export SOURCE_BRANCH = "development"
-export GIT_COMMIT_ID = ""
-export BUILD_TYPE = "nocuda"
-export TARGET_VERSION = "1.0.0"
-export PYTHON_VERSION = "python3.6"
+export SOURCE_BRANCH="development"
+export GIT_COMMIT_ID=""
+export BUILD_TYPE="nocuda"
+export TARGET_VERSION="1.0.0"
+export PYTHON_VERSION="python3.6"
 
 # Tool installation refer to https://www.softwarecollections.org/en/scls/rhscl/devtoolset-7/
 # source /opt/rh/devtoolset-3/enable
