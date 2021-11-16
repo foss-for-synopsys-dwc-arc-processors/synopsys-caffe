@@ -117,8 +117,8 @@ rm -rf ~/.local # avoid locally installed pip packages affect
 
 source env.sh
 
-rm -rf distro/cmake.tar.gz
- CMake: https://cmake.org/
+#rm -rf distro/cmake.tar.gz
+# CMake: https://cmake.org/
 if [ ! -f distro/cmake.tar.gz ]; then
     wget -O distro/cmake.tar.gz https://cmake.org/files/v3.18/cmake-3.18.2.tar.gz
 fi
