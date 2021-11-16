@@ -460,7 +460,7 @@ message ParamSpec {
 // NOTE
 // Update the next available ID when you add a new LayerParameter field.
 //
-// LayerParameter next available layer-specific ID: 281 (last added: Tensor2Box=280)
+// LayerParameter next available layer-specific ID: 282 (last added: Corr1d=281)
 message LayerParameter {
   optional string name = 1; // the layer name
   optional string type = 2; // the layer type
@@ -683,6 +683,9 @@ message LayerParameter {
   optional ScatterNDParameter scatter_nd_param = 276;
   optional LayerNormParameter layer_norm_param = 277;
   optional Tensor2BoxParameter tensor2box_param = 280;
+  
+  // custom
+ optional Corr1dParameter corr1d_param = 281;
 }  
 
 message AccumParameter {
@@ -3692,3 +3695,11 @@ message Tensor2BoxParameter {
   repeated int32 anchors_x = 4;
   repeated int32 anchors_y = 5;
 }
+
+message Corr1dParameter {
+  //The shape of the desired output.
+  optional int32 num_of_shifts = 32 [default = 32];
+  optional int32 stride = 1 [default = 1];
+}
+
+
