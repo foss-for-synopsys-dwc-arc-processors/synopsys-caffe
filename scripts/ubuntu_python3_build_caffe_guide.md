@@ -125,10 +125,10 @@ source env.sh
 ```
 # CMake: https://cmake.org/
 if [ ! -f distro/cmake.tar.gz ]; then
-    wget -O distro/cmake.tar.gz https://cmake.org/files/v3.9/cmake-3.9.3.tar.gz
+    wget -O distro/cmake.tar.gz https://cmake.org/files/v3.18/cmake-3.18.2.tar.gz
 fi
 tar zxf distro/cmake.tar.gz -C build
-cd build/cmake-3.9.3
+cd build/cmake-3.18.2
 ./bootstrap --prefix=$SYNOPSYS_CAFFE_HOME
 make
 make install
@@ -395,14 +395,14 @@ pip3 install --upgrade pip
 for req in $(cat python/requirements.txt); do pip3 install $req --no-cache-dir; done
 pip3 install Jinja2==2.11.3
 pip3 install MarkupSafe>=0.23
-pip3 install Pillow>=3.2.0
+pip3 install Pillow==8.3.1
 pip3 install numpy
 pip3 install EasyDict
 pip3 install sqlalchemy
 pip3 install sklearn
 pip3 install future
 pip3 install sympy
-pip3 install opencv-python
+pip3 install opencv-python==4.2.0.34
 pip3 install pycocotools
 pip3 install tqdm
 pip3 install configparser
@@ -420,6 +420,10 @@ pip3 install flatbuffers
 pip3 install configobj
 pip3 install onnx-simplifier
 pip3 install torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install platformdirs
+pip3 install pipdeptree
+pip3 install colorama
+pip3 install importlib_metadata
 
 cd src
 protoc caffe/proto/caffe.proto --cpp_out=$SYNOPSYS_CAFFE_HOME/include/
