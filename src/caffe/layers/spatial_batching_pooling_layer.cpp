@@ -334,14 +334,14 @@ void SpatialBatchingPoolingLayer<Dtype>::Forward_cpu(
       for (int c = 0; c < channels_; ++c) {
         for (int sbh = 0; sbh < spatial_batching_h_; sbh++) {
           int batch_hstart = sbh * (batch_h_ + gap_h_);
-          int batch_hend = min(height_, (sbh + 1) * (batch_h_ + gap_h_));
+          //int batch_hend = min(height_, (sbh + 1) * (batch_h_ + gap_h_));
           for (int ph = sbh * (pooled_batch_h_ + pooled_gap_h_);
                ph < min(pooled_height_,
                         (sbh + 1) * (pooled_batch_h_ + pooled_gap_h_));
                ++ph) {
             for (int sbw = 0; sbw < spatial_batching_w_; sbw++) {
               int batch_wstart = sbw * (batch_w_ + gap_w_);
-              int batch_wend = min(width_, (sbw + 1) * (batch_w_ + gap_w_));
+              //int batch_wend = min(width_, (sbw + 1) * (batch_w_ + gap_w_));
               for (int pw = sbw * (pooled_batch_w_ + pooled_gap_w_);
                    pw < min(pooled_width_,
                             (sbw + 1) * (pooled_batch_w_ + pooled_gap_w_));
@@ -361,9 +361,9 @@ void SpatialBatchingPoolingLayer<Dtype>::Forward_cpu(
                     const int index = h * width_ + w;
                     Dtype bot_data = ( \
                        (h >= (sbh * (batch_h_ + gap_h_) + batch_h_ ) && \
-                       (h < (sbh * (batch_h_ + gap_h_) + batch_h_ + pad_b_ ))) || \
+                       ((h < (sbh * (batch_h_ + gap_h_) + batch_h_ + pad_b_ )) || skip_h_)) || \
                        (w >= (sbw * (batch_w_ + gap_w_) + batch_w_ ) && \
-                       (w < (sbw * (batch_w_ + gap_w_) + batch_w_ + pad_r_ ))) \
+                       ((w < (sbw * (batch_w_ + gap_w_) + batch_w_ + pad_r_ )) || skip_w_)) \
                                          ) ? Dtype(0) : bottom_data[index];
                     if (bot_data > top_data[pool_index]) {
                       top_data[pool_index] = bot_data;
