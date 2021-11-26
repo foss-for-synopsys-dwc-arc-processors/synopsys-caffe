@@ -20,18 +20,54 @@ template<>
 void caffe_cpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const float alpha, const float* A, const float* B, const float beta,
-    float* C) {
+    float* C, const bool submanifold_sparse) {
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
+
   cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
       ldb, beta, C, N);
+
+  if(submanifold_sparse)
+  {
+    // Submanifold sparse active site check
+    // weight: M*K input blob: K*N -> output blob: M*N
+    //LOG(INFO)<<"K="<<K<<", M="<<M<<", N="<<N<<std::endl;
+    LOG(INFO)<<"Use submanifold sparse."<<std::endl;
+    for (int j=0;j<N; j++)
+    {
+      bool batch_center_active = false;
+      for (int b=0; b<M; b++)
+      {
+        bool center_active = false;
+        for(int i=0; i<K/M; i++) // K=M*xyz
+        {
+          int index = (b*(K/M)+i)*N+j;
+          if(B[index] != 0)
+          {
+            if(i == (K/M)/2)
+            {
+              center_active = true;
+              //LOG(WARNING)<<"center active!!"<<std::endl;
+              //LOG(INFO)<<"index b="<<b<<", i="<<i<<", j="<<j<<", data="<<B[index]<<" ";
+            }
+          }
+        }
+        batch_center_active = batch_center_active || center_active;
+      }
+      if(!batch_center_active)
+      {
+        for(int t=0; t<M; t++)
+          C[t*N+j] = 0;
+      }
+    }
+  }
 }
 
 template<>
 void caffe_cpu_gemm<double>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const double alpha, const double* A, const double* B, const double beta,
-    double* C) {
+    double* C, const bool submanifold_sparse) {
   int lda = (TransA == CblasNoTrans) ? K : M;
   int ldb = (TransB == CblasNoTrans) ? N : K;
   cblas_dgemm(CblasRowMajor, TransA, TransB, M, N, K, alpha, A, lda, B,
