@@ -25,6 +25,16 @@ void ConvolutionLayer<Dtype>::compute_output_shape() {
     const int kernel_extent = dilation_data[i] * (kernel_shape_data[i] - 1) + 1;
     int output_dim;
     //<--CUSTOMIZATION
+    if(this->submanifold_sparse_)
+    {
+      if(kernel_shape_data[i] % 2 == 0)
+      {
+        LOG(WARNING)<<"kernel shape "<<i<<" is "<<kernel_shape_data[i]<<", "
+            "we don't suppport even kernel size for submanifold sparse conv feature! Using normal conv computation instead.\n";
+        this->submanifold_sparse_ = false;
+      }
+    }
+
     if (pad_l!=0 || pad_r!=0 || pad_t!=0 || pad_b!=0){ //only support 2D
       if (i==0) {
         output_dim = (input_dim + pad_t + pad_b - kernel_extent) / stride_data[i] + 1;
