@@ -236,28 +236,11 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
   if(this->submanifold_sparse_)
   {
-    if(bottom[0]->num_axes()==4)
-    {
-      CHECK_EQ(bottom[0]->height(), top[0]->height())<<
-          "Input and output blob height not equal! Submanifold sparse computation is invalid!";
-      CHECK_EQ(bottom[0]->width(), top[0]->width())<<
-          "Input and output blob width not equal! Submanifold sparse computation is invalid!";
-    }
-    else if(bottom[0]->num_axes()==5)
-    {
-      CHECK_EQ(bottom[0]->shape(2), top[0]->shape(2))<<
-          "Input and output blob depth not equal! Submanifold sparse computation is invalid!";
-      CHECK_EQ(bottom[0]->shape(3), top[0]->shape(3))<<
-          "Input and output blob height not equal! Submanifold sparse computation is invalid!";
-      CHECK_EQ(bottom[0]->shape(4), top[0]->shape(4))<<
-          "Input and output blob width not equal! Submanifold sparse computation is invalid!";
-    }
-    else
-    {
-      CHECK_EQ(bottom[0]->num_axes(), 3)<<"Not support Submanifold sparse computation for such blob dimension yet!";
-      CHECK_EQ(bottom[0]->shape(2), top[0]->shape(2))<<
-           "Input and output blob length not equal! Submanifold sparse computation is invalid!";
-    }
+    CHECK_GE(bottom[0]->num_axes(), 3)<<"Input blob dimension must >=3!";
+    for(int i=2; i<bottom[0]->num_axes();i++)
+      CHECK_EQ(bottom[0]->shape(i), top[0]->shape(i))<<
+          "Input and output blob shape does not match! Submanifold sparse computation is invalid!";
+
     LOG(INFO)<<"Starts submanifold sparse computation.";
 
     for(int index=0; index<bottom[0]->count(2); index++)
