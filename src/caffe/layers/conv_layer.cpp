@@ -233,6 +233,55 @@ void ConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       weight_mutable += slice;
     }
   }
+
+  if(this->submanifold_sparse_)
+  {
+    if(bottom[0]->num_axes()==4)
+    {
+      CHECK_EQ(bottom[0]->height(), top[0]->height())<<
+          "Input and output blob height not equal! Submanifold sparse computation is invalid!";
+      CHECK_EQ(bottom[0]->width(), top[0]->width())<<
+          "Input and output blob width not equal! Submanifold sparse computation is invalid!";
+    }
+    else if(bottom[0]->num_axes()==5)
+    {
+      CHECK_EQ(bottom[0]->shape(2), top[0]->shape(2))<<
+          "Input and output blob depth not equal! Submanifold sparse computation is invalid!";
+      CHECK_EQ(bottom[0]->shape(3), top[0]->shape(3))<<
+          "Input and output blob height not equal! Submanifold sparse computation is invalid!";
+      CHECK_EQ(bottom[0]->shape(4), top[0]->shape(4))<<
+          "Input and output blob width not equal! Submanifold sparse computation is invalid!";
+    }
+    else
+    {
+      CHECK_EQ(bottom[0]->num_axes(), 3)<<"Not support Submanifold sparse computation for such blob dimension yet!";
+      CHECK_EQ(bottom[0]->shape(2), top[0]->shape(2))<<
+           "Input and output blob length not equal! Submanifold sparse computation is invalid!";
+    }
+    LOG(INFO)<<"Starts submanifold sparse computation.";
+
+    for(int index=0; index<bottom[0]->count(2); index++)
+    {
+      bool active=false;
+      // TODO: add handling for pre-quantized model with non 0 zero-points
+      for(int in_c=0; in_c<bottom[0]->shape(1); in_c++)
+      {
+        Dtype data=bottom[0]->cpu_data()[in_c*bottom[0]->count(2)+index];
+        if(data!=Dtype(0))
+        {
+          active = true;
+          break;
+        }
+      }
+      if(!active)
+      {
+        for(int out_c=0; out_c<top[0]->shape(1); out_c++)
+        {
+          top[0]->mutable_cpu_data()[out_c*bottom[0]->count(2)+index]=0;
+        }
+      }
+    }
+  }
 }
 
 template <typename Dtype>

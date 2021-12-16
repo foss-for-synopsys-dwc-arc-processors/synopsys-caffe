@@ -87,6 +87,8 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   quantize_method_ = conv_param.quantize_method();
   per_channel_scale_weight_ = conv_param.per_channel_scale_weight();
   per_channel_scale_output_ = conv_param.per_channel_scale_output();
+
+  submanifold_sparse_ = conv_param.submanifold_sparse();
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).
