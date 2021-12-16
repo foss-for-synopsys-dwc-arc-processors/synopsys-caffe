@@ -1428,7 +1428,7 @@ message ConvolutionParameter {
   optional bool per_channel_scale_weight = 39 [default = false];
   // CUSTOMIZATION, whether to have per-channel scale & zero_points for output (scale data will be stored in caffemodel)
   optional bool per_channel_scale_output = 41 [default = false];
-  optional bool submanifold_sparse = 42 [default = false];
+
 
   //<--CUSTOMIZATION
   enum SaturateMethod {
@@ -2746,7 +2746,7 @@ message SqueezeConvolutionParameter {
   // CUSTOMIZATION, whether to have per-channel scale & zero_points for weights/bias (data will be stored in caffemodel)
   optional bool per_channel_scale_weight = 59 [default = false];
   optional bool per_channel_scale_output = 61 [default = false];
-  optional bool submanifold_sparse = 62 [default = false];
+
 
   //<--CUSTOMIZATION
   enum SaturateMethod {

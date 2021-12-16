@@ -87,7 +87,6 @@ void BaseConvolutionLayer<Dtype>::LayerSetUpInternal(LayerParam conv_param,
   quantize_method_ = conv_param.quantize_method();
   per_channel_scale_weight_ = conv_param.per_channel_scale_weight();
   per_channel_scale_output_ = conv_param.per_channel_scale_output();
-  submanifold_sparse_ = conv_param.submanifold_sparse();
   //CUSTOMIZATION-->
 
   // Setup pad dimensions (pad_).
@@ -391,7 +390,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
-    const Dtype* weights, Dtype* output, bool skip_im2col, bool submanifold_sparse) {
+    const Dtype* weights, Dtype* output, bool skip_im2col) {
   const Dtype* col_buff = input;
   if (!is_1x1_) {
     if (!skip_im2col) {
@@ -403,7 +402,7 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_gemm(const Dtype* input,
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, conv_out_channels_ /
         group_, conv_out_spatial_dim_, kernel_dim_,
         (Dtype)1., weights + weight_offset_ * g, col_buff + col_offset_ * g,
-        (Dtype)0., output + output_offset_ * g, submanifold_sparse);
+        (Dtype)0., output + output_offset_ * g);
   }
 }
 

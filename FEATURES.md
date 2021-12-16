@@ -103,7 +103,6 @@ pad_type (deprecated, "SAME" style padding) in ConvolutionParameter and PoolingP
 pad_l, pad_r, pad_t and pad_b (arbitrary 2D padding) in ConvolutionParameter and PoolingParameter  
 AVE_EXC_PAD (average pooling excluding the paddings), AVE_TF (deprecated, alias for AVE_EXC_PAD) in PoolingParameter  
 ceil_mode in PoolingParameter  
-submanifold_sparse in ConvolutionParameter  
 faceboxes, box_width, box_height, keras, tf and yx_order in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
 
