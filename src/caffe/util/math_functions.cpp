@@ -559,7 +559,11 @@ void MultiplyByQuantizedMultiplierVR(const int n, Dtype* x, const int mul, const
     }
   } else if (round_mode == 2) {
     for(int i = 0; i < n; ++i) {
-      x[i] = tfl_RoundingDivideByPOT(tfl_SaturatingRoundingDoublingHighMul((int)x[i], mul), shf);
+      // ref see https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/internal/common.h#L251
+      int left_shift = shift > 0 ? shift : 0;
+      int right_shift = shift > 0 ? 0 : -shift;
+      x[i] = tfl_RoundingDivideByPOT(tfl_SaturatingRoundingDoublingHighMul(int(x[i]) *
+          (1 << left_shift), mul), right_shift);
     }
   }
 }
