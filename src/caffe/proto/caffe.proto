@@ -2212,6 +2212,12 @@ message PoolingParameter {
   optional bool global_pooling = 12 [default = false];
 
   optional bool ceil_mode = 14 [default = true]; // Specify floor/ceil mode rounding
+  // How to calculate the output size - using ceil (default) or floor rounding.
+  enum RoundMode {
+    CEIL = 0;
+    FLOOR = 1;
+  }
+  optional RoundMode round_mode = 15 [default = CEIL]; // functionality similar to ceil_mode; higher priority than ceil_mode
 }
 
 message Pooling3DParameter {
