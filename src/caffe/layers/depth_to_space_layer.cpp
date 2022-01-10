@@ -20,7 +20,6 @@ void DepthToSpaceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype> *> &bottom,
                                      (this->block_size * this->block_size));
   } else if (this->data_format == "NCHW" || this->data_format == "CRD" ||
              this->data_format == "DCR") {
-    std::cout << "the second output shape" << std::endl;
     this->output_top_shape.push_back(bottom_shape[1] /
                                      (this->block_size * this->block_size));
     this->output_top_shape.push_back(bottom_shape[2] * this->block_size);
