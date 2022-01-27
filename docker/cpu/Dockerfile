@@ -1,6 +1,14 @@
 FROM ubuntu:18.04
 LABEL maintainer justin.you@synopsys.com
 
+# workaround bug https://grigorkh.medium.com/fix-tzdata-hangs-docker-image-build-cdb52cc3360d
+ENV TZ=Asia/Dubai
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update
+RUN apt install -y tzdata
+
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         cmake \
