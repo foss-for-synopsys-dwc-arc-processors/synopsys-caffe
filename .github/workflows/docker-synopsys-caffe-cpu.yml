@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Build docker-synopsys-caffe-cpu
 
 on:
   push:
@@ -14,5 +14,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build the Docker image
+    - name: Build docker-synopsys-caffe-cpu
       run: docker build . --file docker/cpu/Dockerfile --tag synopsys-caffe-cpu:$(date +%s)
