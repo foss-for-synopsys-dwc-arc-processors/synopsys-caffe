@@ -1,4 +1,4 @@
-name: Test Centos container inside Ubuntu Image
+name: Test Centos Image
 
 on:
   push:
@@ -10,10 +10,9 @@ jobs:
 
   build:
 
-    runs-on: ubuntu-18.04
-    container: 'centos:7'
+    runs-on: centos-7.9
 
     steps:
     - uses: actions/checkout@v2
-    - name: Test Centos container inside Ubuntu Image
+    - name: Test Centos Image
       run: docker build . --file docker/cpu/Dockerfile --tag synopsys-caffe-cpu:$(date +%s)
