@@ -1,5 +1,5 @@
-FROM ubuntu:16.04
-LABEL maintainer caffe-maint@googlegroups.com
+FROM ubuntu:18.04
+LABEL maintainer justin.you@synopsys.com
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
