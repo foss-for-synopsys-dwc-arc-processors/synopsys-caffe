@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libprotobuf-dev \
         libsnappy-dev \
         protobuf-compiler \
-        python3.7-dev \
+        python3.8-dev \
         python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
