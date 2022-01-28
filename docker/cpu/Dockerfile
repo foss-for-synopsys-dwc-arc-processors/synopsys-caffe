@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         git \
         wget \
-        libffi-dev \
+        #required by pandas
+        libopenblas-dev \
         libatlas-base-dev \
         libboost-all-dev \
         libgflags-dev \
