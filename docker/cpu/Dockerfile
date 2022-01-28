@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libsnappy-dev \
         protobuf-compiler \
         python3.8-dev \
+        python-skimage \
         python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
