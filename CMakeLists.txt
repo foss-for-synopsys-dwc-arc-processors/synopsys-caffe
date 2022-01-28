@@ -1,4 +1,13 @@
 cmake_minimum_required(VERSION 3.16.0)
+
+# ---[ Python3 
+find_package(Python COMPONENTS Interpreter Development)
+
+message("Python_FOUND:${Python_FOUND}")
+message("Python_VERSION:${Python_VERSION}")
+message("Python_Development_FOUND:${Python_Development_FOUND}")
+message("Python_LIBRARIES:${Python_LIBRARIES}")
+
 if(MSVC)
   cmake_minimum_required(VERSION 3.16.0)
 endif()
@@ -42,7 +51,6 @@ else()
   caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 endif()
 caffe_option(BUILD_python "Build Python wrapper" ON)
-set(python_version "2" CACHE STRING "Specify which Python version to use")
 caffe_option(BUILD_matlab "Build Matlab wrapper" OFF)
 caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
 caffe_option(BUILD_python_layer "Build the Caffe Python layer" ON)
@@ -136,12 +144,7 @@ add_custom_target(lint COMMAND ${CMAKE_COMMAND} -DPYTHON_EXECUTABLE=${PYTHON_EXE
 
 # ---[ pytest target
 if(BUILD_python)
-  if(UNIX)
-    set(python_executable python${python_version})
-  else()
-    set(python_executable ${PYTHON_EXECUTABLE})
-  endif()
-  add_custom_target(pytest COMMAND ${python_executable} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
+  add_custom_target(pytest COMMAND ${Python_EXECUTABLE} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
   add_dependencies(pytest pycaffe)
 endif()
 
