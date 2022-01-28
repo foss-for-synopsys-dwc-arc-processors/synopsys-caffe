@@ -14,13 +14,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         git \
         wget \
+        libffi-dev \
         libatlas-base-dev \
         libboost-all-dev \
         libgflags-dev \
         #Directly incorporate Google glog projects from Github instead of consume it.
         #See https://github.com/google/glog#incorporating-glog-into-a-cmake-project
         #Not install google glog into env and incorporate into cmake build directly.
-        #libgoogle-glog-dev \
+        libgoogle-glog-dev \
         libhdf5-serial-dev \
         libleveldb-dev \
         liblmdb-dev \
