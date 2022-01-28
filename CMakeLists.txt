@@ -16,6 +16,14 @@ message("Python_VERSION:${Python_VERSION}")
 message("Python_Development_FOUND:${Python_Development_FOUND}")
 message("Python_LIBRARIES:${Python_LIBRARIES}")
 
+find_package(PythonInterp)
+find_package(PythonLibs)
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+
+include_directories(${PYTHON_INCLUDE_DIRS})
+
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
 
