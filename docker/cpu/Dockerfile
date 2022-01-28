@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         wget \
         #required by pandas
+        libgfortran3 \
         libopenblas-dev \
         libatlas-base-dev \
         libboost-all-dev \
