@@ -1,23 +1,5 @@
 cmake_minimum_required(VERSION 3.16.0)
 
-# ---[ Python3 
-find_package(Python COMPONENTS Interpreter Development)
-
-message("Python_FOUND:${Python_FOUND}")
-message("Python_VERSION:${Python_VERSION}")
-message("Python_Development_FOUND:${Python_Development_FOUND}")
-message("Python_LIBRARIES:${Python_LIBRARIES}")
-
-if(MSVC)
-  cmake_minimum_required(VERSION 3.16.0)
-endif()
-if(POLICY CMP0046)
-  cmake_policy(SET CMP0046 NEW)
-endif()
-if(POLICY CMP0054)
-  cmake_policy(SET CMP0054 NEW)
-endif()
-
 # ---[ Caffe project
 project(Caffe C CXX)
 
@@ -25,6 +7,14 @@ project(Caffe C CXX)
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
 add_definitions(-DCAFFE_VERSION=${CAFFE_TARGET_VERSION})
+
+# ---[ Python3 
+find_package(Python COMPONENTS Interpreter Development)
+
+message("Python_FOUND:${Python_FOUND}")
+message("Python_VERSION:${Python_VERSION}")
+message("Python_Development_FOUND:${Python_Development_FOUND}")
+message("Python_LIBRARIES:${Python_LIBRARIES}")
 
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
