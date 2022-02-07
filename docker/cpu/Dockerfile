@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libhdf5-serial-dev \
         libleveldb-dev \
         liblmdb-dev \
-        libopencv-dev_3.2.0+dfsg-4build2_amd64.deb \
+        libopencv-dev \
         libprotobuf-dev \
         libsnappy-dev \
         protobuf-compiler \
