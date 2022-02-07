@@ -35,6 +35,11 @@ if(USE_OPENMP)
   list(APPEND Caffe_COMPILE_OPTIONS PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
+# ---[ Google-gtest
+include("cmake/External/googletest.cmake")
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${googletest_STATIC_LIBRARIES})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${googletest_STATIC_LIBRARIES})
+
 # ---[ Google-glog
 include("cmake/External/glog.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
