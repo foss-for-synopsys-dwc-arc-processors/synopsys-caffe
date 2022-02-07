@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopencv-dev \
         libprotobuf-dev \
         libsnappy-dev \
+        libmatio-dev \
         protobuf-compiler \
         python3.8-dev \
         python3-skimage \
