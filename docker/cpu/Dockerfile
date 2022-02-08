@@ -61,7 +61,8 @@ RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-c
     cd python && for req in $(cat requirements.txt) pydot; do pip3 install $req; done && cd .. && \
     mkdir build && cd build && \
     cmake -DCPU_ONLY=1 .. && \
-    make -j"$(nproc)"
+    make -j"$(nproc)" && \
+    make runtest
 
 ENV PYCAFFE_ROOT $CAFFE_ROOT/python
 ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
