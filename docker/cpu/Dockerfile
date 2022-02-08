@@ -47,6 +47,12 @@ RUN pip3 install --upgrade pip && \
     pip3 install --upgrade cmake && \
     cmake --version
 
+#remove python2 and only keep python3
+RUN apt-get install python-is-python3 && \
+    apt remove python2 && \
+    apt autoremove --purge && \
+    which python
+
 RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe.git . && \
     pip3 install --upgrade pip && \
     cd python && for req in $(cat requirements.txt) pydot; do pip3 install $req; done && cd .. && \
