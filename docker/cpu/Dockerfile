@@ -14,11 +14,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cmake \
         git \
         wget \
+        python3.8-dev \
+        python3-skimage \
+        python3-opencv \
+        python3-pip \
         #required by pandas
         libgfortran5 \
         libopenblas-dev \
         libatlas-base-dev \
-        libboost-python1.71-dev \
+        libboost-python1.65.1-dev \
         libgflags-dev \
         #Directly incorporate Google glog projects from Github instead of consume it.
         #See https://github.com/google/glog#incorporating-glog-into-a-cmake-project
@@ -31,11 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libprotobuf-dev \
         libsnappy-dev \
         libmatio-dev \
-        protobuf-compiler \
-        python3.8-dev \
-        python3-skimage \
-        python3-opencv \
-        python3-pip && \
+        protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 
 ENV CAFFE_ROOT=/opt/caffe
