@@ -47,11 +47,15 @@ RUN pip3 install --upgrade pip && \
     pip3 install --upgrade cmake && \
     cmake --version
 
-#remove python2 and only keep python3
-RUN apt remove python-dev && \
-    apt autoremove --purge && \
-    which python
+#Hack for libboost-python binding when both python2 and python3 present.    
+RUN cd /usr/lib/x86_64-linux-gnu && \
+    unlink libboost_python.so && \
+    unlink libboost_python.a && \
+    ln -s libboost_python-py36.so libboost_python.so && \
+    ln -s libboost_python-py36.a libboost_python.a && \
+    cd -
 
+#Start Building
 RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-caffe.git . && \
     pip3 install --upgrade pip && \
     cd python && for req in $(cat requirements.txt) pydot; do pip3 install $req; done && cd .. && \
