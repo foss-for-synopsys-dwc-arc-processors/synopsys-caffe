@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopenblas-dev \
         libatlas-base-dev \
         libboost-python1.65-dev \
+        libboost-all-dev \
         libgflags-dev \
         #Directly incorporate Google glog projects from Github instead of consume it.
         #See https://github.com/google/glog#incorporating-glog-into-a-cmake-project
