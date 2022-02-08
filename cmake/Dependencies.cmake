@@ -83,6 +83,11 @@ if(USE_LMDB)
   endif()
 endif()
 
+# ---[ MATIO
+find_package(MATIO REQUIRED)
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${MATIO_INCLUDE_DIR})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${MATIO_LIBRARIES})
+
 # ---[ LevelDB
 if(USE_LEVELDB)
   find_package(LevelDB REQUIRED)
