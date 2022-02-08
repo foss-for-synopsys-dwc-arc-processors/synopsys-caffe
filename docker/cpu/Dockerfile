@@ -48,8 +48,7 @@ RUN pip3 install --upgrade pip && \
     cmake --version
 
 #remove python2 and only keep python3
-RUN apt-get install python-is-python3 && \
-    apt remove python2 && \
+RUN apt remove python2 && \
     apt autoremove --purge && \
     which python
 
