@@ -62,6 +62,8 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
+  const int count = top[0]->count();
+  caffe_set(count, Dtype(0), top_data);
   vector<int> bottom_shape = bottom[0]->shape();
   vector<int> top_shape = bottom_shape;
 
