@@ -63,8 +63,7 @@ RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-c
     cmake -DCPU_ONLY=1 .. && \
     make -j"$(nproc)" && \
     make runtest && \
-    make pycaffe && \
-    make pytest
+    make pycaffe 
 
 ENV PYCAFFE_ROOT $CAFFE_ROOT/python
 ENV PYTHONPATH $PYCAFFE_ROOT:$PYTHONPATH
