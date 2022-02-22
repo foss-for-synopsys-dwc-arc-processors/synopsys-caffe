@@ -26,7 +26,7 @@ jobs:
       shell: cmd
       
     - name: vcpkg install
-      run: vcpkg install glog gflags lmdb protobuf boost
+      run: vcpkg install glog gflags lmdb
       
     - name: vcpkg integrate install
       run: vcpkg integrate install
