@@ -37,7 +37,7 @@ endif()
 
 
 # ---[ Google-glog
-find_package(glog CONFIG REQUIRED)
+find_package(glog NAMES google-glog glog)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 
