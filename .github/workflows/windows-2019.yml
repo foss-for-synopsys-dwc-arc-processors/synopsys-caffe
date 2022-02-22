@@ -25,11 +25,13 @@ jobs:
       run: set PATH=%VCPKG_INSTALLATION_ROOT%;%PATH%
       shell: cmd
       
+    - name: vcpkg integrate install
+      run: vcpkg integrate install
+      
     - name: vcpkg install
       run: vcpkg install glog gflags lmdb
       
-    - name: vcpkg integrate install
-      run: vcpkg integrate install
+
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
