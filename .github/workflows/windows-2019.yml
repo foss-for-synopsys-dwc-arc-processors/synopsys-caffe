@@ -20,6 +20,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: vcpkg
+      run: set PATH=%VCPKG_INSTALLATION_ROOT%;%PATH%
+      
+    - name: vcpkg install
+      run: vcpkg install boost
+      
+    - name: vcpkg integrate install
+      run: vcpkg integrate install
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
