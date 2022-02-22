@@ -77,9 +77,6 @@ if(MSVC AND BUILD_SHARED_LIBS)
   message(WARNING "Some tests (solvers) will fail when building as a shared library with MSVC")
 endif()
 
-# ---[ Prebuild dependencies on windows
-include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
-
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 caffe_option(USE_HDF5 "Build with hdf5" ON)
 
