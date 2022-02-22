@@ -35,16 +35,27 @@ if(USE_OPENMP)
   list(APPEND Caffe_COMPILE_OPTIONS PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
+# ---[ LMDB
+if(USE_LMDB)
+  find_package(LMDB REQUIRED)
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${LMDB_INCLUDE_DIR})
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${LMDB_LIBRARIES})
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LMDB)
+  if(ALLOW_LMDB_NOLOCK)
+    list(APPEND Caffe_DEFINITIONS PRIVATE -DALLOW_LMDB_NOLOCK)
+  endif()
+endif()
+
+# ---[ Google-gflags
+find_package(gflags CONFIG REQUIRED)
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${GFLAGS_LIBRARIES})
 
 # ---[ Google-glog
 find_package(glog NAMES google-glog glog CONFIG REQUIRED)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 
-# ---[ Google-gflags
-find_package(gflags CONFIG REQUIRED)
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${GFLAGS_LIBRARIES})
 
 # ---[ Google-protobuf
 include(cmake/ProtoBuf.cmake)
@@ -72,16 +83,7 @@ if(USE_HDF5)
   add_definitions(-DUSE_HDF5)
 endif()
 
-# ---[ LMDB
-if(USE_LMDB)
-  find_package(LMDB REQUIRED)
-  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${LMDB_INCLUDE_DIR})
-  list(APPEND Caffe_LINKER_LIBS PUBLIC ${LMDB_LIBRARIES})
-  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LMDB)
-  if(ALLOW_LMDB_NOLOCK)
-    list(APPEND Caffe_DEFINITIONS PRIVATE -DALLOW_LMDB_NOLOCK)
-  endif()
-endif()
+
 
 # ---[ MATIO
 if(USE_MATIO)
