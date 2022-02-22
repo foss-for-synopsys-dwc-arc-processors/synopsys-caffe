@@ -38,13 +38,11 @@ endif()
 
 # ---[ Google-glog
 find_package(glog CONFIG REQUIRED)
-include("cmake/External/glog.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 
 # ---[ Google-gflags
 find_package(gflags CONFIG REQUIRED)
-include("cmake/External/gflags.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${GFLAGS_LIBRARIES})
 
