@@ -23,6 +23,7 @@ jobs:
     
     - name: vcpkg
       run: set PATH=%VCPKG_INSTALLATION_ROOT%;%PATH%
+      shell: cmd
       
     - name: vcpkg install
       run: vcpkg install boost
