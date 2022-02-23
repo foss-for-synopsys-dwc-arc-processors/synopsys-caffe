@@ -29,7 +29,7 @@ jobs:
       run: vcpkg integrate install
       
     - name: vcpkg install
-      run: vcpkg install lmdb gflags glog
+      run: vcpkg install lmdb 
       
 
 
