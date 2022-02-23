@@ -29,7 +29,7 @@ jobs:
       run: vcpkg integrate install
       
     - name: vcpkg install
-      run: vcpkg install lmdb 
+      run: vcpkg install lmdb  --triplet x64-windows
       
 
 
