@@ -1,6 +1,7 @@
 version: 1.0.{build}
 clone_folder: c:\projects\synopsys-caffe
 
+
 branches:
   only:
     - master
