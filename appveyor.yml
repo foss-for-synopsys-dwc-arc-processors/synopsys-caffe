@@ -1,6 +1,4 @@
 version: 1.0.{build}
-clone_folder: c:\projects\synopsys-caffe
-
 
 branches:
   only:
@@ -9,6 +7,8 @@ branches:
   except:
     - /dev/     # You can use Regular expression to match multiple branch name(s)
     - windows-2019
+
+clone_folder: c:\projects\synopsys-caffe
 
 environment:
   matrix:
