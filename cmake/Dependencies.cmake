@@ -35,6 +35,16 @@ if(USE_OPENMP)
   list(APPEND Caffe_COMPILE_OPTIONS PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
+
+# ---[ HDF5
+if(USE_HDF5)
+  find_package(HDF5 COMPONENTS HL REQUIRED)
+  include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} ${HDF5_HL_INCLUDE_DIR})
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
+  list(APPEND Caffe_LINKER_LIBS ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+  add_definitions(-DUSE_HDF5)
+endif()
+
 # ---[ LMDB
 if(USE_LMDB)
   find_package(LMDB REQUIRED)
@@ -60,28 +70,7 @@ list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 # ---[ Google-protobuf
 include(cmake/ProtoBuf.cmake)
 
-# ---[ HDF5
-if(MSVC)
-  # Find HDF5 using it's hdf5-config.cmake file with MSVC
-  if(DEFINED HDF5_DIR)
-    list(APPEND CMAKE_MODULE_PATH ${HDF5_DIR})
-  endif()
-  find_package(HDF5 COMPONENTS C HL REQUIRED)
-  set(HDF5_LIBRARIES hdf5-shared)
-  set(HDF5_HL_LIBRARIES hdf5_hl-shared)
-else()
-  find_package(HDF5 COMPONENTS HL REQUIRED)
-endif()
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
 
-# This code is taken from https://github.com/sh1r0/caffe-android-lib
-if(USE_HDF5)
-  find_package(HDF5 COMPONENTS HL REQUIRED)
-  include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} ${HDF5_HL_INCLUDE_DIR})
-  list(APPEND Caffe_LINKER_LIBS ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-  add_definitions(-DUSE_HDF5)
-endif()
 
 
 
