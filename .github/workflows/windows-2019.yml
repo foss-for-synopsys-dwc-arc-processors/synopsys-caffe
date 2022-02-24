@@ -29,7 +29,7 @@ jobs:
       run: vcpkg integrate install
       
     - name: vcpkg install
-      run: vcpkg install lmdb gflags glog leveldb snappy protobuf hdf5 opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo boost boost-python[python3] --triplet x64-windows
+      run: vcpkg install lmdb gflags glog leveldb snappy protobuf hdf5 opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo python3 boost boost-python[python3] --triplet x64-windows
       
 
 
