@@ -4,18 +4,6 @@ set(Caffe_INCLUDE_DIRS "")
 set(Caffe_DEFINITIONS "")
 set(Caffe_COMPILE_OPTIONS "")
 
-# ---[ Boost
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost REQUIRED COMPONENTS python3 system thread filesystem regex)
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
-list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
-
-if(DEFINED MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0.40629.0)
-  # Required for VS 2013 Update 4 or earlier.
-  list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_NO_CXX11_TEMPLATE_ALIASES)
-endif()
-
 # ---[ Threads
 find_package(Threads REQUIRED)
 list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
@@ -159,6 +147,19 @@ elseif(APPLE)
       list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_ACCELERATE)
     endif()
   endif()
+endif()
+
+
+
+# ---[ Boost
+find_package(Boost REQUIRED COMPONENTS python3 system thread filesystem regex)
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
+list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+
+if(DEFINED MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0.40629.0)
+  # Required for VS 2013 Update 4 or earlier.
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_NO_CXX11_TEMPLATE_ALIASES)
 endif()
 
 # ---[ Python
