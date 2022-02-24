@@ -31,7 +31,7 @@ jobs:
       
     - name: vcpkg install
       # run: vcpkg install lmdb gflags glog leveldb snappy protobuf matio hdf5[cpp,tools,utils] h5py-lzf opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo python3 boost boost-system boost-thread boost-filesystem boost-regex boost-python[python3] --triplet x64-windows
-      run: vcpkg install hdf5[cpp,tools,utils] h5py-lzf leveldb lmdb gflags glog  --triplet x64-windows
+      run: vcpkg install hdf5[cpp,tools,utils] h5py-lzf leveldb lmdb gflags glog snappy protobuf matio  --triplet x64-windows
 
 
     - name: Configure CMake
