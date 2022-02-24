@@ -9,7 +9,7 @@ find_package(Threads REQUIRED)
 list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # ---[ Boost
-find_package(Boost REQUIRED COMPONENTS system thread filesystem regex)
+find_package(Boost REQUIRED COMPONENTS python3 system thread filesystem regex)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
