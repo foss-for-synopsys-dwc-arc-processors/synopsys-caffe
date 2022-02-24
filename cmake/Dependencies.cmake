@@ -83,9 +83,9 @@ endif()
 
 # ---[ LevelDB
 if(USE_LEVELDB)
-  find_package(LevelDB REQUIRED)
-  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${LevelDB_INCLUDES})
-  list(APPEND Caffe_LINKER_LIBS PUBLIC ${LevelDB_LIBRARIES})
+  find_package(leveldb REQUIRED)
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${leveldb_INCLUDES})
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${leveldb_LIBRARIES})
   list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LEVELDB)
 endif()
 
