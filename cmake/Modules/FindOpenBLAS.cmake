@@ -15,6 +15,10 @@ SET(Open_BLAS_INCLUDE_SEARCH_PATHS
   C:/vcpkg/installed/x64-windows-static/openblas/include
   C:/vcpkg/installed/x64-windows/openblas
   C:/vcpkg/installed/x64-windows/openblas/include
+  C:/vcpkg/installed/x64-windows-static/OpenBLAS
+  C:/vcpkg/installed/x64-windows-static/OpenBLAS/include
+  C:/vcpkg/installed/x64-windows/OpenBLAS
+  C:/vcpkg/installed/x64-windows/OpenBLAS/include
 )
 
 SET(Open_BLAS_LIB_SEARCH_PATHS
@@ -35,15 +39,28 @@ SET(Open_BLAS_LIB_SEARCH_PATHS
         C:/vcpkg/installed/x64-windows-static/openblas/lib
         C:/vcpkg/installed/x64-windows/openblas
         C:/vcpkg/installed/x64-windows/openblas/lib
+        C:/vcpkg/installed/x64-windows-static/OpenBLAS
+        C:/vcpkg/installed/x64-windows-static/OpenBLAS/lib
+        C:/vcpkg/installed/x64-windows/OpenBLAS
+        C:/vcpkg/installed/x64-windows/OpenBLAS/lib
  )
 
 if(MSVC)
   set(OpenBLAS_LIB_NAMES 
     libopenblas.dll.a
     libopenblas.dll.so
+    libopenblas.dll
     libopenblas.lib
     libopenblas.a
     libopenblas.so
+    libopenblas
+    libOpenBLAS.dll.a
+    libOpenBLAS.dll.so
+    libOpenBLAS.dll
+    libOpenBLAS.lib
+    libOpenBLAS.a
+    libOpenBLAS.so
+    libOpenBLAS
     )
 else()
   set(OpenBLAS_LIB_NAMES openblas)
