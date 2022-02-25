@@ -1,7 +1,5 @@
 
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(OpenBLAS DEFAULT_MSG
-    OpenBLAS_INCLUDE_DIR OpenBLAS_LIB)
+
 
 SET(Open_BLAS_INCLUDE_SEARCH_PATHS
   /usr/include
@@ -13,6 +11,10 @@ SET(Open_BLAS_INCLUDE_SEARCH_PATHS
   /opt/OpenBLAS/include
   $ENV{OpenBLAS_HOME}
   $ENV{OpenBLAS_HOME}/include
+  C:/vcpkg/installed/x64-windows-static/openblas
+  C:/vcpkg/installed/x64-windows-static/openblas/include
+  C:/vcpkg/installed/x64-windows/openblas
+  C:/vcpkg/installed/x64-windows/openblas/include
 )
 
 SET(Open_BLAS_LIB_SEARCH_PATHS
@@ -29,6 +31,10 @@ SET(Open_BLAS_LIB_SEARCH_PATHS
         $ENV{OpenBLAS}/lib
         $ENV{OpenBLAS_HOME}
         $ENV{OpenBLAS_HOME}/lib
+        C:/vcpkg/installed/x64-windows-static/openblas
+        C:/vcpkg/installed/x64-windows-static/openblas/lib
+        C:/vcpkg/installed/x64-windows/openblas
+        C:/vcpkg/installed/x64-windows/openblas/lib
  )
 
 if(MSVC)
