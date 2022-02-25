@@ -8,6 +8,21 @@ set(Caffe_COMPILE_OPTIONS "")
 find_package(Threads REQUIRED)
 list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
+# ---[ LevelDB
+if(USE_LEVELDB)
+  find_package(leveldb REQUIRED)
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${LEVELDB_INCLUDES})
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${LEVELDB_LIBRARIES})
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LEVELDB)
+endif()
+
+# ---[ Snappy
+if(USE_LEVELDB)
+  find_package(Snappy REQUIRED)
+  list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Snappy_INCLUDE_DIRS})
+  list(APPEND Caffe_LINKER_LIBS PRIVATE ${Snappy_LIBRARIES})
+endif()
+
 # ---[ Boost
 find_package(Boost REQUIRED COMPONENTS python system thread filesystem regex)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
@@ -83,20 +98,7 @@ if(USE_MATIO)
   list(APPEND Caffe_LINKER_LIBS PUBLIC ${MATIO_LIBRARIES})
 endif()
 
-# ---[ LevelDB
-if(USE_LEVELDB)
-  find_package(leveldb REQUIRED)
-  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${LEVELDB_INCLUDES})
-  list(APPEND Caffe_LINKER_LIBS PUBLIC ${LEVELDB_LIBRARIES})
-  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LEVELDB)
-endif()
 
-# ---[ Snappy
-if(USE_LEVELDB)
-  find_package(Snappy REQUIRED)
-  list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Snappy_INCLUDE_DIRS})
-  list(APPEND Caffe_LINKER_LIBS PRIVATE ${Snappy_LIBRARIES})
-endif()
 
 # ---[ CUDA
 include(cmake/Cuda.cmake)
