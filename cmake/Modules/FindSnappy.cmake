@@ -17,23 +17,23 @@ find_library(Snappy_LIBRARIES
   HINTS ${snappy_ROOT_DIR}/lib)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Snappy DEFAULT_MSG Snappy_LIBRARIES Snappy_INCLUDE_DIRS)
+find_package_handle_standard_args(SNAPPY DEFAULT_MSG SNAPPY_LIBRARIES SNAPPY_INCLUDE_DIRS)
 
 mark_as_advanced(
-  Snappy_LIBRARIES
-  Snappy_INCLUDE_DIRS)
+  SNAPPY_LIBRARIES
+  SNAPPY_INCLUDE_DIRS)
 
 if(SNAPPY_FOUND AND NOT (TARGET Snappy::snappy))
 
   add_library (Snappy::snappy UNKNOWN IMPORTED)
   set_target_properties(Snappy::snappy
     PROPERTIES
-      IMPORTED_LOCATION ${Snappy_LIBRARIES}
-      INTERFACE_INCLUDE_DIRECTORIES ${Snappy_INCLUDE_DIRS})
+      IMPORTED_LOCATION ${SNAPPY_LIBRARIES}
+      INTERFACE_INCLUDE_DIRECTORIES ${SNAPPY_INCLUDE_DIRS})
       
-  message(STATUS "Found Snappy  (include: ${Snappy_INCLUDE_DIRS}, library: ${Snappy_LIBRARIES})")
+  message(STATUS "Found Snappy  (include: ${SNAPPY_INCLUDE_DIRS}, library: ${SNAPPY_LIBRARIES})")
 
-  caffe_parse_header(${Snappy_INCLUDE_DIRS}/snappy-stubs-public.h
+  caffe_parse_header(${SNAPPY_INCLUDE_DIRS}/snappy-stubs-public.h
                      SNAPPY_VERION_LINES SNAPPY_MAJOR SNAPPY_MINOR SNAPPY_PATCHLEVEL)
   set(Snappy_VERSION "${SNAPPY_MAJOR}.${SNAPPY_MINOR}.${SNAPPY_PATCHLEVEL}")
 endif()
