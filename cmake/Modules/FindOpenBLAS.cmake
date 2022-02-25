@@ -11,6 +11,8 @@ SET(Open_BLAS_INCLUDE_SEARCH_PATHS
   /opt/OpenBLAS/include
   $ENV{OpenBLAS_HOME}
   $ENV{OpenBLAS_HOME}/include
+  C:/vcpkg/installed/x64-windows-static/include
+  C:/vcpkg/installed/x64-windows/include
   C:/vcpkg/installed/x64-windows-static/openblas
   C:/vcpkg/installed/x64-windows-static/openblas/include
   C:/vcpkg/installed/x64-windows/openblas
@@ -35,6 +37,8 @@ SET(Open_BLAS_LIB_SEARCH_PATHS
         $ENV{OpenBLAS}/lib
         $ENV{OpenBLAS_HOME}
         $ENV{OpenBLAS_HOME}/lib
+        C:/vcpkg/installed/x64-windows-static/lib
+        C:/vcpkg/installed/x64-windows/lib
         C:/vcpkg/installed/x64-windows-static/openblas
         C:/vcpkg/installed/x64-windows-static/openblas/lib
         C:/vcpkg/installed/x64-windows/openblas
