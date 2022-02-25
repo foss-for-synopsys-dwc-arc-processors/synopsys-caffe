@@ -10,7 +10,7 @@ list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # ---[ BLAS
 if(NOT APPLE)
-  set(BLAS "MKL" CACHE STRING "Selected BLAS library")
+  set(BLAS "Open" CACHE STRING "Selected BLAS library")
   set_property(CACHE BLAS PROPERTY STRINGS "Atlas;Open;MKL")
 
   if(BLAS STREQUAL "Atlas" OR BLAS STREQUAL "atlas")
