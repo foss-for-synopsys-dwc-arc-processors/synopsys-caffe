@@ -1,4 +1,7 @@
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(OpenBLAS DEFAULT_MSG
+    OPENBLAS_INCLUDE_DIRS OPENBLAS_LIBRARY)
 
 SET(Open_BLAS_INCLUDE_SEARCH_PATHS
   /usr/include
