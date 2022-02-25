@@ -19,8 +19,8 @@ endif()
 # ---[ Snappy
 if(USE_LEVELDB)
   find_package(Snappy REQUIRED)
-  list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Snappy_INCLUDE_DIRS})
-  list(APPEND Caffe_LINKER_LIBS PRIVATE ${Snappy_LIBRARIES})
+  list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${SNAPPY_INCLUDE_DIRS})
+  list(APPEND Caffe_LINKER_LIBS PRIVATE ${SNAPPY_LIBRARIES})
 endif()
 
 # ---[ Boost
