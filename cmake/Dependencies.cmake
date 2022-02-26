@@ -114,9 +114,7 @@ list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 
 
 # ---[ Google-protobuf
-find_package(protobuf CONFIG REQUIRED)
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
+include(cmake/ProtoBuf.cmake)
 
 
 
