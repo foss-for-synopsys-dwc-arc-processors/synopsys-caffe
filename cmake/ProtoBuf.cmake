@@ -2,8 +2,7 @@
 # the standard cmake script with version and python generation support
 
 if(MSVC)
-  # search using protobuf-config.cmake
-  find_package( Protobuf REQUIRED NO_MODULE)
+  find_package(protobuf CONFIG REQUIRED)
   set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIRS})
 else()
   find_package( Protobuf REQUIRED )
