@@ -34,12 +34,12 @@ jobs:
       run: vcpkg integrate install
       
     - name: vcpkg install
-      run: vcpkg install lmdb gflags glog leveldb snappy protobuf matio hdf5[cpp,tools,utils] h5py-lzf opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo python3 boost boost-system boost-thread boost-filesystem boost-regex boost-smart-ptr boost-function boost-date-time boost-bind boost-random boost-math boost-algorithm boost-python[python3] --triplet x64-windows-static
+      run: vcpkg install lmdb gflags glog leveldb snappy protobuf matio hdf5[cpp,tools,utils] h5py-lzf opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo boost boost-system boost-thread boost-filesystem boost-regex boost-smart-ptr boost-function boost-date-time boost-bind boost-random boost-math boost-algorithm boost-python[python3] --triplet x64-windows-static
       # run: vcpkg install openblas  --triplet x64-windows-static
 
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64  -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake  -DVCPKG_TARGET_TRIPLET=x64-windows-static  -DBoost_USE_STATIC_LIBS=ON -DBOOST_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST-PYTHON_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST_LIBRARYDIR="C:/vcpkg/installed/x64-windows-static" -DZLIB_ROOT="C:/vcpkg/installed/x64-windows-static" -DUSE_LMDB=1 -DUSE_HDF5=0 -DUSE_LEVELDB=1 -DUSE_MATIO=1 -DBUILD_python=0
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64  -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake  -DVCPKG_TARGET_TRIPLET=x64-windows-static  -DBoost_USE_STATIC_LIBS=ON -DBOOST_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST-PYTHON_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST_LIBRARYDIR="C:/vcpkg/installed/x64-windows-static" -DZLIB_ROOT="C:/vcpkg/installed/x64-windows-static" -DUSE_LMDB=1 -DUSE_HDF5=0 -DUSE_LEVELDB=1 -DUSE_MATIO=1 -DBUILD_python=1
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}  
