@@ -39,7 +39,7 @@ jobs:
 
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64  -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake  -DVCPKG_TARGET_TRIPLET=x64-windows-static  -DBoost_USE_STATIC_LIBS=ON -DBOOST_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST-PYTHON_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST_LIBRARYDIR="C:/vcpkg/installed/x64-windows-static" -DZLIB_ROOT="C:/vcpkg/installed/x64-windows-static" -DUSE_LMDB=1 -DUSE_HDF5=0 -DUSE_LEVELDB=1 -DUSE_MATIO=1 -DBUILD_python=1
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G "Visual Studio 16 2019" -A x64  -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake  -DVCPKG_TARGET_TRIPLET=x64-windows-static  -DBoost_USE_STATIC_LIBS=ON -DBOOST_ROOT="C:/vcpkg/installed/x64-windows-static" -DBOOST_LIBRARYDIR:PATH="C:/vcpkg/installed/x64-windows-static/boost/lib64-msvc-14.2" -DBOOST-PYTHON_ROOT:PATH="C:/vcpkg/installed/x64-windows-static" -DZLIB_ROOT="C:/vcpkg/installed/x64-windows-static" -DUSE_LMDB=1 -DUSE_HDF5=0 -DUSE_LEVELDB=1 -DUSE_MATIO=1 -DBUILD_python=1
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}  
