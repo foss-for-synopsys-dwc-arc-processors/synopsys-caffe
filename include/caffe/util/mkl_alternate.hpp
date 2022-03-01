@@ -1,9 +1,9 @@
 #ifndef CAFFE_UTIL_MKL_ALTERNATE_H_
 #define CAFFE_UTIL_MKL_ALTERNATE_H_
 
-extern "C" {
+
 #include <cblas.h>
-}
+
 
 #ifdef USE_MKL
 
@@ -14,9 +14,9 @@ extern "C" {
 #ifdef USE_ACCELERATE
 #include <Accelerate/Accelerate.h>
 #else
-### extern "C" {
-###   #include <cblas.h>
-### }
+// extern "C" {
+//   #include <cblas.h>
+// }
 #endif  // USE_ACCELERATE
 
 #include <math.h>
