@@ -2,7 +2,7 @@
 #define CAFFE_UTIL_MKL_ALTERNATE_H_
 
 
-#include <openblas/cblas.h>
+#include <OpenBLAS/cblas.h>
 
 
 #ifdef USE_MKL
