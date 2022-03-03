@@ -82,6 +82,23 @@ if(USE_OPENMP)
 endif()
 
 
+
+# ---[ HDF5
+if(MSVC)
+  # Find HDF5 using it's hdf5-config.cmake file with MSVC
+  if(DEFINED HDF5_DIR)
+    list(APPEND CMAKE_MODULE_PATH ${HDF5_DIR})
+  endif()
+  find_package(HDF5 COMPONENTS C HL REQUIRED)
+  set(HDF5_LIBRARIES hdf5-shared)
+  set(HDF5_HL_LIBRARIES hdf5_hl-shared)
+else()
+  find_package(HDF5 COMPONENTS HL REQUIRED)
+endif()
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+
+
 # ---[ HDF5
 if(USE_HDF5)
   find_package(hdf5 COMPONENTS HL REQUIRED)
