@@ -37,7 +37,7 @@ jobs:
       run: vcpkg install hdf5 --triplet x64-windows-static
       
     - name: vcpkg install
-      run: vcpkg install lmdb gflags glog leveldb snappy protobuf matio opencv3[contrib,nonfree,world] openblas zlib libjpeg-turbo boost boost-system boost-thread boost-filesystem boost-regex boost-smart-ptr boost-function boost-date-time boost-bind boost-random boost-math boost-algorithm boost-python[python3] --triplet x64-windows-static
+      run: vcpkg install lmdb gflags glog leveldb snappy protobuf matio opencv3[contrib] openblas zlib libjpeg-turbo boost boost-system boost-thread boost-filesystem boost-regex boost-smart-ptr boost-function boost-date-time boost-bind boost-random boost-math boost-algorithm boost-python[python3] --triplet x64-windows-static
       # run: cd /d c:\ && cd C:/vcpkg/installed/x64-windows-static/lib && dir 
       shell: cmd
 
