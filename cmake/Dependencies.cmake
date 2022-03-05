@@ -8,6 +8,20 @@ set(Caffe_COMPILE_OPTIONS "")
 find_package(Threads REQUIRED)
 list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
+
+# ---[ OpenCV
+if(USE_OPENCV)
+  find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs videoio)
+  if(NOT OpenCV_FOUND) # if not OpenCV 3.x, then imgcodecs are not found
+    message(STATUS "not OpenCV 3.x")
+    find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
+  endif()
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${OpenCV_INCLUDE_DIRS})
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${OpenCV_LIBS})
+  message(STATUS "OpenCV found (${OpenCV_CONFIG_PATH})")
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_OPENCV)
+endif()
+
 # ---[ HDF5
 if(USE_HDF5)
   find_package(hdf5 COMPONENTS HL REQUIRED)
@@ -157,17 +171,7 @@ if(USE_NCCL)
   add_definitions(-DUSE_NCCL)
 endif()
 
-# ---[ OpenCV
-if(USE_OPENCV)
-  find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs videoio)
-  if(NOT OpenCV_FOUND) # if not OpenCV 3.x, then imgcodecs are not found
-    find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
-  endif()
-  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${OpenCV_INCLUDE_DIRS})
-  list(APPEND Caffe_LINKER_LIBS PUBLIC ${OpenCV_LIBS})
-  message(STATUS "OpenCV found (${OpenCV_CONFIG_PATH})")
-  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_OPENCV)
-endif()
+
 
 
 
