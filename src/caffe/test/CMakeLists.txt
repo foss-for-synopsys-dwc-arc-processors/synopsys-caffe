@@ -28,12 +28,11 @@ endif()
 # ---[ Adding test target
 add_executable(${the_target} EXCLUDE_FROM_ALL ${test_srcs})
 target_link_libraries(${the_target} gtest ${Caffe_LINK})
+target_include_directories(${the_target} PUBLIC ${Caffe_INCLUDE_DIR})
 caffe_default_properties(${the_target})
 caffe_set_runtime_directory(${the_target} "${PROJECT_BINARY_DIR}/test")
 
-if(MSVC AND COPY_PREREQUISITES)
-  caffe_copy_prerequisites(${the_target} USE_HARD_LINKS)
-endif()
+
 
 # ---[ Adding runtest
 add_custom_target(runtest COMMAND ${the_target} ${test_args}
