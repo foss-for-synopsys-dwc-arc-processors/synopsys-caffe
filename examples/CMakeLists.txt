@@ -10,11 +10,10 @@ foreach(source_file ${examples_srcs})
 
   add_executable(${name} ${source_file})
   target_link_libraries(${name} ${Caffe_LINK})
+  target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
 
-  if(MSVC AND COPY_PREREQUISITES)
-    caffe_copy_prerequisites(${name} USE_HARD_LINKS)
-  endif()
+
 
   # set back RUNTIME_OUTPUT_DIRECTORY
   set_target_properties(${name} PROPERTIES
@@ -26,9 +25,7 @@ foreach(source_file ${examples_srcs})
   install(TARGETS ${name} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 
-  if(MSVC AND INSTALL_PREREQUISITES)
-    caffe_install_prerequisites(${name} DESTINATION bin)
-  endif()
+
 
   if(UNIX OR APPLE)
     # Funny command to make tutorials work
