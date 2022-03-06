@@ -45,7 +45,7 @@ include(cmake/Targets.cmake)
 include(cmake/Misc.cmake)
 include(cmake/Summary.cmake)
 include(cmake/ConfigGen.cmake)
-include(cmake/WindowsCreateLinkHeader.cmake)
+
 include(cmake/TargetResolvePrerequesites.cmake)
 
 # ---[ Options
