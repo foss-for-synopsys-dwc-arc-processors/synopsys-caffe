@@ -79,9 +79,9 @@ elseif(MSVC AND NOT BUILD_SHARED_LIBS)
   # add a custom build command that generates a list of symbols
   # to force linking. This is required because MSVC as nothing
   # the whole-archive option
-  windows_create_link_header(caffe ${caffe_symbols_hdr})
-  get_filename_component(_name ${caffe_symbols_hdr} NAME)
-  set(CAFFE_INCLUDE_SYMBOLS "#include \"caffe/${_name}\"")
+
+
+
   # definition needed to include CMake generated files
   target_compile_definitions(caffe PRIVATE ${_caffe_static_compile_def}
                                    PUBLIC -DCMAKE_WINDOWS_BUILD)
