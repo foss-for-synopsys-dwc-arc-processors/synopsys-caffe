@@ -41,7 +41,7 @@ jobs:
       shell: cmd
 
     - name: print dir
-      run: cd /d c:\ && cd C:/vcpkg/installed/x64-windows-static/lib && dir &&  cd C:/vcpkg/installed/x64-windows-static/shared && dir
+      run: cd /d c:\ && cd C:/vcpkg/installed/x64-windows-static/lib && dir
       shell: cmd
 
 
