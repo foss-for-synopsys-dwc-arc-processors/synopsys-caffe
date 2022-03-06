@@ -13,6 +13,8 @@ foreach(source ${srcs})
   # target
   add_executable(${name} ${source})
   target_link_libraries(${name} ${Caffe_LINK})
+  target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR} )
+  
   caffe_default_properties(${name})
 
   # set back RUNTIME_OUTPUT_DIRECTORY
