@@ -168,6 +168,9 @@ add_custom_target(uninstall
 # ---[ Configuration summary
 caffe_print_configuration_summary()
 
+# ---[ Message Caffe_LINKER_LIBS 
+message(STATUS, "Caffe_LINKER_LIBS is ${Caffe_LINKER_LIBS}")
+
 # ---[ Export configs generation
 caffe_generate_export_configs()
 
