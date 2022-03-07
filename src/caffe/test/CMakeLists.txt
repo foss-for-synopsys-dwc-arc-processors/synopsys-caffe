@@ -1,3 +1,7 @@
+# ---[temp hack for CPU_ONLY
+set(CPU_ONLY true CACHE BOOL "temp hack for global CPU_ONLY mode build.")
+
+
 # The option allows to include in build only selected test files and exclude all others
 # Usage example:
 #  cmake -DBUILD_only_tests="common,net,blob,im2col_kernel"
