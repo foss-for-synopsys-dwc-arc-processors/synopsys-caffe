@@ -1,6 +1,8 @@
 #ifndef CAFFE_UTIL_DEVICE_ALTERNATE_H_
 #define CAFFE_UTIL_DEVICE_ALTERNATE_H_
 
+#define CPU_ONLY
+
 #ifdef CPU_ONLY  // CPU-only Caffe.
 
 #include <vector>
