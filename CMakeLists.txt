@@ -12,6 +12,8 @@ if(MSVC)
     )
 endif()
 
+# ---[temp hack for CPU_ONLY
+set(CPU_ONLY true CACHE BOOL "temp hack for global CPU_ONLY mode build.")
 
 # ---[ Caffe version
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
