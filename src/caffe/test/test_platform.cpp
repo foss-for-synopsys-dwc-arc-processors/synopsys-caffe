@@ -1,8 +1,6 @@
 #include "caffe/common.hpp"
 
-#ifdef CPU_ONLY
-  return 0;
-#else
+#ifndef CPU_ONLY
 
 #include <cstdio>
 #include <cstdlib>
