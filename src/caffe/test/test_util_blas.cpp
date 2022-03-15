@@ -1,4 +1,7 @@
-#ifndef CPU_ONLY  // CPU-GPU test
+#ifdef CPU_ONLY
+  return 0;
+#else
+
 
 #include "gtest/gtest.h"
 
