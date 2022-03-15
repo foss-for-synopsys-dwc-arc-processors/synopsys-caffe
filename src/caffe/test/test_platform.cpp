@@ -1,4 +1,6 @@
-#ifndef CPU_ONLY
+#ifdef CPU_ONLY
+  return 0;
+#else
 
 #include <cstdio>
 #include <cstdlib>
