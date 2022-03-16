@@ -10,7 +10,7 @@ foreach(source_file ${examples_srcs})
 
   link_directories("../../lib/Release")
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} "caffe")
+  target_link_libraries(${name} CAFFE)
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
