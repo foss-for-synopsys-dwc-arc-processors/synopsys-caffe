@@ -9,7 +9,7 @@ foreach(source_file ${examples_srcs})
   get_filename_component(folder ${path} NAME_WE)
 
   add_executable(${name} ${source_file})
-  target_link_libraries(${name}  "-I${PROJECT_BINARY_DIR}/lib/Release/caffe.lib")
+  target_link_libraries(${name}  ${Caffe_LINK})
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
 
