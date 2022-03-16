@@ -8,10 +8,9 @@ foreach(source_file ${examples_srcs})
   get_filename_component(path ${source_file} PATH)
   get_filename_component(folder ${path} NAME_WE)
 
+  link_directories(D:\a\synopsys-caffe\synopsys-caffe\build\lib\Release)
   add_executable(${name} ${source_file})
-  
-  find_library(CAFFE_LIBRARY caffe HINTS ../../lib/Release)
-  target_link_libraries(${name} PUBLIC ${CAFFE_LIBRARY})
+  target_link_libraries(${name} caffe)
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
