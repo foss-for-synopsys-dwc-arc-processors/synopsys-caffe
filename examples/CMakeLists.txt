@@ -8,7 +8,7 @@ foreach(source_file ${examples_srcs})
   get_filename_component(path ${source_file} PATH)
   get_filename_component(folder ${path} NAME_WE)
 
-  link_directories(${CMAKE_INSTALL_LIBDIR})
+  link_directories(${PROJECT_BINARY_DIR}/lib/Release)
   add_executable(${name} ${source_file})
   target_link_libraries(${name} caffe)
   
