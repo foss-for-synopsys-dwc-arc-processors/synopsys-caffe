@@ -11,8 +11,11 @@ foreach(source_file ${examples_srcs})
   message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
   message(STATUS "${CMAKE_BINARY_DIR}")
   
+  add_library(caffestatic UNKNOWN IMPORTED)
+  set_property(TARGET caffestatic PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib")
+  
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} caffe "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib" )
+  target_link_libraries(${name} caffestatic )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
