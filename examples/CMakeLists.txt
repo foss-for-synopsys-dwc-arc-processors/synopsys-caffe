@@ -10,6 +10,7 @@ foreach(source_file ${examples_srcs})
 
   message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
   message(STATUS "${CMAKE_BINARY_DIR}")
+  message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
   add_library(caffestatic UNKNOWN IMPORTED)
   set_property(TARGET caffestatic PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib")
