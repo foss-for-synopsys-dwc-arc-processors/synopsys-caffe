@@ -12,7 +12,7 @@ foreach(source_file ${examples_srcs})
   message(STATUS "${CMAKE_BINARY_DIR}")
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} caffe "${CMAKE_CURRENT_BINARY_DIR}/../lib/Release/caffe.lib" )
+  target_link_libraries(${name} caffe "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib" )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
