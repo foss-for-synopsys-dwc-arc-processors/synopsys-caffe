@@ -13,7 +13,7 @@ foreach(source_file ${examples_srcs})
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
   add_library(caffestatic UNKNOWN IMPORTED)
-  set_property(TARGET caffestatic PROPERTY IMPORTED_LOCATION "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib")
+  set_property(TARGET caffestatic PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
   
   add_executable(${name} ${source_file})
   target_link_libraries(${name} caffestatic )
