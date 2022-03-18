@@ -21,7 +21,11 @@ foreach(source_file ${examples_srcs})
   add_library(justinstatic_${name} UNKNOWN IMPORTED)
   set_property(TARGET justinstatic_${name} PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
   
+  # reset
+  set(CMAKE_EXE_LINKER_FLAGS "")
+  set(CMAKE_EXE_LINKER_FLAGS "/machine:x64")
   # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows-static/lib ")
+  
   # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   # set(HACKER_LINK_LIBS caffe.lib)
   
