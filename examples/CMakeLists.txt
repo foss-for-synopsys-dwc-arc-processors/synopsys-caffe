@@ -20,8 +20,12 @@ foreach(source_file ${examples_srcs})
   # add_library(justinstatic UNKNOWN IMPORTED)
   # set_property(TARGET justinstatic PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
   
+  
+  link_directories(${CMAKE_BINARY_DIR}/lib/Release)
+  set(HACKER_LINK_LIBS caffe.lib)
+  
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} caffe "./lib/Release/caffe" )
+  target_link_libraries(${name} ${HACKER_LINK_LIBS} )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
