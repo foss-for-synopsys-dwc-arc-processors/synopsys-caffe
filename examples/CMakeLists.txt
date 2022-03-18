@@ -23,11 +23,14 @@ foreach(source_file ${examples_srcs})
   
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows-static/lib ")
   
-  link_directories(${CMAKE_BINARY_DIR}/lib/Release)
-  set(HACKER_LINK_LIBS ${CMAKE_BINARY_DIR}/lib/Release/caffe.lib)
+  # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
+  # set(HACKER_LINK_LIBS ${CMAKE_BINARY_DIR}/lib/Release/caffe.lib)
+  
+  set(CMAKE_STATIC_LIBRARY_PREFIX "")
+  set(CMAKE_STATIC_LIBRARY_SUFFIX "")
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} ${HACKER_LINK_LIBS} )
+  target_link_libraries(${name} "${CMAKE_BINARY_DIR}/lib/Release/caffe.lib" )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
