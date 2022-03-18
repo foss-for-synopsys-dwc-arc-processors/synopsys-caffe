@@ -18,16 +18,16 @@ foreach(source_file ${examples_srcs})
   message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
-  # add_library(justinstatic UNKNOWN IMPORTED)
-  # set_property(TARGET justinstatic PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
+  add_library(justinstatic_${name} UNKNOWN IMPORTED)
+  set_property(TARGET justinstatic_${name} PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
   
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows-static/lib ")
   
-  link_directories(${CMAKE_BINARY_DIR}/lib/Release)
-  set(HACKER_LINK_LIBS caffe.lib)
+  # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
+  # set(HACKER_LINK_LIBS caffe.lib)
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} ${HACKER_LINK_LIBS} )
+  target_link_libraries(${name} justinstatic_${name} )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
