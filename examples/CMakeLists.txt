@@ -11,6 +11,7 @@ foreach(source_file ${examples_srcs})
 
   message(STATUS "Justin hack for Linker Path issue --- START")
   
+  message("CMAKE_EXE_LINKER_FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
   message("Caffe_LINK: ${Caffe_LINK}")
   message("Caffe_LINKER_LIBS: ${Caffe_LINKER_LIBS}")
   message("CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
@@ -20,6 +21,7 @@ foreach(source_file ${examples_srcs})
   # add_library(justinstatic UNKNOWN IMPORTED)
   # set_property(TARGET justinstatic PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
   
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows-static/lib ")
   
   link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   set(HACKER_LINK_LIBS caffe.lib)
