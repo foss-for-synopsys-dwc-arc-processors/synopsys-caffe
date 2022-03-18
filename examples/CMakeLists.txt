@@ -9,9 +9,12 @@ foreach(source_file ${examples_srcs})
   get_filename_component(folder ${path} NAME_WE)
 
 
-  message(STATUS "Justin hack for Linker Path issue.")
-  message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
-  message(STATUS "${CMAKE_BINARY_DIR}")
+  message(STATUS "Justin hack for Linker Path issue --- START")
+  
+  message("Caffe_LINK: ${Caffe_LINK}")
+  message("Caffe_LINKER_LIBS: ${Caffe_LINKER_LIBS}")
+  message("CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+  message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
   # add_library(justinstatic UNKNOWN IMPORTED)
