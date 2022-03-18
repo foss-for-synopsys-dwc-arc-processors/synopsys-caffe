@@ -18,6 +18,7 @@ foreach(source_file ${examples_srcs})
   message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
+  
   # reset
   set(CMAKE_EXE_LINKER_FLAGS "")
   set(CMAKE_EXE_LINKER_FLAGS "/machine:x64")
@@ -30,7 +31,7 @@ foreach(source_file ${examples_srcs})
   # set(HACKER_LINK_LIBS caffe.lib)
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} justinstatic_${name} )
+  target_link_libraries(${name} justinstatic_${name} ${Caffe_LINKER_LIBS} )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
