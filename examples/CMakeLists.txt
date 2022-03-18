@@ -8,6 +8,8 @@ foreach(source_file ${examples_srcs})
   get_filename_component(path ${source_file} PATH)
   get_filename_component(folder ${path} NAME_WE)
 
+
+  message(STATUS "Justin hack for Linker Path issue.")
   message(STATUS "${CMAKE_CURRENT_BINARY_DIR}")
   message(STATUS "${CMAKE_BINARY_DIR}")
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
