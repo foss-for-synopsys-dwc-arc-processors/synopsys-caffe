@@ -31,7 +31,7 @@ foreach(source_file ${examples_srcs})
   # set(HACKER_LINK_LIBS caffe.lib)
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} justinstatic_${name} ${Caffe_LINKER_LIBS} )
+  target_link_libraries(${name} PUBLIC justinstatic_${name} ${Caffe_LINKER_LIBS} )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
