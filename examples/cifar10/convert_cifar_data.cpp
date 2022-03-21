@@ -18,7 +18,7 @@
 #include "caffe/util/db.hpp"
 #include "caffe/util/format.hpp"
 
-using caffe::Datum;
+
 using boost::scoped_ptr;
 using std::string;
 namespace db = caffe::db;
@@ -44,7 +44,7 @@ void convert_dataset(const string& input_folder, const string& output_folder,
   // Data buffer
   int label;
   char str_buffer[kCIFARImageNBytes];
-  Datum datum;
+  caffe::Datum datum;
   datum.set_channels(3);
   datum.set_height(kCIFARSize);
   datum.set_width(kCIFARSize);
