@@ -1,5 +1,16 @@
 file(GLOB_RECURSE examples_srcs "${PROJECT_SOURCE_DIR}/examples/*.cpp")
 
+
+# ---[MSVC static linking
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MT> #--|
+    )
+endif()
+
+
 foreach(source_file ${examples_srcs})
   # get file name
   get_filename_component(name ${source_file} NAME_WE)
