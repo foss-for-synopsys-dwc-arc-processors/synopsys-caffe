@@ -26,12 +26,16 @@ foreach(source_file ${examples_srcs})
   
   add_library(justinstatic_${name} UNKNOWN IMPORTED)
   set_property(TARGET justinstatic_${name} PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
+ 
+  
+  add_library(justin_glog_${name} UNKNOWN IMPORTED)
+  set_property(TARGET justin_glog_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows-static/lib/glog.lib")
     
   # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   # set(HACKER_LINK_LIBS caffe.lib)
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} PUBLIC justinstatic_${name} ${Caffe_LINKER_LIBS} )
+  target_link_libraries(${name} PUBLIC justinstatic_${name} justin_glog_${name}  ${Caffe_LINKER_LIBS} )
   
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   caffe_default_properties(${name})
