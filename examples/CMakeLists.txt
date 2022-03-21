@@ -41,12 +41,15 @@ foreach(source_file ${examples_srcs})
   
   add_library(justin_glog_${name} UNKNOWN IMPORTED)
   set_property(TARGET justin_glog_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows-static/lib/glog.lib")
+  
+  add_library(justin_leveldb_${name} UNKNOWN IMPORTED)
+  set_property(TARGET justin_leveldb_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows-static/lib/leveldb.lib")
     
   # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   # set(HACKER_LINK_LIBS caffe.lib)
   
   add_executable(${name} ${source_file})
-  target_link_libraries(${name} PUBLIC justinstatic_${name} justin_glog_${name}  ${Caffe_LINKER_LIBS} )
+  target_link_libraries(${name} PUBLIC justinstatic_${name}   justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
   
   # add some preprocessor macros for linker bugs
   target_compile_definitions(${name} PRIVATE  _VARIADIC_MAX=10 GFLAGS_DLL_DECLARE_FLAG=  GFLAGS_DLL_DEFINE_FLAG=  GOOGLE_GLOG_DLL_DECL=  GLOG_NO_ABBREVIATED_SEVERITIES)
