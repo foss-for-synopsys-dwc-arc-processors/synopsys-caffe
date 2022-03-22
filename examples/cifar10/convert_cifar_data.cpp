@@ -53,7 +53,7 @@ void convert_dataset(const std::string& input_folder, const std::string& output_
   for (int fileid = 0; fileid < kCIFARTrainBatches; ++fileid) {
     // Open files
     LOG(INFO) << "Training Batch " << fileid + 1;
-    string batchFileName = input_folder + "/data_batch_"
+    std::string batchFileName = input_folder + "/data_batch_"
       + caffe::format_int(fileid+1) + ".bin";
     std::ifstream data_file(batchFileName.c_str(),
         std::ios::in | std::ios::binary);
