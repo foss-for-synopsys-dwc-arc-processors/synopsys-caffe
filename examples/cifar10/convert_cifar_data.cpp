@@ -20,7 +20,7 @@
 
 
 using boost::scoped_ptr;
-using std::string;
+
 namespace db = caffe::db;
 
 const int kCIFARSize = 32;
