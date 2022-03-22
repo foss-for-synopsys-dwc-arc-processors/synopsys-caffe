@@ -36,8 +36,8 @@ void read_image(std::ifstream* file, int* label, char* buffer) {
   return;
 }
 
-void convert_dataset(const string& input_folder, const string& output_folder,
-    const string& db_type) {
+void convert_dataset(const std::string& input_folder, const std::string& output_folder,
+    const std::string& db_type) {
   scoped_ptr<db::DB> train_db(db::GetDB(db_type));
   train_db->Open(output_folder + "/cifar10_train_" + db_type, db::NEW);
   scoped_ptr<db::Transaction> txn(train_db->NewTransaction());
@@ -62,7 +62,7 @@ void convert_dataset(const string& input_folder, const string& output_folder,
       read_image(&data_file, &label, str_buffer);
       datum.set_label(label);
       datum.set_data(str_buffer, kCIFARImageNBytes);
-      string out;
+      std::string out;
       CHECK(datum.SerializeToString(&out));
       txn->Put(caffe::format_int(fileid * kCIFARBatchSize + itemid, 5), out);
     }
@@ -82,7 +82,7 @@ void convert_dataset(const string& input_folder, const string& output_folder,
     read_image(&data_file, &label, str_buffer);
     datum.set_label(label);
     datum.set_data(str_buffer, kCIFARImageNBytes);
-    string out;
+    std::string out;
     CHECK(datum.SerializeToString(&out));
     txn->Put(caffe::format_int(itemid, 5), out);
   }
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
            "You should gunzip them after downloading.\n");
   } else {
     google::InitGoogleLogging(argv[0]);
-    convert_dataset(string(argv[1]), string(argv[2]), string(argv[3]));
+    convert_dataset(std::string(argv[1]), std::string(argv[2]), std::string(argv[3]));
   }
   return 0;
 }
