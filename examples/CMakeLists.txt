@@ -1,6 +1,10 @@
 file(GLOB_RECURSE examples_srcs "${PROJECT_SOURCE_DIR}/examples/*.cpp")
 
 
+
+# ---[the workaround for Boost throw exception trigger LNK fatal error
+SET(TPN_WIN32 "/EHsc")
+
 # ---[MSVC static linking
 if(MSVC)
     add_compile_options(
