@@ -37,17 +37,17 @@ foreach(source_file ${examples_srcs})
   # reset
   set(CMAKE_EXE_LINKER_FLAGS "")
   set(CMAKE_EXE_LINKER_FLAGS "/machine:x64")
-  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows-static-md/lib ")
+  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows/lib ")
   
   add_library(justinstatic_${name} UNKNOWN IMPORTED)
   set_property(TARGET justinstatic_${name} PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
  
   
   add_library(justin_glog_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justin_glog_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows-static-md/lib/glog.lib")
+  set_property(TARGET justin_glog_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/glog.lib")
   
   add_library(justin_leveldb_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justin_leveldb_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows-static-md/lib/leveldb.lib")
+  set_property(TARGET justin_leveldb_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/leveldb.lib")
     
   # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   # set(HACKER_LINK_LIBS caffe.lib)
