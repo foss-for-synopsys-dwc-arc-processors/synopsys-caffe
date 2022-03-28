@@ -2,6 +2,7 @@
 #define CAFFE_COMMON_HPP_
 
 #define CPU_ONLY
+#define BOOST_NO_EXCEPTIONS
 
 #include <boost/shared_ptr.hpp>
 #include <gflags/gflags.h>
