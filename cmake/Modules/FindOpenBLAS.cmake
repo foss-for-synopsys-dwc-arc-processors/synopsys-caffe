@@ -41,6 +41,7 @@ SET(Open_BLAS_LIB_SEARCH_PATHS
         C:/vcpkg/installed/x64-windows-static/lib/openblas
         C:/vcpkg/installed/x64-windows-static/lib/OpenBLAS
         C:/vcpkg/installed/x64-windows/lib
+        C:/vcpkg/installed/x64-windows/bin
         C:/vcpkg/installed/x64-windows/lib/openblas
         C:/vcpkg/installed/x64-windows/lib/OpenBLAS
         C:/vcpkg/installed/x64-windows-static/openblas
