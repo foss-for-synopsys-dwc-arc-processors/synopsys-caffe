@@ -48,6 +48,9 @@ foreach(source_file ${examples_srcs})
   
   add_library(justin_leveldb_${name} UNKNOWN IMPORTED)
   set_property(TARGET justin_leveldb_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/leveldb.lib")
+  
+  add_library(justin_protobuf_${name} UNKNOWN IMPORTED)
+  set_property(TARGET justin_protobuf_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/libprotobuf.lib")
     
   # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
   # set(HACKER_LINK_LIBS caffe.lib)
@@ -55,7 +58,7 @@ foreach(source_file ${examples_srcs})
   add_executable(${name} ${source_file})
   
   # this line is working
-  # target_link_libraries(${name} PUBLIC justinstatic_${name}   justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
+  # target_link_libraries(${name} PUBLIC justinstatic_${name} justin_protobuf_${name}  justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
   target_link_libraries(${name} PUBLIC  caffe  justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
   
   
