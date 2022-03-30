@@ -31,7 +31,7 @@ endif()
 
 # ---[ Adding test target
 add_executable(${the_target} EXCLUDE_FROM_ALL ${test_srcs})
-target_link_libraries(${the_target} PUBLIC gtest caffe ${Caffe_LINKER_LIBS}  ${Caffe_LINK} )
+target_link_libraries(${the_target} PUBLIC gtest caffeproto caffe ${Caffe_LINKER_LIBS}  ${Caffe_LINK} )
 target_include_directories(${the_target} PUBLIC ${Caffe_INCLUDE_DIR})
 caffe_default_properties(${the_target})
 caffe_set_runtime_directory(${the_target} "${PROJECT_BINARY_DIR}/test")
