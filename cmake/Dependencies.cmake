@@ -207,6 +207,12 @@ if(BUILD_python)
     # disable Python 3 search
 
   endif()
+  
+  message(STATUS "Justin hack here to monitor target pycaffe")
+  message(STATUS "PYTHONLIBS_FOUND ------: ${PYTHONLIBS_FOUND}")
+  message(STATUS "NUMPY_FOUND ------: ${NUMPY_FOUND}")
+  message(STATUS "Boost_PYTHON_FOUND ------: ${Boost_PYTHON_FOUND}")
+  
   if(PYTHONLIBS_FOUND AND NUMPY_FOUND AND Boost_PYTHON_FOUND)
     set(HAVE_PYTHON TRUE)
     if(Boost_USE_STATIC_LIBS AND MSVC)
