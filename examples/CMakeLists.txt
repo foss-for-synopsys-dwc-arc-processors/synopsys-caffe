@@ -59,7 +59,7 @@ foreach(source_file ${examples_srcs})
   
   # this line is working
   # target_link_libraries(${name} PUBLIC justinstatic_${name} justin_protobuf_${name}  justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
-  target_link_libraries(${name} PUBLIC  caffeproto  caffe   justin_protobuf_${name}   justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
+  target_link_libraries(${name} PUBLIC  caffeproto  caffe   justin_protobuf_${name}   justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} ${Caffe_LINK})
   
   
   
