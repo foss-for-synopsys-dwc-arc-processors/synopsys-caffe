@@ -180,7 +180,7 @@ endif()
 if(BUILD_python)
   if(NOT "${python_version}" VERSION_LESS "3.0.0")
     # use python3
-    find_package(NumPy 1.7.1)
+    find_package(NumPy)
     # Find the matching boost python implementation
     set(version ${PYTHONLIBS_VERSION_STRING})
 
