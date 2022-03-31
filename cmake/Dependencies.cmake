@@ -178,8 +178,9 @@ endif()
 
 # ---[ Python
 if(BUILD_python)
-  if(NOT "${python_version}" VERSION_LESS "3.0.0")
-    # use python3
+  message(STATUS "Justin hack for START for BUILD_python")
+  if(NOT "${Python3_VERSION}" VERSION_LESS "3.0.0")
+    message(STATUS "Justin hack for START for find_package___NumPy")
     find_package(NumPy)
     # Find the matching boost python implementation
     set(version ${PYTHONLIBS_VERSION_STRING})
