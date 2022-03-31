@@ -183,6 +183,8 @@ if(BUILD_python)
     find_package(NumPy)
     # Find the matching boost python implementation
     set(version ${PYTHONLIBS_VERSION_STRING})
+    message(STATUS "Justin hack for Boost_PYTHON_FOUND")
+    message(STATUS "PYTHONLIBS_VERSION_STRING ====== : ${PYTHONLIBS_VERSION_STRING}")
 
     STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
     find_package(Boost  COMPONENTS "python-py${boost_py_version}")
@@ -201,7 +203,7 @@ if(BUILD_python)
       endif()
     endwhile()
     if(NOT Boost_PYTHON_FOUND)
-      find_package(Boost COMPONENTS python)
+      find_package(Boost COMPONENTS python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
     endif()
   else()
     # disable Python 3 search
