@@ -177,6 +177,7 @@ endif()
 
 
 # ---[ Python
+message(STATUS "BUILD_python ====== : ${BUILD_python}")
 if(BUILD_python)
   message(STATUS "Justin hack for START for BUILD_python")
   if(NOT "${Python3_VERSION}" VERSION_LESS "3.0.0")
