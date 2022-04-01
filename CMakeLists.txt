@@ -144,7 +144,7 @@ add_subdirectory(src/gtest)
 add_subdirectory(src/caffe)
 
 # ---[disable tools and example folders
-# add_subdirectory(tools)
+add_subdirectory(tools)
 # add_subdirectory(examples)
 
 
