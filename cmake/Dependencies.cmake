@@ -206,6 +206,8 @@ if(BUILD_python)
     endwhile()
     if(NOT Boost_PYTHON_FOUND)
       find_package(Boost COMPONENTS python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR})
+      message(STATUS "Justin hack === TBD huge hack for Boost_PYTHON_FOUND that enable pycaffe")
+      set(Boost_PYTHON_FOUND 1.78.0)
     endif()
   else()
     # disable Python 3 search
