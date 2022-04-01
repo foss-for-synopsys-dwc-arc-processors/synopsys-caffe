@@ -11,7 +11,7 @@ set_target_properties(pycaffe PROPERTIES PREFIX "" OUTPUT_NAME "_caffe")
 if(MSVC)
   set_target_properties(pycaffe PROPERTIES SUFFIX ".pyd")
 endif()
-target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR})
+target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})
 target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${PYTHON_LIBRARIES})
 
 if(UNIX OR APPLE)
