@@ -21,7 +21,7 @@ message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")
 message(STATUS "Caffe_LINK ====== ${Caffe_LINK}")
 message(STATUS "PYTHON_LIBRARIES ====== ${PYTHON_LIBRARIES}")
 
-target_link_libraries(pycaffe PUBLIC caffe  ${Caffe_LINKER_LIBS} ${Caffe_LINK} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(pycaffe PUBLIC caffe caffeproto ${Caffe_LINKER_LIBS} ${Caffe_LINK} ${PYTHON_LIBRARIES} ${Boost_LIBRARIES})
 
 target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})
 
