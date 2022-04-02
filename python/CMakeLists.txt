@@ -13,7 +13,7 @@ if(MSVC)
 endif()
 
 
-//re-order to put linker at first to generate caffe.lib at first 
+# ---[ Re-order to put linker at first to generate caffe.lib at first 
 target_link_libraries(pycaffe PUBLIC caffe ${Caffe_LINK} ${PYTHON_LIBRARIES})
 
 target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})
