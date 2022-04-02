@@ -143,12 +143,13 @@ endif()
 add_subdirectory(src/gtest)
 add_subdirectory(src/caffe)
 
-# ---[disable tools and example folders
+
 add_subdirectory(tools)
-# add_subdirectory(examples)
-
-
+add_subdirectory(examples)
 add_subdirectory(python)
+
+
+
 add_subdirectory(matlab)
 add_subdirectory(docs)
 
