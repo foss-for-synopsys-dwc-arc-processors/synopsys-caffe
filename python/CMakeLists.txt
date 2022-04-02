@@ -13,8 +13,12 @@ if(MSVC)
 endif()
 
 
+# reset
+set(CMAKE_EXE_LINKER_FLAGS "")
+set(CMAKE_EXE_LINKER_FLAGS "/machine:x64")
+
 # ---[ Re-order to put linker at first to generate caffe.lib at first 
-target_link_libraries(pycaffe PUBLIC caffe ${Caffe_LINK} ${PYTHON_LIBRARIES})
+target_link_libraries(pycaffe PUBLIC caffe ${Caffe_LINKER_LIBS} ${Caffe_LINK} ${PYTHON_LIBRARIES})
 
 target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})
 
