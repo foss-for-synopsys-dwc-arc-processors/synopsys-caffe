@@ -27,6 +27,12 @@ if(PROTOBUF_FOUND)
   unset(GOOGLE_PROTOBUF_VERSION)
 endif()
 
+# printf cmake var's value
+message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
+message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
+message(STATUS "PROTOBUF_PROTOC_EXECUTABLE ====== ${PROTOBUF_PROTOC_EXECUTABLE}")
+
+
 # place where to generate protobuf sources
 set(proto_gen_folder "${PROJECT_BINARY_DIR}/include/caffe/proto")
 include_directories("${PROJECT_BINARY_DIR}/include")
