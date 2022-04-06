@@ -7,6 +7,10 @@ if(MSVC)
 else()
   find_package( Protobuf REQUIRED )
 endif()
+
+
+
+
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
 
@@ -17,6 +21,13 @@ if(EXISTS ${PROTOBUF_PROTOC_EXECUTABLE})
 else()
   message(FATAL_ERROR "Could not find PROTOBUF Compiler")
 endif()
+
+
+message(STATUS "Justin hack for linker fatal error for protobuf diff about DLL VS LIB.")
+message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
+message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
+message(STATUS "PROTOBUF_PROTOC_EXECUTABLE ====== ${PROTOBUF_PROTOC_EXECUTABLE}")
+
 
 if(PROTOBUF_FOUND)
   # fetches protobuf version
