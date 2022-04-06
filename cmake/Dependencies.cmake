@@ -134,7 +134,12 @@ list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
 
 
 # ---[ Google-protobuf
-include(cmake/ProtoBuf.cmake)
+
+# ---[disable old method and try to use the same CMake Modules method now!!!
+# include(cmake/ProtoBuf.cmake)
+
+find_package(protobuf CONFIG REQUIRED)
+set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIRS})
 
 
 
