@@ -31,6 +31,8 @@ endif()
 message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
 message(STATUS "PROTOBUF_PROTOC_EXECUTABLE ====== ${PROTOBUF_PROTOC_EXECUTABLE}")
+message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
+message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")
 
 
 # place where to generate protobuf sources
