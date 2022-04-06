@@ -29,6 +29,8 @@ message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
 message(STATUS "PROTOBUF_PROTOC_EXECUTABLE ====== ${PROTOBUF_PROTOC_EXECUTABLE}")
 message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
 message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")
+message(STATUS "Caffe_LINK ====== ${Caffe_LINK}")
+
 
 
 if(PROTOBUF_FOUND)
