@@ -4,6 +4,7 @@
 #  PROTOBUF_LIBRARIES - Libraries needed to use PROTOBUF
 
 
+message(STATUS "Justin hack into Findprotobuf.cmake")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PROTOBUF DEFAULT_MSG PROTOBUF_INCLUDE_DIR PROTOBUF_LIBRARIES)
