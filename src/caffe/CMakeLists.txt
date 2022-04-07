@@ -5,7 +5,7 @@ caffe_protobuf_generate_cpp_py(${proto_gen_folder} proto_srcs proto_hdrs proto_p
 # include python files either to force generation
 add_library(caffeproto STATIC ${proto_hdrs} ${proto_srcs} ${proto_python})
 caffe_default_properties(caffeproto)
-target_link_libraries(caffeproto PUBLIC ${PROTOBUF_LIBRARIES})
+target_link_libraries(caffeproto PUBLIC protobuf::libprotoc protobuf::libprotobuf protobuf::libprotobuf-lite)
 target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
 
 list(INSERT Caffe_LINKER_LIBS 0 PUBLIC caffeproto) # note, crucial to prepend!
