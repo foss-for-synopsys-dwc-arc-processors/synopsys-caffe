@@ -6,7 +6,7 @@
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(protobuf DEFAULT_MSG PROTOBUF_INCLUDE_DIR PROTOBUF_LIBRARIES)
+find_package_handle_standard_args(PROTOBUF DEFAULT_MSG PROTOBUF_INCLUDE_DIR PROTOBUF_LIBRARIES)
 
 
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
