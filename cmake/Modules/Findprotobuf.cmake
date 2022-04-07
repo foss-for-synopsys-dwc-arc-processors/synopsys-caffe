@@ -12,6 +12,7 @@ find_package_handle_standard_args(PROTOBUF DEFAULT_MSG PROTOBUF_INCLUDE_DIR PROT
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
 
+message(STATUS "Justin hack for Findprotobuf.cmake")
 message(STATUS "Justin hack for linker fatal error for protobuf diff about DLL VS LIB.")
 message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")

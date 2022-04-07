@@ -3,7 +3,7 @@
 
 
 
-
+message(STATUS "Justin hack for filename ProtoBuf.cmake")
 message(STATUS "Justin hack for linker fatal error for protobuf diff about DLL VS LIB.")
 message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
