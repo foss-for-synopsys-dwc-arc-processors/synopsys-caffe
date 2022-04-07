@@ -40,6 +40,10 @@ jobs:
       run: vcpkg install lmdb gflags glog leveldb snappy matio hdf5 openblas zlib libjpeg-turbo boost boost-system boost-thread boost-filesystem boost-regex boost-smart-ptr boost-function boost-date-time boost-bind boost-random boost-math boost-algorithm boost-python[python3] --triplet x64-windows
       shell: cmd
 
+    - name: print dir include
+      run: cd /d c:\ && cd C:/vcpkg/installed/x64-windows/include && dir
+      shell: cmd
+
     - name: print dir lib
       run: cd /d c:\ && cd C:/vcpkg/installed/x64-windows/lib && dir
       shell: cmd
