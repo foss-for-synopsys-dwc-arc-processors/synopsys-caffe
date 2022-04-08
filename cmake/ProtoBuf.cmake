@@ -9,6 +9,9 @@ else()
 endif()
 
 
+# Justin hack for DLL/Lib
+# put this hack BEFORE Caffe_LINKER_LIBS
+set(PROTOBUF_LIBRARIES "optimized;C:/vcpkg/installed/x64-windows/lib/libprotobuf.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/libprotobufd.lib")
 
 
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
@@ -23,8 +26,7 @@ else()
 endif()
 
 
-# Justin hack for DLL/Lib
-set(PROTOBUF_LIBRARIES "optimized;C:/vcpkg/installed/x64-windows/lib/libprotobuf.lib;debug;C:/vcpkg/installed/x64-windows/debug/lib/libprotobufd.lib")
+
 
 
 message(STATUS "Justin hack for filename ProtoBuf.cmake")
