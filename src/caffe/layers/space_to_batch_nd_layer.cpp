@@ -62,6 +62,8 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
+  const int count = top[0]->count();
+  caffe_set(count, Dtype(0), top_data);
   vector<int> bottom_shape = bottom[0]->shape();
   vector<int> top_shape = bottom_shape;
 
@@ -105,11 +107,12 @@ void SpaceToBatchNDLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   for(int i=0; i<top_temp.size(); i++){
     vector<int> coord_old = indices(i, top_shape);
     vector<int> coord_permuted = coord_old;
-    for(int i=0; i<coord_old.size(); i++){
-      coord_permuted[i] = coord_old[permuted_order[i]];
+    for(int j=0; j<coord_old.size(); j++){
+      coord_permuted[j] = coord_old[permuted_order[j]];
     }
     int position_permuted = offset(coord_permuted, permuted_shape);
-    copy_n(top_temp.begin()+i, 1, top_data+position_permuted);
+    //copy_n(top_temp.begin()+i, 1, top_data+position_permuted);
+    top_data[position_permuted] = top_temp[i];
   }
 
   // 4. Reshape permuted_reshaped_padded to flatten block_shape into the batch dimension, producing an output tensor of shape:
