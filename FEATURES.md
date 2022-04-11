@@ -126,7 +126,7 @@ squeeze_inner_product_layer
 squeeze_deconv_layer  
   
 
-## Custom Quantization related  
+## Customized Quantization related  
 + input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, per_channel_scale_weight, per_channel_scale_output, saturate in  
 ConvolutionParameter  
 + input_scale, input_zero_point, output_scale, output_zero_point, weight_scale, weight_zero_point, saturate in  
@@ -148,7 +148,7 @@ InputParameter
 PowerParameter  
 
 
-## evquantize related (only valid for CUDA forwards implementation)   
+## evquantize related (only valid for CUDA version forwards implementation)   
 input_scale and output_scale in ConvolutionParameter, SoftmaxParameter and LRNParameter  
 output_scale in EltwiseParameter and InnerProductParameter  
 output_shift_instead_division in PoolingParameter  
