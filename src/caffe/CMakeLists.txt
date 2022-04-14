@@ -60,6 +60,9 @@ target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
                                  PUBLIC
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
                                  $<INSTALL_INTERFACE:include>)
+                                 
+set_target_properties(caffe PROPERTIES LINK_FLAGS "C:/vcpkg/installed/x64-windows/lib")                                 
+                                 
 target_compile_definitions(caffe ${Caffe_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
   target_compile_options(caffe ${Caffe_COMPILE_OPTIONS})
