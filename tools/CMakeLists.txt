@@ -12,8 +12,7 @@ foreach(source ${srcs})
 
   # target
   add_executable(${name} ${source})
-  target_link_libraries(${name} ${CMAKE_INSTALL_LIBDIR}/caffe.lib)
-  # target_link_libraries(${name} ${Caffe_LINK})
+  target_link_libraries(${name} PUBLIC  caffe  glog::glog  gflags::gflags  leveldb::leveldb   ${Caffe_LINKER_LIBS})
   target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
   
   caffe_default_properties(${name})
