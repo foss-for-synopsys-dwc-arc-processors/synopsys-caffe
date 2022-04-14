@@ -1,6 +1,18 @@
 # Collect source files
 file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
+# ---[the workaround for Boost throw exception trigger LNK fatal error
+SET(TPN_WIN32 "/EHsc")
+
+# ---[MSVC static linking
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MT> #---------|
+        $<$<CONFIG:Debug>:/MTd> #---|-- Statically link the runtime libraries
+        $<$<CONFIG:Release>:/MD> #--|
+    )
+endif()
+
 # Build each source file independently
 foreach(source ${srcs})
   get_filename_component(name ${source} NAME_WE)
