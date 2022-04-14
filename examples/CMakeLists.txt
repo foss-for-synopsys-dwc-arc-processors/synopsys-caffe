@@ -33,33 +33,8 @@ foreach(source_file ${examples_srcs})
   message("CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
   message("CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES: ${CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES}")
   
-  
-  # reset
-  set(CMAKE_EXE_LINKER_FLAGS "")
-  set(CMAKE_EXE_LINKER_FLAGS "/machine:x64")
-  # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}  ${CMAKE_BINARY_DIR}/lib/Release  C:/vcpkg/installed/x64-windows/lib ")
-  
-  add_library(justinstatic_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justinstatic_${name} PROPERTY IMPORTED_LOCATION "D:/a/synopsys-caffe/synopsys-caffe/build/lib/Release/caffe.lib")
- 
-  
-  add_library(justin_glog_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justin_glog_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/glog.lib")
-  
-  add_library(justin_leveldb_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justin_leveldb_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/leveldb.lib")
-  
-  add_library(justin_protobuf_${name} UNKNOWN IMPORTED)
-  set_property(TARGET justin_protobuf_${name} PROPERTY IMPORTED_LOCATION "C:/vcpkg/installed/x64-windows/lib/libprotobuf.lib")
-    
-  # link_directories(${CMAKE_BINARY_DIR}/lib/Release)
-  # set(HACKER_LINK_LIBS caffe.lib)
-  
   add_executable(${name} ${source_file})
-  
-  # this line is working
-  # target_link_libraries(${name} PUBLIC justinstatic_${name} justin_protobuf_${name}  justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} )
-  target_link_libraries(${name} PUBLIC  caffeproto  caffe   justin_protobuf_${name}   justin_leveldb_${name}  justin_glog_${name}  ${Caffe_LINKER_LIBS} ${Caffe_LINK})
+  target_link_libraries(${name} PUBLIC  caffeproto  caffe  PUBLIC  caffe  glog::glog  gflags::gflags  leveldb::leveldb   ${Caffe_LINKER_LIBS})
   
   
   
