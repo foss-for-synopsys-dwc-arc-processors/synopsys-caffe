@@ -600,7 +600,12 @@ int tfl_QuantizeMultiplier(double scale, int *shift) {
   double q_mul = std::frexp(scale, shift);
   long long quantized_multiplier = (long long) std::round(q_mul * (1ll<<31));
   CHECK_LT(quantized_multiplier, 1ll<<31);
-  CHECK_GE(*shift, -31);
+  //CHECK_GE(*shift, -31);
+  if(*shift< -31)
+  {
+    *shift = 0;
+    return int(0);
+  }
   return (int) quantized_multiplier;
 }
 int tfl_MultiplyByQuantizedMultiplier(int x, int q_mul, int shift) {
