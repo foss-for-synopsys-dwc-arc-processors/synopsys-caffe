@@ -47,7 +47,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pwd && \
       git clone https://github.com/microsoft/vcpkg.git  && \
       ls -l && \
-      ./vcpkg/bootstrap-vcpkg.sh && \
+      /vcpkg/bootstrap-vcpkg.sh && \
       vcpkg integrate install && \
       vcpkg install protobuf[zlib] --triplet x64-linux  
 
@@ -72,7 +72,7 @@ RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-c
     pip3 install --upgrade pip && \
     cd python && for req in $(cat requirements.txt) pydot; do pip3 install $req; done && cd .. && \
     mkdir build && cd build && \
-    cmake -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DCPU_ONLY=1 .. && \
+    cmake -DCMAKE_TOOLCHAIN_FILE=/vcpkg/scripts/buildsystems/vcpkg.cmake -DCPU_ONLY=1 .. && \
     make -j"$(nproc)" && \
     make runtest && \
     make pycaffe 
