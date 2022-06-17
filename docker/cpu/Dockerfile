@@ -8,10 +8,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt update
 RUN apt install -y tzdata
 
-RUN git clone https://github.com/microsoft/vcpkg.git . && \
-      ./vcpkg/bootstrap-vcpkg.sh && \
-      vcpkg integrate install && \
-      vcpkg install protobuf[zlib] --triplet x64-linux  
+
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -42,6 +39,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libsnappy-dev \
         libmatio-dev && \
     rm -rf /var/lib/apt/lists/*
+
+RUN git clone https://github.com/microsoft/vcpkg.git . && \
+      ./vcpkg/bootstrap-vcpkg.sh && \
+      vcpkg integrate install && \
+      vcpkg install protobuf[zlib] --triplet x64-linux  
 
 ENV CAFFE_ROOT=/opt/caffe
 WORKDIR $CAFFE_ROOT
