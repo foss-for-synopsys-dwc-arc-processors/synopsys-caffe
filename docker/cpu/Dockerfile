@@ -49,7 +49,7 @@ RUN pwd && \
       ls -l && \
       cd /vcpkg && \
       ls -l && \
-      /bin/sh -c /vcpkg/bootstrap-vcpkg.sh && \
+      ./bootstrap-vcpkg.sh && \
       vcpkg integrate install && \
       vcpkg install protobuf[zlib] --triplet x64-linux  
 
