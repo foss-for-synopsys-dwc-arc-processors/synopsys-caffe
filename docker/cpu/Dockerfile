@@ -47,6 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pwd && \
       git clone https://github.com/microsoft/vcpkg.git  && \
       ls -l && \
+      cd /vcpkg && \
+      ls -l && \
       /bin/sh -c /vcpkg/bootstrap-vcpkg.sh && \
       vcpkg integrate install && \
       vcpkg install protobuf[zlib] --triplet x64-linux  
