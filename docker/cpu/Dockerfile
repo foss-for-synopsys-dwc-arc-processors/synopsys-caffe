@@ -8,6 +8,10 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt update
 RUN apt install -y tzdata
 
+RUN git clone https://github.com/Microsoft/vcpkg.git && \
+      ./vcpkg/bootstrap-vcpkg.sh && \
+      vcpkg integrate install && \
+      vcpkg install protobuf[zlib] --triplet x64-linux  
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
@@ -33,10 +37,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libleveldb-dev \
         liblmdb-dev \
         libopencv-dev \
-        libprotobuf-dev \
+        #libprotobuf-dev \
+        #protobuf-compiler \
         libsnappy-dev \
-        libmatio-dev \
-        protobuf-compiler && \
+        libmatio-dev && \
     rm -rf /var/lib/apt/lists/*
 
 ENV CAFFE_ROOT=/opt/caffe
@@ -60,7 +64,7 @@ RUN git clone https://github.com/foss-for-synopsys-dwc-arc-processors/synopsys-c
     pip3 install --upgrade pip && \
     cd python && for req in $(cat requirements.txt) pydot; do pip3 install $req; done && cd .. && \
     mkdir build && cd build && \
-    cmake -DCPU_ONLY=1 .. && \
+    cmake -DCMAKE_TOOLCHAIN_FILE=../../vcpkg/scripts/buildsystems/vcpkg.cmake -DCPU_ONLY=1 .. && \
     make -j"$(nproc)" && \
     make runtest && \
     make pycaffe 
