@@ -51,8 +51,8 @@ RUN pwd && \
       ls -l && \
       ./bootstrap-vcpkg.sh && \
       ls -l && \
-      vcpkg integrate install && \
-      vcpkg install protobuf[zlib] --triplet x64-linux  
+      ./vcpkg integrate install && \
+      ./vcpkg install protobuf[zlib] --triplet x64-linux  
 
 ENV CAFFE_ROOT=/opt/caffe
 WORKDIR $CAFFE_ROOT
