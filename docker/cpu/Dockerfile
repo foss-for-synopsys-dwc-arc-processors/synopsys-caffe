@@ -40,7 +40,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libmatio-dev && \
     rm -rf /var/lib/apt/lists/*
 
-RUN git clone https://github.com/microsoft/vcpkg.git . && \
+RUN pwd && \
+      git clone https://github.com/microsoft/vcpkg.git  && \
       ./vcpkg/bootstrap-vcpkg.sh && \
       vcpkg integrate install && \
       vcpkg install protobuf[zlib] --triplet x64-linux  
