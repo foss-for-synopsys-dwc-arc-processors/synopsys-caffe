@@ -8,7 +8,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt update
 RUN apt install -y tzdata
 
-RUN git clone https://github.com/Microsoft/vcpkg.git . && \
+RUN git clone https://github.com/microsoft/vcpkg.git . && \
       ./vcpkg/bootstrap-vcpkg.sh && \
       vcpkg integrate install && \
       vcpkg install protobuf[zlib] --triplet x64-linux  
