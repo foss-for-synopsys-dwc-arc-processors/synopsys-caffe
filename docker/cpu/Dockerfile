@@ -12,6 +12,10 @@ RUN apt install -y tzdata
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
+        curl \
+        zip \
+        unzip \
+        tar \
         cmake \
         git \
         wget \
