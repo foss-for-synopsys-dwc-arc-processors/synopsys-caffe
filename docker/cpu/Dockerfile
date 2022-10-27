@@ -53,7 +53,7 @@ RUN pwd && \
       ls -l && \
       ./vcpkg integrate install && \
       ./vcpkg install protobuf[zlib] --triplet x64-linux  && \
-      ./vcpkg install tensorflow --triplet x64-linux  
+      ./vcpkg install vcpkg-tool-bazel --triplet x64-linux  
 
 ENV CAFFE_ROOT=/opt/caffe
 WORKDIR $CAFFE_ROOT
