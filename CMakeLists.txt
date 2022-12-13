@@ -78,7 +78,7 @@ if(MSVC AND BUILD_SHARED_LIBS)
 endif()
 
 # ---[ Prebuild dependencies on windows
-include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
+#include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
 
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 caffe_option(USE_HDF5 "Build with hdf5" ON)
@@ -146,7 +146,7 @@ add_custom_target(lint COMMAND ${CMAKE_COMMAND} -DPYTHON_EXECUTABLE=${PYTHON_EXE
 
 # ---[ pytest target
 if(BUILD_python)
-  add_custom_target(pytest COMMAND  python3 -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
+  add_custom_target(pytest COMMAND python3 -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python)
   add_dependencies(pytest pycaffe)
 endif()
 
