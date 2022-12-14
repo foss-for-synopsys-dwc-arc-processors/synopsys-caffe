@@ -26,8 +26,8 @@ if(MSVC)
     find_package(glog NO_MODULE)
     set(GLOG_LIBRARY ${glog_LIBRARIES})
     set(GLOG_INCLUDE_DIR ${glog_INCLUDE_DIRS})
-    set(GLOG_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/glog")
-    set(GLOG_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/glog.lib")
+    #set(GLOG_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/glog")
+    #set(GLOG_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/glog.lib")
 else()
     find_library(GLOG_LIBRARY glog
         PATHS ${GLOG_ROOT_DIR}

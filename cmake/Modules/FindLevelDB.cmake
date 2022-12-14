@@ -9,8 +9,8 @@ if(MSVC)
   find_package(LevelDB NO_MODULE)
   set(LevelDB_INCLUDE ${LevelDB_INCLUDE_DIRS})
   set(LevelDB_LIBRARY ${LevelDB_LIBRARIES})
-  set(LevelDB_INCLUDE "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/leveldb")
-  set(LevelDB_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/leveldb.lib")
+  #set(LevelDB_INCLUDE "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/leveldb")
+  #set(LevelDB_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/leveldb.lib")
 
 else()
   find_path(LevelDB_INCLUDE NAMES leveldb/db.h
