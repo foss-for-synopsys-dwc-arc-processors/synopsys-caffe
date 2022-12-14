@@ -11,7 +11,7 @@ if(MSVC)
   # rely on snappy-config.cmake
   find_package(Snappy NO_MODULE)
   set(Snappy_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include")
-  set(Snappy_LIBRARIES "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/bin\/snappy.dll")
+  set(Snappy_LIBRARIES "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/snappy.lib")
 else()
   find_path(Snappy_INCLUDE_DIR NAMES snappy.h
                               PATHS ${SNAPPY_ROOT_DIR} ${SNAPPY_ROOT_DIR}/include)

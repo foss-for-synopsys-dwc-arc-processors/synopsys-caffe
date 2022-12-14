@@ -20,8 +20,8 @@ find_path(GFLAGS_INCLUDE_DIR gflags/gflags.h
 if(MSVC)
     # rely on gflags-config.cmake
     find_package(gflags NO_MODULE)
+
     set(GFLAGS_LIBRARY ${gflags_LIBRARIES})
-    set(GFLAGS_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/bin\/gflags.dll")
     set(GFLAGS_INCLUDE_DIR ${gflags_INCLUDE_DIRS})
 else()
     find_library(GFLAGS_LIBRARY gflags)

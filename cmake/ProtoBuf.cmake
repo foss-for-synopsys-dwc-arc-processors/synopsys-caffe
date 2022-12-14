@@ -5,7 +5,7 @@ if(MSVC)
   # search using protobuf-config.cmake
   find_package( Protobuf REQUIRED NO_MODULE)
   set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIRS})
-  set(PROTOBUF_LIBRARIES "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/bin\/libprotobuf.dll")
+  set(PROTOBUF_LIBRARIES "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/libprotobuf.lib")
 else()
   find_package( Protobuf REQUIRED )
 endif()
