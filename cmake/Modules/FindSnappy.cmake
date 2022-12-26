@@ -10,6 +10,8 @@
 if(MSVC)
   # rely on snappy-config.cmake
   find_package(Snappy NO_MODULE)
+  set(Snappy_INCLUDE_DIR "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/include")
+  set(Snappy_LIBRARIES snappy)
   #set(Snappy_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include")
   #set(Snappy_LIBRARIES "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/snappy.lib")
 else()

@@ -6,7 +6,7 @@ caffe_protobuf_generate_cpp_py(${proto_gen_folder} proto_srcs proto_hdrs proto_p
 add_library(caffeproto STATIC ${proto_hdrs} ${proto_srcs} ${proto_python})
 caffe_default_properties(caffeproto)
 target_link_libraries(caffeproto PUBLIC ${PROTOBUF_LIBRARIES})
-target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
+#target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
 
 list(INSERT Caffe_LINKER_LIBS 0 PUBLIC caffeproto) # note, crucial to prepend!
 
@@ -56,10 +56,11 @@ endif()
 add_library(caffe ${srcs})
 caffe_default_properties(caffe)
 target_link_libraries(caffe ${Caffe_LINKER_LIBS})
-target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
+target_include_directories(caffe
                                  PUBLIC
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
                                  $<INSTALL_INTERFACE:include>)
+add_compile_definitions(NOMINMAX)  # to fix windows compile issues http://www.suodenjoki.dk/us/archive/2010/min-max.htm
 target_compile_definitions(caffe ${Caffe_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
   target_compile_options(caffe ${Caffe_COMPILE_OPTIONS})

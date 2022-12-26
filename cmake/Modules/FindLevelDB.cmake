@@ -7,8 +7,10 @@
 # Look for the header file.
 if(MSVC)
   find_package(LevelDB NO_MODULE)
-  set(LevelDB_INCLUDE ${LevelDB_INCLUDE_DIRS})
-  set(LevelDB_LIBRARY ${LevelDB_LIBRARIES})
+  #set(LevelDB_INCLUDE ${LevelDB_INCLUDE_DIRS})
+  #set(LevelDB_LIBRARY ${LevelDB_LIBRARIES})
+  set(LevelDB_LIBRARY leveldb)
+  set(LevelDB_INCLUDE "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/include\/leveldb")
   #set(LevelDB_INCLUDE "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/leveldb")
   #set(LevelDB_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/leveldb.lib")
 

@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #include "caffe/data_transformer.hpp"
 #include "caffe/util/bbox_util.hpp"

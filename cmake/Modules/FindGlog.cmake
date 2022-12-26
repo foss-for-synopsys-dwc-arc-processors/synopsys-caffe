@@ -17,9 +17,9 @@ find_path(GLOG_INCLUDE_DIR glog/logging.h
     PATHS ${GLOG_ROOT_DIR})
 
 # required for py38 when glog version updates (could also be added in build_v140_x64\libraries\lib\cmake\glog\glog-config.cmake instead)
-#set (glog_LIBRARY glog)
-#set (glog_LIBRARIES ${glog_LIBRARY})
-#set (glog_INCLUDE_DIRS ${glog_INCLUDE_DIR})
+set (glog_LIBRARY glog)
+set (glog_LIBRARIES ${glog_LIBRARY})
+set (glog_INCLUDE_DIRS ${glog_INCLUDE_DIR})
 
 if(MSVC)
     # rely on glog-config.cmake
@@ -28,6 +28,7 @@ if(MSVC)
     set(GLOG_INCLUDE_DIR ${glog_INCLUDE_DIRS})
     #set(GLOG_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/glog")
     #set(GLOG_LIBRARY "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/glog.lib")
+    add_compile_definitions(GLOG_NO_ABBREVIATED_SEVERITIES)
 else()
     find_library(GLOG_LIBRARY glog
         PATHS ${GLOG_ROOT_DIR}

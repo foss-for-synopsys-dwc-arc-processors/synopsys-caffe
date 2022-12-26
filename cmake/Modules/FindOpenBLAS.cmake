@@ -37,7 +37,8 @@ FIND_PATH(OpenBLAS_INCLUDE_DIR NAMES cblas.h PATHS ${Open_BLAS_INCLUDE_SEARCH_PA
 FIND_LIBRARY(OpenBLAS_LIB NAMES ${OpenBLAS_LIB_NAMES} PATHS ${Open_BLAS_LIB_SEARCH_PATHS})
 
 SET(OpenBLAS_FOUND ON)
-#set(OpenBLAS_INCLUDE_DIR "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/include\/openblas")
+set(OpenBLAS_INCLUDE_DIR "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/include\/openblas")
+set(OpenBLAS_LIB openblas)
 #set(OpenBLAS_LIB "C:\/Users\/yche\/AppData\/Local\/Continuum\/miniconda3-4.5.4\/envs\/py38\/Library\/lib\/openblas.lib")
 
 #    Check include files
