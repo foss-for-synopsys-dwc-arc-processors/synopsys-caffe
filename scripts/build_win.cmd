@@ -186,17 +186,27 @@ if NOT EXIST build mkdir build
 pushd build
 
 :: Setup the environement for VS x64
-REM set batch_file=!VS%MSVC_VERSION%0COMNTOOLS!..\..\VC\vcvarsall.bat
-set batch_file=C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat
-call "%batch_file%" x64
-REM amd64
+if "%MSVC_VERSION%"=="16" (
+    set batch_file="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+) else (
+    set batch_file=!VS%MSVC_VERSION%0COMNTOOLS!..\..\VC\vcvarsall.bat
+)
+if "%MSVC_VERSION%"=="16" (
+    call !batch_file! x64
+) else (
+    call "!batch_file!" amd64
+)
 echo on
 
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
 :: below to use cuDNN
-:: -A x64
-cmake -G"!CMAKE_GENERATOR!" -A x64 ^
+:: -DUSE_LEVELDB=0
+if "%MSVC_VERSION%"=="16" (
+    set extra_flag=-A x64
+)
+
+cmake -G"!CMAKE_GENERATOR!" %extra_flag% ^
       -DBLAS=Open ^
       -DCMAKE_BUILD_TYPE:STRING=%CMAKE_CONFIG% ^
       -DBUILD_SHARED_LIBS:BOOL=%CMAKE_BUILD_SHARED_LIBS% ^
