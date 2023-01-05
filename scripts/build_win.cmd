@@ -103,7 +103,7 @@ if DEFINED APPVEYOR (
     :: Change MSVC_VERSION to 12 to use VS 2013
     if NOT DEFINED MSVC_VERSION set MSVC_VERSION=16
     :: Change to 1 to use Ninja generator (builds much faster)
-    if NOT DEFINED WITH_NINJA set WITH_NINJA=0
+    if NOT DEFINED WITH_NINJA set WITH_NINJA=1
     :: Change to 1 to build caffe without CUDA support
     if NOT DEFINED CPU_ONLY set CPU_ONLY=1
     :: Change to generate CUDA code for one of the following GPU architectures
@@ -137,6 +137,7 @@ if DEFINED APPVEYOR (
 if %WITH_NINJA% EQU 0 (
     if "%MSVC_VERSION%"=="16" (
         set CMAKE_GENERATOR=Visual Studio 16 2019
+        set extra_flag=-A x64
     )
     if "%MSVC_VERSION%"=="14" (
         set CMAKE_GENERATOR=Visual Studio 14 2015 Win64
@@ -201,12 +202,8 @@ echo on
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
 :: below to use cuDNN
-:: -DUSE_LEVELDB=0
-if "%MSVC_VERSION%"=="16" (
-    set extra_flag=-A x64
-)
-
-cmake -G"!CMAKE_GENERATOR!" %extra_flag% ^
+:: -DUSE_LEVELDB=0 -DUSE_OPENCV=0
+cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DBLAS=Open ^
       -DCMAKE_BUILD_TYPE:STRING=%CMAKE_CONFIG% ^
       -DBUILD_SHARED_LIBS:BOOL=%CMAKE_BUILD_SHARED_LIBS% ^
@@ -225,6 +222,9 @@ if ERRORLEVEL 1 (
   echo ERROR: Configure failed
   exit /b 1
 )
+
+:: clean up
+::cmake --build . --target clean --config %CMAKE_CONFIG%
 
 :: Lint
 if %RUN_LINT% EQU 1 (
