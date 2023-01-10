@@ -14,8 +14,7 @@ message(STATUS "boost find: include dir -> ${Boost_INCLUDE_DIRS}, lib -> ${Boost
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
 set(Boost_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_python38.lib")
-list(APPEND Boost_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_system.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_thread.lib"
-"C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_filesystem.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_regex.lib")
+list(APPEND Boost_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_system.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_thread.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_filesystem.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_regex.lib")
 #list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARY})
 

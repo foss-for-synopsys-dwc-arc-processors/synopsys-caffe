@@ -11,7 +11,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6 (only 2.7 and 3.5/3.6 are supported)
+    :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6
     if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.6
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
@@ -115,7 +115,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     :: Change to 1 to build a caffe.dll
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 2 if using python 2.7, Change to 3 if using python 3.5/3.6 (only 2.7 and 3.5/3.6 are supported)
+    :: Change to 2 if using python 2.7, Change to 3 if using python 3.5/3.6
     if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.8
     :: Change these options for your needs.
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
@@ -202,7 +202,6 @@ echo on
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
 :: below to use cuDNN
-:: -DUSE_LEVELDB=0 -DUSE_OPENCV=0
 cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DBLAS=Open ^
       -DCMAKE_BUILD_TYPE:STRING=%CMAKE_CONFIG% ^
@@ -226,6 +225,9 @@ if ERRORLEVEL 1 (
 :: clean up
 ::cmake --build . --target clean --config %CMAKE_CONFIG%
 
+REM create empty file as placeholder to avoid missing error in compilation
+cd . > ..\build\caffe\include_symbols.hpp
+
 :: Lint
 if %RUN_LINT% EQU 1 (
     cmake --build . --target lint  --config %CMAKE_CONFIG%
@@ -244,6 +246,13 @@ if ERRORLEVEL 1 (
   exit /b 1
 )
 
+cmake --build . --target pycaffe --config %CMAKE_CONFIG%
+
+if ERRORLEVEL 1 (
+  echo ERROR: pycaffe build failed
+  exit /b 1
+)
+
 :: Build and exectute the tests
 if !RUN_TESTS! EQU 1 (
     cmake --build . --target runtest --config %CMAKE_CONFIG%
@@ -256,7 +265,7 @@ if !RUN_TESTS! EQU 1 (
     if %BUILD_PYTHON% EQU 1 (
         if %BUILD_PYTHON_LAYER% EQU 1 (
             :: Run python tests only in Release build since
-            :: the _caffe module is _caffe-d is debug
+            :: the _caffe module is _caffe-d for debug
             if "%CMAKE_CONFIG%"=="Release" (
                 :: Run the python tests
                 cmake --build . --target pytest
@@ -273,6 +282,8 @@ if !RUN_TESTS! EQU 1 (
 if %RUN_INSTALL% EQU 1 (
     cmake --build . --target install --config %CMAKE_CONFIG%
 )
+
+echo DONE: All build completed.
 
 popd
 @endlocal

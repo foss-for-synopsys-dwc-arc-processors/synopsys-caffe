@@ -56,7 +56,7 @@ endif()
 add_library(caffe ${srcs})
 caffe_default_properties(caffe)
 target_link_libraries(caffe ${Caffe_LINKER_LIBS})
-target_include_directories(caffe
+target_include_directories(caffe #${Caffe_INCLUDE_DIRS}
                                  PUBLIC
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
                                  $<INSTALL_INTERFACE:include>)
@@ -78,6 +78,13 @@ if(MSVC AND BUILD_SHARED_LIBS)
   # and https://cmake.org/cmake/help/v3.5/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html
   # for details.
   set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
+  # Force to generate, otherwise will have errors like "Unknown layer type: Input" in net construction
+  windows_create_link_header(caffe ${caffe_symbols_hdr})
+  get_filename_component(_name ${caffe_symbols_hdr} NAME)
+  set(CAFFE_INCLUDE_SYMBOLS "#include \"caffe/${_name}\"")
+  target_compile_definitions(caffe PRIVATE ${_caffe_static_compile_def}
+                                   PUBLIC -DCMAKE_WINDOWS_BUILD)
 elseif(MSVC AND NOT BUILD_SHARED_LIBS)
   # add a custom build command that generates a list of symbols
   # to force linking. This is required because MSVC as nothing

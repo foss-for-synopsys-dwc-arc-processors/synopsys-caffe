@@ -16,7 +16,7 @@ if(MSVC)
     add_compile_options(
         $<$<CONFIG:>:/MD> #---------|
         $<$<CONFIG:Release>:/MD> #--|
-        $<$<CONFIG:Debug>:/MTd> #---|
+        $<$<CONFIG:Debug>:/MDd> #---|
     )
 endif()
 
