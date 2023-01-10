@@ -17,7 +17,8 @@ find_path(GLOG_INCLUDE_DIR glog/logging.h
     PATHS ${GLOG_ROOT_DIR})
 
 # required for py38 when glog version updates (could also be added in build_v140_x64\libraries\lib\cmake\glog\glog-config.cmake instead)
-set (glog_LIBRARY glog)
+#set (glog_LIBRARY glog)
+set (glog_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/glog.lib")
 set (glog_LIBRARIES ${glog_LIBRARY})
 set (glog_INCLUDE_DIRS ${glog_INCLUDE_DIR})
 

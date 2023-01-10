@@ -1,4 +1,4 @@
-# These lists are later turned into target properties on main caffe library target
+﻿# These lists are later turned into target properties on main caffe library target
 set(Caffe_LINKER_LIBS "")
 set(Caffe_INCLUDE_DIRS "")
 set(Caffe_DEFINITIONS "")
@@ -13,7 +13,11 @@ endif()
 message(STATUS "boost find: include dir -> ${Boost_INCLUDE_DIRS}, lib -> ${Boost_LIBRARIES}")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+set(Boost_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_python38.lib")
+list(APPEND Boost_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_system.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_thread.lib"
+"C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_filesystem.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/boost_regex.lib")
+#list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARY})
 
 if(DEFINED MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0.40629.0)
   # Required for VS 2013 Update 4 or earlier.
@@ -138,12 +142,15 @@ endif()
 
 # ---[ OpenCV
 if(USE_OPENCV)
-  find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs videoio)
+  find_package(OpenCV COMPONENTS core highgui imgproc imgcodecs videoio)
   if(NOT OpenCV_FOUND) # if not OpenCV 3.x, then imgcodecs are not found
     find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
   endif()
+  #set(OpenCV_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/opencv_core349.lib")
+  #list(APPEND OpenCV_LIBRARY "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/opencv_highgui349.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/opencv_imgproc349.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/opencv_imgcodecs349.lib" "C:\/Users\/yche\/caffe_py38_workspace\/synopsys-caffe\/Miniconda3\/Library\/lib\/opencv_videoio349.lib")
   list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${OpenCV_INCLUDE_DIRS})
   list(APPEND Caffe_LINKER_LIBS PUBLIC ${OpenCV_LIBS})
+  #list(APPEND Caffe_LINKER_LIBS PUBLIC ${OpenCV_LIBRARY})
   message(STATUS "OpenCV found (${OpenCV_CONFIG_PATH})")
   list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_OPENCV)
 endif()

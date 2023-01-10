@@ -11,8 +11,18 @@ set_target_properties(pycaffe PROPERTIES PREFIX "" OUTPUT_NAME "_caffe")
 if(MSVC)
   set_target_properties(pycaffe PROPERTIES SUFFIX ".pyd")
 endif()
-target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR})
-target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${PYTHON_LIBRARIES})
+
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MD> #---------|
+        $<$<CONFIG:Release>:/MD> #--|
+        $<$<CONFIG:Debug>:/MTd> #---|
+    )
+endif()
+
+target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})  #
+#target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${PYTHON_LIBRARIES})
+target_link_libraries(pycaffe PUBLIC ${Caffe_LINKER_LIBS} ${Caffe_LINK} ${PYTHON_LIBRARIES})
 
 if(UNIX OR APPLE)
     set(__linkname "${PROJECT_SOURCE_DIR}/python/caffe/_caffe.so")

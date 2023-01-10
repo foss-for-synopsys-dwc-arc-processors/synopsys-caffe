@@ -3,6 +3,14 @@ cmake_minimum_required(VERSION 3.10.0)
 # ---[ Caffe project
 project(Caffe C CXX)
 
+if(MSVC)
+    add_compile_options(
+        $<$<CONFIG:>:/MD> #---------|
+        $<$<CONFIG:Release>:/MD> #--|
+        $<$<CONFIG:Debug>:/MTd> #---|
+    )
+endif()
+
 # ---[ Caffe version
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
@@ -86,6 +94,20 @@ caffe_option(USE_HDF5 "Build with hdf5" ON)
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
 
+#if(MSVC)
+#  set(CompilerFlags
+#        CMAKE_CXX_FLAGS
+#        CMAKE_CXX_FLAGS_DEBUG
+#        CMAKE_CXX_FLAGS_RELEASE
+#        CMAKE_C_FLAGS
+#        CMAKE_C_FLAGS_DEBUG
+#        CMAKE_C_FLAGS_RELEASE
+#        )
+#  foreach(CompilerFlag ${CompilerFlags})
+#    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+#  endforeach()
+#endif()
+
 # ---[ Flags
 if(UNIX OR APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall")
@@ -166,3 +188,5 @@ caffe_print_configuration_summary()
 # ---[ Export configs generation
 caffe_generate_export_configs()
 
+message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
+message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")

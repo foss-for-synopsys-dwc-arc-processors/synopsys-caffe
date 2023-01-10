@@ -61,6 +61,8 @@ target_include_directories(caffe
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
                                  $<INSTALL_INTERFACE:include>)
 add_compile_definitions(NOMINMAX)  # to fix windows compile issues http://www.suodenjoki.dk/us/archive/2010/min-max.htm
+set_target_properties(caffe PROPERTIES LINK_FLAGS "${Caffe_LINKER_LIBS}")
+
 target_compile_definitions(caffe ${Caffe_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
   target_compile_options(caffe ${Caffe_COMPILE_OPTIONS})
