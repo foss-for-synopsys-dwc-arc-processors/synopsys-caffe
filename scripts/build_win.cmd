@@ -109,7 +109,7 @@ if DEFINED APPVEYOR (
     :: Change to generate CUDA code for one of the following GPU architectures
     :: [Fermi  Kepler  Maxwell  Pascal  All]
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
-    :: Change to Debug to build Debug. This is only relevant for the Ninja generator the Visual Studio generator will generate both Debug and Release configs
+    :: Change to Debug to build Debug. This is only relevant for the Ninja generator, the Visual Studio generator will generate both Debug and Release configs
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     :: Set to 1 to use NCCL
     if NOT DEFINED USE_NCCL set USE_NCCL=0
@@ -202,6 +202,7 @@ echo on
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
 :: below to use cuDNN
+:: -DUSE_LEVELDB=0
 cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DBLAS=Open ^
       -DCMAKE_BUILD_TYPE:STRING=%CMAKE_CONFIG% ^
@@ -214,6 +215,7 @@ cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DINSTALL_PREREQUISITES:BOOL=1 ^
       -DUSE_NCCL:BOOL=!USE_NCCL! ^
       -DCUDA_ARCH_NAME:STRING=%CUDA_ARCH_NAME% ^
+      -DGFLAGS_INCLUDE_DIRS=%SYNOPSYS_CAFFE_HOME%\build\include ^
       %* ^
       "%~dp0\.."
 
@@ -225,7 +227,8 @@ if ERRORLEVEL 1 (
 :: clean up
 ::cmake --build . --target clean --config %CMAKE_CONFIG%
 
-REM create empty file as placeholder to avoid missing error in compilation
+:: create empty file as placeholder to avoid missing error in compilation
+if NOT EXIST caffe mkdir caffe
 cd . > ..\build\caffe\include_symbols.hpp
 
 :: Lint

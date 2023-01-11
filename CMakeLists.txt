@@ -7,7 +7,7 @@ if(MSVC)
     add_compile_options(
         $<$<CONFIG:>:/MD> #---------|
         $<$<CONFIG:Release>:/MD> #--|
-        $<$<CONFIG:Debug>:/MTd> #---|
+        $<$<CONFIG:Debug>:/MDd> #---|
     )
 endif()
 
@@ -168,7 +168,7 @@ add_custom_target(lint COMMAND ${CMAKE_COMMAND} -DPYTHON_EXECUTABLE=${PYTHON_EXE
 
 # ---[ pytest target
 if(BUILD_python)
-  add_custom_target(pytest COMMAND python3 -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python)
+  add_custom_target(pytest COMMAND python -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python)
   add_dependencies(pytest pycaffe)
 endif()
 
