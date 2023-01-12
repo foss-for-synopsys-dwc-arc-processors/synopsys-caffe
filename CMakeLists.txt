@@ -16,6 +16,11 @@ set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
 add_definitions(-DCAFFE_VERSION=${CAFFE_TARGET_VERSION})
 
+if(MSVC)
+  set(CONDA_LIB_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/lib)
+  set(CONDA_INCLUDE_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/include)
+endif()
+
 # ---[ Python3 
 find_package(Python3 COMPONENTS Interpreter Development)
 
@@ -86,7 +91,9 @@ if(MSVC AND BUILD_SHARED_LIBS)
 endif()
 
 # ---[ Prebuild dependencies on windows
-#include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
+if("${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
+endif()
 
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 caffe_option(USE_HDF5 "Build with hdf5" ON)
