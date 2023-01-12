@@ -10,7 +10,7 @@
 if(MSVC)
   # rely on snappy-config.cmake
   find_package(Snappy NO_MODULE)
-  set(Snappy_INCLUDE_DIR ${CONDA_INCLUDE_PATH}/include)
+  set(Snappy_INCLUDE_DIR ${CONDA_INCLUDE_PATH})
   set(Snappy_LIBRARIES ${CONDA_LIB_PATH}/snappy.lib)
 else()
   find_path(Snappy_INCLUDE_DIR NAMES snappy.h
