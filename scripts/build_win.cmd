@@ -231,6 +231,11 @@ if ERRORLEVEL 1 (
 if NOT EXIST caffe mkdir caffe
 cd . > ..\build\caffe\include_symbols.hpp
 
+:: boost file error fix (possible for Line 52)
+if "%MSVC_VERSION%"=="16" (
+    sed -i 's/std::snprintf/_snprintf/g' ..\Miniconda3\Library\include\boost\system\detail\system_category_win32.hpp
+)
+
 :: Lint
 if %RUN_LINT% EQU 1 (
     cmake --build . --target lint  --config %CMAKE_CONFIG%

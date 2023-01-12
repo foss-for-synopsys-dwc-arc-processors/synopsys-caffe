@@ -11,7 +11,11 @@
 #include <Accelerate/Accelerate.h>
 #else
 extern "C" {
-#include <openblas/cblas.h>
+#if _MSC_VER > 1900
+#include <openblas/cblas.h>  // for py38 env need to add "openblas/"
+#else
+#include <cblas.h>
+#endif
 }
 #endif  // USE_ACCELERATE
 

@@ -19,6 +19,8 @@ add_definitions(-DCAFFE_VERSION=${CAFFE_TARGET_VERSION})
 if(MSVC)
   set(CONDA_LIB_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/lib)
   set(CONDA_INCLUDE_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/include)
+  string(REPLACE "\\" "/" CONDA_LIB_PATH "${CONDA_LIB_PATH}")
+  string(REPLACE "\\" "/" CONDA_INCLUDE_PATH "${CONDA_INCLUDE_PATH}")
 endif()
 
 # ---[ Python3 
