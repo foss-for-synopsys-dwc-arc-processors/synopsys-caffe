@@ -7,10 +7,13 @@
 # Look for the header file.
 if(MSVC)
   find_package(LevelDB NO_MODULE)
-  #set(LevelDB_INCLUDE ${LevelDB_INCLUDE_DIRS})
-  #set(LevelDB_LIBRARY ${LevelDB_LIBRARIES})
-  set(LevelDB_LIBRARY ${CONDA_LIB_PATH}/leveldb.lib)
-  set(LevelDB_INCLUDE ${CONDA_INCLUDE_PATH}/leveldb)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(LevelDB_LIBRARY ${CONDA_LIB_PATH}/leveldb.lib)
+    set(LevelDB_INCLUDE ${CONDA_INCLUDE_PATH}/leveldb)
+  else()
+    set(LevelDB_INCLUDE ${LevelDB_INCLUDE_DIRS})
+    set(LevelDB_LIBRARY ${LevelDB_LIBRARIES})
+  endif()
 
 else()
   find_path(LevelDB_INCLUDE NAMES leveldb/db.h

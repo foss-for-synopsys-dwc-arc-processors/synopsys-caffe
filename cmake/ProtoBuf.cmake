@@ -5,15 +5,20 @@ if(MSVC)
   # search using protobuf-config.cmake
   find_package(Protobuf REQUIRED NO_MODULE)
   set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIRS})
-  set(PROTOBUF_LIBRARIES ${CONDA_LIB_PATH}/libprotobuf.lib)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(PROTOBUF_LIBRARIES ${CONDA_LIB_PATH}/libprotobuf.lib)
+  endif()
   # To solve linking extern issues: https://stackoverflow.com/questions/13733604/visual-studio-2010-c-w-google-protocol-buffers-cannot-find-60-externals-can/16065204#16065204
   add_compile_definitions(PROTOBUF_USE_DLLS)
 else()
   find_package(Protobuf REQUIRED )
 endif()
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
-#list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES} ${CONDA_LIB_PATH}/libprotoc.lib ${CONDA_LIB_PATH}/libprotobuf-lite.lib)
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES} ${CONDA_LIB_PATH}/libprotoc.lib ${CONDA_LIB_PATH}/libprotobuf-lite.lib)
+else()
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
+endif()
 
 # As of Ubuntu 14.04 protoc is no longer a part of libprotobuf-dev package
 # and should be installed separately as in: sudo apt-get install protobuf-compiler

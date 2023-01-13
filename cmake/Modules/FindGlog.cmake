@@ -17,10 +17,12 @@ find_path(GLOG_INCLUDE_DIR glog/logging.h
     PATHS ${GLOG_ROOT_DIR})
 
 if(MSVC)
-    # required for py38 when glog version updates (could also be added in libraries\lib\cmake\glog\glog-config.cmake instead)
-    set (glog_LIBRARY ${CONDA_LIB_PATH}/glog.lib)
-    set (glog_LIBRARIES ${glog_LIBRARY})
-    set (glog_INCLUDE_DIRS ${glog_INCLUDE_DIR})
+    if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+        # required for py38 when glog version updates (could also be added in libraries\lib\cmake\glog\glog-config.cmake instead)
+        set (glog_LIBRARY ${CONDA_LIB_PATH}/glog.lib)
+        set (glog_LIBRARIES ${glog_LIBRARY})
+        set (glog_INCLUDE_DIRS ${glog_INCLUDE_DIR})
+    endif()
 
     # rely on glog-config.cmake
     find_package(glog NO_MODULE)

@@ -56,10 +56,17 @@ endif()
 add_library(caffe ${srcs})
 caffe_default_properties(caffe)
 target_link_libraries(caffe ${Caffe_LINKER_LIBS})
-target_include_directories(caffe #${Caffe_INCLUDE_DIRS}
-                                 PUBLIC
-                                 $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
-                                 $<INSTALL_INTERFACE:include>)
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  target_include_directories(caffe
+                                  PUBLIC
+                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
+                                  $<INSTALL_INTERFACE:include>)
+else()
+  target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
+                                  PUBLIC
+                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
+                                  $<INSTALL_INTERFACE:include>)
+endif()
 add_compile_definitions(NOMINMAX)  # to fix windows compile issues http://www.suodenjoki.dk/us/archive/2010/min-max.htm
 set_target_properties(caffe PROPERTIES LINK_FLAGS "${Caffe_LINKER_LIBS}")
 

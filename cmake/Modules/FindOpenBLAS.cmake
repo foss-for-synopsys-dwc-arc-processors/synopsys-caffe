@@ -38,8 +38,10 @@ FIND_LIBRARY(OpenBLAS_LIB NAMES ${OpenBLAS_LIB_NAMES} PATHS ${Open_BLAS_LIB_SEAR
 
 SET(OpenBLAS_FOUND ON)
 if(MSVC)
-  set(OpenBLAS_INCLUDE_DIR ${CONDA_INCLUDE_PATH}/openblas)
-  set(OpenBLAS_LIB ${CONDA_LIB_PATH}/openblas.lib)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(OpenBLAS_INCLUDE_DIR ${CONDA_INCLUDE_PATH}/openblas)
+    set(OpenBLAS_LIB ${CONDA_LIB_PATH}/openblas.lib)
+  endif()
 endif()
 
 #    Check include files
