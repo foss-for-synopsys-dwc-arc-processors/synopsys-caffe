@@ -22,9 +22,12 @@ foreach(source ${srcs})
 
   # target
   add_executable(${name} ${source})
-  #target_link_libraries(${name} ${Caffe_LINK})
-  target_link_libraries(${name} PUBLIC ${Caffe_LINKER_LIBS} ${Caffe_LINK})
-  target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    target_link_libraries(${name} PUBLIC ${Caffe_LINKER_LIBS} ${Caffe_LINK})
+    target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
+  else()
+    target_link_libraries(${name} ${Caffe_LINK})
+  endif()
 
   caffe_default_properties(${name})
 
