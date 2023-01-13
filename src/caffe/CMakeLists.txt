@@ -86,12 +86,14 @@ if(MSVC AND BUILD_SHARED_LIBS)
   # for details.
   set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
-  # Force to generate, otherwise will have errors like "Unknown layer type: Input" in net construction
-  windows_create_link_header(caffe ${caffe_symbols_hdr})
-  get_filename_component(_name ${caffe_symbols_hdr} NAME)
-  set(CAFFE_INCLUDE_SYMBOLS "#include \"caffe/${_name}\"")
-  target_compile_definitions(caffe PRIVATE ${_caffe_static_compile_def}
-                                   PUBLIC -DCMAKE_WINDOWS_BUILD)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    # Force to generate, otherwise will have errors like "Unknown layer type: Input" in net construction
+    windows_create_link_header(caffe ${caffe_symbols_hdr})
+    get_filename_component(_name ${caffe_symbols_hdr} NAME)
+    set(CAFFE_INCLUDE_SYMBOLS "#include \"caffe/${_name}\"")
+    target_compile_definitions(caffe PRIVATE ${_caffe_static_compile_def}
+                                    PUBLIC -DCMAKE_WINDOWS_BUILD)
+  endif()
 elseif(MSVC AND NOT BUILD_SHARED_LIBS)
   # add a custom build command that generates a list of symbols
   # to force linking. This is required because MSVC as nothing

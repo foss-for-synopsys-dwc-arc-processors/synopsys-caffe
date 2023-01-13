@@ -2,11 +2,13 @@
 file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 if(MSVC)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
     add_compile_options(
         $<$<CONFIG:>:/MD> #---------|
         $<$<CONFIG:Release>:/MD> #--|
         $<$<CONFIG:Debug>:/MDd> #---|
     )
+  endif()
 endif()
 
 # Build each source file independently

@@ -13,11 +13,13 @@ if(MSVC)
 endif()
 
 if(MSVC)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
     add_compile_options(
         $<$<CONFIG:>:/MD> #---------|
         $<$<CONFIG:Release>:/MD> #--|
         $<$<CONFIG:Debug>:/MDd> #---|
     )
+  endif()
 endif()
 
 target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})  #

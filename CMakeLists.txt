@@ -3,14 +3,6 @@ cmake_minimum_required(VERSION 3.10.0)
 # ---[ Caffe project
 project(Caffe C CXX)
 
-if(MSVC)
-    add_compile_options(
-        $<$<CONFIG:>:/MD> #---------|
-        $<$<CONFIG:Release>:/MD> #--|
-        $<$<CONFIG:Debug>:/MDd> #---|
-    )
-endif()
-
 # ---[ Caffe version
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
@@ -38,6 +30,16 @@ message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 
 include_directories(${PYTHON_INCLUDE_DIRS})
+
+if(MSVC)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    add_compile_options(
+        $<$<CONFIG:>:/MD> #---------|
+        $<$<CONFIG:Release>:/MD> #--|
+        $<$<CONFIG:Debug>:/MDd> #---|
+    )
+  endif()
+endif()
 
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
