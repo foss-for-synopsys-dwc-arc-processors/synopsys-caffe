@@ -137,7 +137,7 @@ if DEFINED APPVEYOR (
 if %WITH_NINJA% EQU 0 (
     if "%MSVC_VERSION%"=="16" (
         set CMAKE_GENERATOR=Visual Studio 16 2019
-        set extra_flag=-A x64
+        set extra_flag=-A x64 -DGFLAGS_INCLUDE_DIRS=%SYNOPSYS_CAFFE_HOME%\build\include
     )
     if "%MSVC_VERSION%"=="14" (
         set CMAKE_GENERATOR=Visual Studio 14 2015 Win64
@@ -215,7 +215,6 @@ cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DINSTALL_PREREQUISITES:BOOL=1 ^
       -DUSE_NCCL:BOOL=!USE_NCCL! ^
       -DCUDA_ARCH_NAME:STRING=%CUDA_ARCH_NAME% ^
-      -DGFLAGS_INCLUDE_DIRS=%SYNOPSYS_CAFFE_HOME%\build\include ^
       %* ^
       "%~dp0\.."
 
