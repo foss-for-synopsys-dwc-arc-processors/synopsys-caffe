@@ -26,6 +26,7 @@ if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
   target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} ${Caffe_INCLUDE_DIR})
   target_link_libraries(pycaffe PUBLIC ${Caffe_LINKER_LIBS} ${Caffe_LINK} ${PYTHON_LIBRARIES})
 else()
+  target_include_directories(pycaffe PUBLIC ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR})
   target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${PYTHON_LIBRARIES})
 endif()
 
