@@ -3,13 +3,22 @@
 
 if(MSVC)
   # search using protobuf-config.cmake
-  find_package( Protobuf REQUIRED NO_MODULE)
+  find_package(Protobuf REQUIRED NO_MODULE)
   set(PROTOBUF_INCLUDE_DIR ${PROTOBUF_INCLUDE_DIRS})
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(PROTOBUF_LIBRARIES ${CONDA_LIB_PATH}/libprotobuf.lib)
+    # To solve linking extern issues: https://stackoverflow.com/questions/13733604/visual-studio-2010-c-w-google-protocol-buffers-cannot-find-60-externals-can/16065204#16065204
+    add_compile_definitions(PROTOBUF_USE_DLLS)
+  endif()
 else()
-  find_package( Protobuf REQUIRED )
+  find_package(Protobuf REQUIRED)
 endif()
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${PROTOBUF_INCLUDE_DIR})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES} ${CONDA_LIB_PATH}/libprotoc.lib ${CONDA_LIB_PATH}/libprotobuf-lite.lib)
+else()
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${PROTOBUF_LIBRARIES})
+endif()
 
 # As of Ubuntu 14.04 protoc is no longer a part of libprotobuf-dev package
 # and should be installed separately as in: sudo apt-get install protobuf-compiler
@@ -31,8 +40,8 @@ endif()
 message(STATUS "PROTOBUF_INCLUDE_DIR ====== ${PROTOBUF_INCLUDE_DIR}")
 message(STATUS "PROTOBUF_LIBRARIES ====== ${PROTOBUF_LIBRARIES}")
 message(STATUS "PROTOBUF_PROTOC_EXECUTABLE ====== ${PROTOBUF_PROTOC_EXECUTABLE}")
-message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
-message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")
+#message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
+#message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")
 
 
 # place where to generate protobuf sources

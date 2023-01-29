@@ -8,6 +8,13 @@ set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
 add_definitions(-DCAFFE_VERSION=${CAFFE_TARGET_VERSION})
 
+if(MSVC)
+  set(CONDA_LIB_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/lib)
+  set(CONDA_INCLUDE_PATH $ENV{SYNOPSYS_CAFFE_HOME}/Miniconda3/Library/include)
+  string(REPLACE "\\" "/" CONDA_LIB_PATH "${CONDA_LIB_PATH}")
+  string(REPLACE "\\" "/" CONDA_INCLUDE_PATH "${CONDA_INCLUDE_PATH}")
+endif()
+
 # ---[ Python3 
 find_package(Python3 COMPONENTS Interpreter Development)
 
@@ -23,6 +30,16 @@ message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
 message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
 
 include_directories(${PYTHON_INCLUDE_DIRS})
+
+if(MSVC)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    add_compile_options(
+        $<$<CONFIG:>:/MD> #---------|
+        $<$<CONFIG:Release>:/MD> #--|
+        $<$<CONFIG:Debug>:/MDd> #---|
+    )
+  endif()
+endif()
 
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -78,13 +95,29 @@ if(MSVC AND BUILD_SHARED_LIBS)
 endif()
 
 # ---[ Prebuild dependencies on windows
-include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
+if("${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  include(cmake/WindowsDownloadPrebuiltDependencies.cmake)
+endif()
 
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 caffe_option(USE_HDF5 "Build with hdf5" ON)
 
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
+
+#if(MSVC)
+#  set(CompilerFlags
+#        CMAKE_CXX_FLAGS
+#        CMAKE_CXX_FLAGS_DEBUG
+#        CMAKE_CXX_FLAGS_RELEASE
+#        CMAKE_C_FLAGS
+#        CMAKE_C_FLAGS_DEBUG
+#        CMAKE_C_FLAGS_RELEASE
+#        )
+#  foreach(CompilerFlag ${CompilerFlags})
+#    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+#  endforeach()
+#endif()
 
 # ---[ Flags
 if(UNIX OR APPLE)
@@ -146,7 +179,7 @@ add_custom_target(lint COMMAND ${CMAKE_COMMAND} -DPYTHON_EXECUTABLE=${PYTHON_EXE
 
 # ---[ pytest target
 if(BUILD_python)
-  add_custom_target(pytest COMMAND  python3 -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
+  add_custom_target(pytest COMMAND python -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python)
   add_dependencies(pytest pycaffe)
 endif()
 
@@ -166,3 +199,5 @@ caffe_print_configuration_summary()
 # ---[ Export configs generation
 caffe_generate_export_configs()
 
+message(STATUS "Caffe_INCLUDE_DIRS ====== ${Caffe_INCLUDE_DIRS}")
+message(STATUS "Caffe_LINKER_LIBS ====== ${Caffe_LINKER_LIBS}")

@@ -10,6 +10,10 @@
 if(MSVC)
   # rely on snappy-config.cmake
   find_package(Snappy NO_MODULE)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(Snappy_INCLUDE_DIR ${CONDA_INCLUDE_PATH})
+    set(Snappy_LIBRARIES ${CONDA_LIB_PATH}/snappy.lib)
+  endif()
 else()
   find_path(Snappy_INCLUDE_DIR NAMES snappy.h
                               PATHS ${SNAPPY_ROOT_DIR} ${SNAPPY_ROOT_DIR}/include)

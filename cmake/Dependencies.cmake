@@ -1,14 +1,25 @@
-# These lists are later turned into target properties on main caffe library target
+﻿# These lists are later turned into target properties on main caffe library target
 set(Caffe_LINKER_LIBS "")
 set(Caffe_INCLUDE_DIRS "")
 set(Caffe_DEFINITIONS "")
 set(Caffe_COMPILE_OPTIONS "")
 
 # ---[ Boost
-find_package( Boost COMPONENTS python3 system thread filesystem regex )
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  find_package(Boost COMPONENTS python38 system thread filesystem regex)
+else()
+  find_package(Boost COMPONENTS python3 system thread filesystem regex)
+endif()
+message(STATUS "boost find: include dir -> ${Boost_INCLUDE_DIRS}, lib -> ${Boost_LIBRARIES}")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_ALL_NO_LIB)
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  set(Boost_LIBRARY ${CONDA_LIB_PATH}/boost_python38.lib)
+  list(APPEND Boost_LIBRARY ${CONDA_LIB_PATH}/boost_system.lib ${CONDA_LIB_PATH}/boost_thread.lib ${CONDA_LIB_PATH}/boost_filesystem.lib ${CONDA_LIB_PATH}/boost_regex.lib)
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARY})
+else()
+  list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+endif()
 
 if(DEFINED MSVC AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 18.0.40629.0)
   # Required for VS 2013 Update 4 or earlier.
@@ -35,7 +46,6 @@ if(USE_OPENMP)
   list(APPEND Caffe_COMPILE_OPTIONS PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
-
 # ---[ Google-glog
 include("cmake/External/glog.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
@@ -56,8 +66,10 @@ if(MSVC)
     list(APPEND CMAKE_MODULE_PATH ${HDF5_DIR})
   endif()
   find_package(HDF5 COMPONENTS C HL REQUIRED)
-  set(HDF5_LIBRARIES hdf5-shared)
-  set(HDF5_HL_LIBRARIES hdf5_hl-shared)
+  if("${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    set(HDF5_LIBRARIES hdf5-shared)
+    set(HDF5_HL_LIBRARIES hdf5_hl-shared)
+  endif()
 else()
   find_package(HDF5 COMPONENTS HL REQUIRED)
 endif()
@@ -98,6 +110,7 @@ if(USE_LEVELDB)
   list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_LEVELDB)
 endif()
 
+
 # ---[ Snappy
 if(USE_LEVELDB)
   find_package(Snappy REQUIRED)
@@ -126,7 +139,7 @@ endif()
 
 # ---[ OpenCV
 if(USE_OPENCV)
-  find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs videoio)
+  find_package(OpenCV COMPONENTS core highgui imgproc imgcodecs videoio)
   if(NOT OpenCV_FOUND) # if not OpenCV 3.x, then imgcodecs are not found
     find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
   endif()
@@ -169,7 +182,10 @@ endif()
 
 # ---[ Python
 if(BUILD_python)
-  if(NOT "${python_version}" VERSION_LESS "3.0.0")
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    find_package(Boost COMPONENTS python38)
+    find_package(NumPy)
+  elseif(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.0.0" OR NOT "${python_version}" VERSION_LESS "3.0.0")
     # use python3
     find_package(PythonInterp 3.0)
     find_package(PythonLibs 3.0)
@@ -203,7 +219,8 @@ if(BUILD_python)
     find_package(NumPy 1.7.1)
     find_package(Boost 1.46 COMPONENTS python)
   endif()
-  if(PYTHONLIBS_FOUND AND NUMPY_FOUND AND Boost_PYTHON_FOUND)
+
+  if(PYTHONLIBS_FOUND AND NUMPY_FOUND AND (Boost_PYTHON_FOUND OR Boost_PYTHON3_FOUND OR Boost_PYTHON38_FOUND))
     set(HAVE_PYTHON TRUE)
     if(Boost_USE_STATIC_LIBS AND MSVC)
       list(APPEND Caffe_DEFINITIONS PUBLIC -DBOOST_PYTHON_STATIC_LIB)

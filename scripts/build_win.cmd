@@ -11,7 +11,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6 (only 2.7 and 3.5/3.6 are supported)
+    :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6
     if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.6
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
@@ -101,22 +101,22 @@ if DEFINED APPVEYOR (
 ) else (
     :: Change the settings here to match your setup
     :: Change MSVC_VERSION to 12 to use VS 2013
-    if NOT DEFINED MSVC_VERSION set MSVC_VERSION=14
+    if NOT DEFINED MSVC_VERSION set MSVC_VERSION=16
     :: Change to 1 to use Ninja generator (builds much faster)
-    if NOT DEFINED WITH_NINJA set WITH_NINJA=0
+    if NOT DEFINED WITH_NINJA set WITH_NINJA=1
     :: Change to 1 to build caffe without CUDA support
     if NOT DEFINED CPU_ONLY set CPU_ONLY=1
     :: Change to generate CUDA code for one of the following GPU architectures
     :: [Fermi  Kepler  Maxwell  Pascal  All]
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
-    :: Change to Debug to build Debug. This is only relevant for the Ninja generator the Visual Studio generator will generate both Debug and Release configs
+    :: Change to Debug to build Debug. This is only relevant for the Ninja generator, the Visual Studio generator will generate both Debug and Release configs
     if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     :: Set to 1 to use NCCL
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     :: Change to 1 to build a caffe.dll
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
-    :: Change to 2 if using python 2.7, Change to 3 if using python 3.5/3.6 (only 2.7 and 3.5/3.6 are supported)
-    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.6
+    :: Change to 2 if using python 2.7, Change to 3 if using python 3.5/3.6
+    if NOT DEFINED PYTHON_VERSION set PYTHON_VERSION=3.8
     :: Change these options for your needs.
     if NOT DEFINED BUILD_PYTHON set BUILD_PYTHON=1
     if NOT DEFINED BUILD_PYTHON_LAYER set BUILD_PYTHON_LAYER=1
@@ -128,13 +128,17 @@ if DEFINED APPVEYOR (
     :: Run lint
     if NOT DEFINED RUN_LINT set RUN_LINT=0
     :: Build the install target
-    if NOT DEFINED RUN_INSTALL set RUN_INSTALL=0
+    if NOT DEFINED RUN_INSTALL set RUN_INSTALL=1
 )
 
 :: Set the appropriate CMake generator
 :: Use the exclamation mark ! below to delay the
 :: expansion of CMAKE_GENERATOR
 if %WITH_NINJA% EQU 0 (
+    if "%MSVC_VERSION%"=="16" (
+        set CMAKE_GENERATOR=Visual Studio 16 2019
+        set extra_flag=-A x64 -DGFLAGS_INCLUDE_DIRS=%SYNOPSYS_CAFFE_HOME%\build\include
+    )
     if "%MSVC_VERSION%"=="14" (
         set CMAKE_GENERATOR=Visual Studio 14 2015 Win64
     )
@@ -183,14 +187,23 @@ if NOT EXIST build mkdir build
 pushd build
 
 :: Setup the environement for VS x64
-set batch_file=!VS%MSVC_VERSION%0COMNTOOLS!..\..\VC\vcvarsall.bat
-call "%batch_file%" amd64
+if "%MSVC_VERSION%"=="16" (
+    set batch_file="C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Professional\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+) else (
+    set batch_file=!VS%MSVC_VERSION%0COMNTOOLS!..\..\VC\vcvarsall.bat
+)
+if "%MSVC_VERSION%"=="16" (
+    call !batch_file! x64
+) else (
+    call "!batch_file!" amd64
+)
 echo on
 
 :: Configure using cmake and using the caffe-builder dependencies
 :: Add -DCUDNN_ROOT=C:/Projects/caffe/cudnn-8.0-windows10-x64-v5.1/cuda ^
 :: below to use cuDNN
-cmake -G"!CMAKE_GENERATOR!" ^
+:: -DUSE_LEVELDB=0
+cmake -G"!CMAKE_GENERATOR!" !extra_flag! ^
       -DBLAS=Open ^
       -DCMAKE_BUILD_TYPE:STRING=%CMAKE_CONFIG% ^
       -DBUILD_SHARED_LIBS:BOOL=%CMAKE_BUILD_SHARED_LIBS% ^
@@ -208,6 +221,18 @@ cmake -G"!CMAKE_GENERATOR!" ^
 if ERRORLEVEL 1 (
   echo ERROR: Configure failed
   exit /b 1
+)
+
+:: clean up
+::cmake --build . --target clean --config %CMAKE_CONFIG%
+
+:: create empty file as placeholder to avoid missing error in compilation
+if NOT EXIST caffe mkdir caffe
+cd . > ..\build\caffe\include_symbols.hpp
+
+:: boost file error fix (possible for Line 52)
+if "%MSVC_VERSION%"=="16" (
+    sed -i 's/std::snprintf/_snprintf/g' ..\Miniconda3\Library\include\boost\system\detail\system_category_win32.hpp
 )
 
 :: Lint
@@ -228,6 +253,13 @@ if ERRORLEVEL 1 (
   exit /b 1
 )
 
+cmake --build . --target pycaffe --config %CMAKE_CONFIG%
+
+if ERRORLEVEL 1 (
+  echo ERROR: pycaffe build failed
+  exit /b 1
+)
+
 :: Build and exectute the tests
 if !RUN_TESTS! EQU 1 (
     cmake --build . --target runtest --config %CMAKE_CONFIG%
@@ -240,7 +272,7 @@ if !RUN_TESTS! EQU 1 (
     if %BUILD_PYTHON% EQU 1 (
         if %BUILD_PYTHON_LAYER% EQU 1 (
             :: Run python tests only in Release build since
-            :: the _caffe module is _caffe-d is debug
+            :: the _caffe module is _caffe-d for debug
             if "%CMAKE_CONFIG%"=="Release" (
                 :: Run the python tests
                 cmake --build . --target pytest
@@ -257,6 +289,8 @@ if !RUN_TESTS! EQU 1 (
 if %RUN_INSTALL% EQU 1 (
     cmake --build . --target install --config %CMAKE_CONFIG%
 )
+
+echo DONE: All build completed.
 
 popd
 @endlocal

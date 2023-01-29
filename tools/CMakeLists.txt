@@ -1,6 +1,16 @@
 # Collect source files
 file(GLOB_RECURSE srcs ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
+if(MSVC)
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    add_compile_options(
+        $<$<CONFIG:>:/MD> #---------|
+        $<$<CONFIG:Release>:/MD> #--|
+        $<$<CONFIG:Debug>:/MDd> #---|
+    )
+  endif()
+endif()
+
 # Build each source file independently
 foreach(source ${srcs})
   get_filename_component(name ${source} NAME_WE)
@@ -12,7 +22,13 @@ foreach(source ${srcs})
 
   # target
   add_executable(${name} ${source})
-  target_link_libraries(${name} ${Caffe_LINK})
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    target_link_libraries(${name} PUBLIC ${Caffe_LINKER_LIBS} ${Caffe_LINK})
+    target_include_directories(${name} PUBLIC ${Caffe_INCLUDE_DIR})
+  else()
+    target_link_libraries(${name} ${Caffe_LINK})
+  endif()
+
   caffe_default_properties(${name})
 
   if(MSVC AND COPY_PREREQUISITES)

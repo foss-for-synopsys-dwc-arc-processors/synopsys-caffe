@@ -27,7 +27,13 @@ endif()
 
 # ---[ Adding test target
 add_executable(${the_target} EXCLUDE_FROM_ALL ${test_srcs})
-target_link_libraries(${the_target} gtest ${Caffe_LINK})
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  target_link_libraries(${the_target} PUBLIC gtest ${Caffe_LINKER_LIBS} ${Caffe_LINK})
+  target_include_directories(${the_target} PUBLIC ${Caffe_INCLUDE_DIR})
+else()
+  target_link_libraries(${the_target} gtest ${Caffe_LINK})
+endif()
+
 caffe_default_properties(${the_target})
 caffe_set_runtime_directory(${the_target} "${PROJECT_BINARY_DIR}/test")
 

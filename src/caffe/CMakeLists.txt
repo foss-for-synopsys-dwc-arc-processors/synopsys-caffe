@@ -6,7 +6,9 @@ caffe_protobuf_generate_cpp_py(${proto_gen_folder} proto_srcs proto_hdrs proto_p
 add_library(caffeproto STATIC ${proto_hdrs} ${proto_srcs} ${proto_python})
 caffe_default_properties(caffeproto)
 target_link_libraries(caffeproto PUBLIC ${PROTOBUF_LIBRARIES})
-target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
+if("${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
+endif()
 
 list(INSERT Caffe_LINKER_LIBS 0 PUBLIC caffeproto) # note, crucial to prepend!
 
@@ -56,10 +58,22 @@ endif()
 add_library(caffe ${srcs})
 caffe_default_properties(caffe)
 target_link_libraries(caffe ${Caffe_LINKER_LIBS})
-target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
-                                 PUBLIC
-                                 $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
-                                 $<INSTALL_INTERFACE:include>)
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  target_include_directories(caffe
+                                  PUBLIC
+                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
+                                  $<INSTALL_INTERFACE:include>)
+else()
+  target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
+                                  PUBLIC
+                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
+                                  $<INSTALL_INTERFACE:include>)
+endif()
+add_compile_definitions(NOMINMAX)  # to fix windows compile issues http://www.suodenjoki.dk/us/archive/2010/min-max.htm
+if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+  set_target_properties(caffe PROPERTIES LINK_FLAGS "${Caffe_LINKER_LIBS}")
+endif()
+
 target_compile_definitions(caffe ${Caffe_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
   target_compile_options(caffe ${Caffe_COMPILE_OPTIONS})
@@ -75,6 +89,15 @@ if(MSVC AND BUILD_SHARED_LIBS)
   # and https://cmake.org/cmake/help/v3.5/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html
   # for details.
   set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
+  if(NOT "${PYTHON_VERSION_STRING}" VERSION_LESS "3.8.0")
+    # Force to generate, otherwise will have errors like "Unknown layer type: Input" in net construction
+    windows_create_link_header(caffe ${caffe_symbols_hdr})
+    get_filename_component(_name ${caffe_symbols_hdr} NAME)
+    set(CAFFE_INCLUDE_SYMBOLS "#include \"caffe/${_name}\"")
+    target_compile_definitions(caffe PRIVATE ${_caffe_static_compile_def}
+                                    PUBLIC -DCMAKE_WINDOWS_BUILD)
+  endif()
 elseif(MSVC AND NOT BUILD_SHARED_LIBS)
   # add a custom build command that generates a list of symbols
   # to force linking. This is required because MSVC as nothing
