@@ -232,7 +232,7 @@ cd . > ..\build\caffe\include_symbols.hpp
 
 :: boost file error fix (possible for Line 52)
 if "%MSVC_VERSION%"=="16" (
-    sed -i 's/std::snprintf/_snprintf/g' ..\Miniconda3\Library\include\boost\system\detail\system_category_win32.hpp
+    sed -i 's/std::snprintf/_snprintf/g' %SYNOPSYS_CAFFE_HOME%\Miniconda3\Library\include\boost\system\detail\system_category_win32.hpp
 )
 
 :: Lint
