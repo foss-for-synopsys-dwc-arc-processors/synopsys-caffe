@@ -3,7 +3,6 @@ import numpy as np
 import torch
 import torchvision.ops
 
-
 class Deform_Conv2D(caffe.Layer):
     """
     Implemention of pytorch deform_conv2d method.
@@ -30,15 +29,16 @@ class Deform_Conv2D(caffe.Layer):
             raise Exception("Only supporting input 4 Tensors now!")
         if len(top) != 1:
             raise Exception("Only output one Tensor at a time!")
-
-        d = eval(self.param_str)
+        
+        # d = eval(self.param_str)
+        d = dict()
         self.stride = d.get("stride", 1)
         self.padding = d.get("padding", 1)
         self.dilation = d.get("dilation", 1)
 
     def reshape(self, bottom, top):
         # check input dimensions
-        # if bottom[0].count == 0:
+        #if bottom[0].count == 0:
         #    raise Exception("Input must not be empty!")
         top[0].reshape(*bottom[0].data.shape)
 
