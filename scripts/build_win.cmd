@@ -41,10 +41,10 @@ if DEFINED APPVEYOR (
     )
     set PATH=!CONDA_ROOT!;!CONDA_ROOT!\Scripts;!CONDA_ROOT!\Library\bin;!PATH!
 
+    :: Try to update conda
+    conda upgrade --yes -n base conda
     :: Check that we have the right python version
     !PYTHON_EXE! --version
-    :: Try to update conda
-    conda upgrade -n base conda
 
     :: Add the required channels
     conda config --add channels conda-forge
