@@ -1,6 +1,6 @@
 # A Short Summary of New Features in Synopsys Caffe
 
-Synopsys Caffe Version: 2023.03  
+Synopsys Caffe Version: 2023.09  
 New added features are compared with the original BVLC Caffe 1.0.0
   
 ## evconvert (TensorFlow/ONNX/... to Caffe Converter) related  
@@ -107,6 +107,7 @@ ceil_mode in PoolingParameter
 faceboxes, box_width, box_height, keras, tf and yx_order in PriorBoxParameter  
 relu6, maximum and minimum in ReLUParameter  
 
+deform_conv2d.py (customized Python layer)  
 eltwise.py (deprecated, customized Python layer, realize the broadcasting and add support for divide and minimum for eltwise layer)  
 matrix_inverse.py (customized Python layer, implementation of tf.matrix_inverse)  
 pad.py and pads.py (deprecated, customized Python layer, implementation of tf.pad)  
