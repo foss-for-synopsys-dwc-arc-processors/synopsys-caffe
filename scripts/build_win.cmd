@@ -43,6 +43,9 @@ if DEFINED APPVEYOR (
 
     :: Check that we have the right python version
     !PYTHON_EXE! --version
+    :: Try to update conda
+    conda upgrade -n base conda
+
     :: Add the required channels
     conda config --add channels conda-forge
     conda config --add channels willyd
