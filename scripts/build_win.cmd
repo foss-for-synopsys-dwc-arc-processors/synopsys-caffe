@@ -8,7 +8,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED WITH_NINJA set WITH_NINJA=0
     if NOT DEFINED CPU_ONLY set CPU_ONLY=1
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
-    if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
+    if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Debug
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
     :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6
