@@ -113,7 +113,7 @@ if DEFINED APPVEYOR (
     :: [Fermi  Kepler  Maxwell  Pascal  All]
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
     :: Change to Debug to build Debug. This is only relevant for the Ninja generator, the Visual Studio generator will generate both Debug and Release configs
-    if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
+    set CMAKE_CONFIG=Debug
     :: Set to 1 to use NCCL
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     :: Change to 1 to build a caffe.dll
