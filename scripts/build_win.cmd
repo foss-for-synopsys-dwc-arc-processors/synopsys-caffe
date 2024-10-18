@@ -8,7 +8,7 @@ if DEFINED APPVEYOR (
     if NOT DEFINED WITH_NINJA set WITH_NINJA=0
     if NOT DEFINED CPU_ONLY set CPU_ONLY=1
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
-    set CMAKE_CONFIG=Debug
+    if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     if NOT DEFINED CMAKE_BUILD_SHARED_LIBS set CMAKE_BUILD_SHARED_LIBS=0
     :: Change to 2/2.7 if using python 2.7, Change to 3/3.5 if using python 3.5, change to 3.6 if using python 3.6
@@ -113,7 +113,7 @@ if DEFINED APPVEYOR (
     :: [Fermi  Kepler  Maxwell  Pascal  All]
     if NOT DEFINED CUDA_ARCH_NAME set CUDA_ARCH_NAME=Auto
     :: Change to Debug to build Debug. This is only relevant for the Ninja generator, the Visual Studio generator will generate both Debug and Release configs
-    set CMAKE_CONFIG=Debug
+    if NOT DEFINED CMAKE_CONFIG set CMAKE_CONFIG=Release
     :: Set to 1 to use NCCL
     if NOT DEFINED USE_NCCL set USE_NCCL=0
     :: Change to 1 to build a caffe.dll
@@ -234,7 +234,6 @@ if NOT EXIST caffe mkdir caffe
 cd . > ..\build\caffe\include_symbols.hpp
 
 :: boost file error fix (possible for Line 52)
-:: replace miniconda3 with miniforge3, this file doesn't exist
 if "%MSVC_VERSION%"=="16" (
     sed -i 's/std::snprintf/_snprintf/g' %SYNOPSYS_CAFFE_HOME%\Miniforge3\Library\include\boost\system\detail\system_category_win32.hpp
 )
