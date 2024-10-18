@@ -12,6 +12,9 @@
 
 #include "caffe/util/bbox_util.hpp"
 
+#include <opencv2/imgproc/types_c.h>
+#include "opencv2/imgcodecs/legacy/constants_c.h"
+
 namespace caffe {
 
 bool SortBBoxAscend(const NormalizedBBox &bbox1, const NormalizedBBox &bbox2) {
@@ -2666,7 +2669,7 @@ void VisualizeBBox(const vector<cv::Mat> &images, const Blob<Dtype> *detections,
         cv::getTextSize(buffer, fontface, scale, thickness, &baseline);
     cv::rectangle(image, cv::Point(0, 0),
                   cv::Point(text.width, text.height + baseline),
-                  CV_RGB(255, 255, 255), CV_FILLED);
+                  CV_RGB(255, 255, 255), cv::FILLED);
     cv::putText(image, buffer, cv::Point(0, text.height + baseline / 2.),
                 fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
     // Draw bboxes.
@@ -2698,7 +2701,7 @@ void VisualizeBBox(const vector<cv::Mat> &images, const Blob<Dtype> *detections,
         cv::rectangle(image, bottom_left_pt + cv::Point(0, 0),
                       bottom_left_pt +
                           cv::Point(text.width, -text.height - baseline),
-                      color, CV_FILLED);
+                      color, cv::FILLED);
         cv::putText(image, buffer, bottom_left_pt - cv::Point(0, baseline),
                     fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
       }
@@ -2707,7 +2710,7 @@ void VisualizeBBox(const vector<cv::Mat> &images, const Blob<Dtype> *detections,
     if (!save_file.empty()) {
       if (!cap_out.isOpened()) {
         cv::Size size(image.size().width, image.size().height);
-        cv::VideoWriter outputVideo(save_file, CV_FOURCC('D', 'I', 'V', 'X'),
+        cv::VideoWriter outputVideo(save_file, cv::VideoWriter::fourcc('D', 'I', 'V', 'X'),
                                     30, size, true);
         cap_out = outputVideo;
       }

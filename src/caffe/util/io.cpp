@@ -15,6 +15,8 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 #ifdef USE_OPENCV
+#include <opencv2/imgproc/types_c.h>
+#include "opencv2/imgcodecs/legacy/constants_c.h"
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/highgui/highgui_c.h>

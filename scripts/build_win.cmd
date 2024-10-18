@@ -235,9 +235,9 @@ cd . > ..\build\caffe\include_symbols.hpp
 
 :: boost file error fix (possible for Line 52)
 :: replace miniconda3 with miniforge3, this file doesn't exist
-::if "%MSVC_VERSION%"=="16" (
-::    sed -i 's/std::snprintf/_snprintf/g' %SYNOPSYS_CAFFE_HOME%\Miniconda3\Library\include\boost\system\detail\system_category_win32.hpp::
-::)
+if "%MSVC_VERSION%"=="16" (
+    sed -i 's/std::snprintf/_snprintf/g' %SYNOPSYS_CAFFE_HOME%\Miniforge3\Library\include\boost\system\detail\system_category_win32.hpp
+)
 
 :: Lint
 if %RUN_LINT% EQU 1 (
